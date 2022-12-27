@@ -21,11 +21,14 @@ time_offset = -3600 # seconds from UTC
 
 posts_url_prefix = "posts"
 
+[homepage]
+id = "202212011301" # or: builtin = "posts"
+
 # Website menu entries
 
 [[menu]]
 builtin = "homepage"
-id = "202212011301"
+title = "Home"
 
 [[menu]]
 builtin = "posts"
