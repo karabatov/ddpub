@@ -22,8 +22,8 @@ time_offset = -3600 # seconds from UTC
 posts_url_prefix = "posts"
 
 [notes]
-id_format = "\d{12}"
-id_link_format = "§\d{12}" # Format in Markdown links: [Link](§202212011301), [[§202212011301]]
+id_format = "\\d{12}"
+id_link_format = "§\\d{12}" # Format in Markdown links: [Link](§202212011301), [[§202212011301]]
 
 [homepage]
 id = "202212011301" # or: builtin = "posts"
