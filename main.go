@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+)
 
 func main() {
-	fmt.Println("Hello")
+	var notesDir = flag.String("notesDir", ".", "Directory that stores notes")
+	flag.Parse()
+	fmt.Println(*notesDir)
+	flag.PrintDefaults()
 }
