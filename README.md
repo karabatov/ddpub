@@ -12,29 +12,33 @@
 $ ddpub check --config ./website1.toml
 ```
 
-### Start empty and expect a push
-
-The `DDPUB_ADDRESS` environment variable is required when the `--config` parameter is missing.
-
-```bash
-$ DDPUB_TOKEN='ABCDEF' DDPUB_ADDRESS='ddpub.org' ddpub serve  --port 33075
-```
-
 ### Serve from the local notes directory
-
-Without the `DDPUB_TOKEN` environment variable the server cannot accept pushes.
 
 ```bash
 $ ddpub serve --config ./website1.toml --notes "~/notes" --port 33075
 ```
 
-### Push a website to server
+### Further development
+
+Serving from an empty state and getting pushes is not essential to launching.
+
+#### Start empty and expect a push
+
+The `DDPUB_ADDRESS` environment variable is required when the `--config` parameter is missing.
+
+Without the `DDPUB_TOKEN` environment variable the server cannot accept pushes.
+
+```bash
+$ DDPUB_TOKEN='ABCDEF' DDPUB_ADDRESS='ddpub.org' ddpub serve  --port 33075
+```
+
+#### Push a website to server
 
 Performs a `/ddpub_push` POST request to a running DDPub server. Can use HTTP if required.
 
 Both `DDPUB_TOKEN` environment variable and `address` variable in the config must match the values on the server, otherwise the push will be refused.
 
-The server performs a diff and only requests the client to upload files it doesn't have, to conserve traffic.
+The server performs a diff and only requests the client to upload files it doesn't have, to conserve traffic. The diff checks for file names, modified dates and size.
 
 ```bash
 $ DDPUB_TOKEN=ABCDEF ddpub push --config ./website1.toml --notes "~notes"
@@ -48,6 +52,8 @@ The website configuration file uses the [TOML](https://toml.io/en/) format.
 
 A sample `website.toml`:
 ```toml
+address = "norikitech.com"
+
 language = "en-US"
 
 title = "NorikiTech"
@@ -60,8 +66,8 @@ time_offset = -3600 # seconds from UTC
 posts_url_prefix = "posts"
 
 [notes]
-id_format = "\\d{12}"
-id_link_format = "§\\d{12}" # Format in Markdown links: [Link](§202212011301), [[§202212011301]]
+id_format = '\d{12}'
+id_link_format = '§\d{12}' # Format in Markdown links: [Link](§202212011301), [[§202212011301]]
 
 [homepage]
 id = "202212011301" # or: builtin = "posts"
