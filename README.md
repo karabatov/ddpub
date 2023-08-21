@@ -8,14 +8,16 @@
 
 ### Check config
 
+`website` is a directory containing `config.toml`.
+
 ```bash
-$ ddpub check --config ./website1.toml
+$ ddpub check --config "~/notes/website"
 ```
 
 ### Serve from the local notes directory
 
 ```bash
-$ ddpub serve --config ./website1.toml --notes "~/notes" --port 33075
+$ ddpub serve --config "~/notes/website" --notes "~/notes" --port 33075
 ```
 
 ### Further development
@@ -41,16 +43,24 @@ Both `DDPUB_TOKEN` environment variable and `address` variable in the config mus
 The server performs a diff and only requests the client to upload files it doesn't have, to conserve traffic. The diff checks for file names, modified dates and size.
 
 ```bash
-$ DDPUB_TOKEN=ABCDEF ddpub push --config ./website1.toml --notes "~notes"
+$ DDPUB_TOKEN=ABCDEF ddpub push --config "~/notes/website" --notes "~/notes"
 ```
 
 How to allow both running from `./notes` and not overwriting local bootstrapped notes?
 
-## Configuration file format
+## Configuration directory format
+
+A website is a structured directory containing, at a minimum, the website configuration file `config.toml`. It may or may not be within the notes directory.
+
+```bash
+$ tree ~/notes/sites/website
+website
+└── config.toml
+```
 
 The website configuration file uses the [TOML](https://toml.io/en/) format.
 
-A sample `website.toml`:
+A sample `config.toml`:
 ```toml
 address = "norikitech.com"
 
