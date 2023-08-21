@@ -7,6 +7,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+// DDConfig represents a configuration file for a single website.
 type DDConfig struct {
 	Address string
 }
