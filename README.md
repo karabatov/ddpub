@@ -11,7 +11,7 @@
 `website` is a directory containing `config.toml`.
 
 ```bash
-$ ddpub check --config "~/notes/website"
+$ ddpub check --config "~/notes/website" --notes "~/notes"
 ```
 
 ### Serve from the local notes directory
