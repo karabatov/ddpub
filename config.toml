@@ -1,4 +1,4 @@
 address = "ddpub.org"
 
 [notes]
-id_format = '\d{12}'
+id_format = '^\d{12}'
