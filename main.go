@@ -18,6 +18,12 @@ type DDConfig struct {
 	}
 }
 
+type noteID = string
+
+type metadata struct {
+	filename string
+}
+
 func main() {
 	argsLen := len(os.Args[1:])
 	// At least the command must be present.
@@ -65,7 +71,6 @@ func main() {
 	}
 
 	fmt.Println("ID format:", cfg.Notes.IdFormat)
-	validID.FindAllString("", 1)
 
 	// Read a list of “.md” files from the notes directory with names that match the regex.
 	allFiles, err := os.ReadDir(*notesDir)
@@ -74,21 +79,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	type noteID = string
-
-	type metadata struct {
-		id       noteID
-		filename string
-	}
-
 	notes := map[noteID]metadata{}
 
+	var isMarkdownFile = regexp.MustCompile(".md$")
 	for _, file := range allFiles {
-		fmt.Println("Filename:", file.Name())
+		if file.IsDir() {
+			continue
+		}
+		var name = file.Name()
+		var id = validID.FindString(name)
+		if isMarkdownFile.MatchString(name) && len(id) > 0 {
+			var path = filepath.Join(*notesDir, name)
+			data, err := readMetadata(path)
+			if err != nil {
+				fmt.Println("Could not read metadata from file:", name)
+				continue
+			}
+			notes[id] = data
+		}
 	}
 
 	// Print “Found N files.”
-	fmt.Printf("Read %d notes.", len(notes))
+	fmt.Printf("Loaded metadata for %d notes.", len(notes))
 
 	// Create a map of file ID to file metadata.
 	// Read metadata for the files in the list:
@@ -98,7 +110,7 @@ func main() {
 	// * Title (if present, defaults to blank)
 	// * List of tags (if present, defaults to empty), with hashtag characters stripped
 	// * Slug (if present, defaults to file ID)
-	// * Date (if present, defaults to file creation date)
+	// * Date (if present, defaults to file modification date)
 	// * Language (if present, defaults to default language code, currently "en-US")
 	// Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
 
@@ -107,4 +119,9 @@ func main() {
 
 	// Verify the menu entries (loaded as part of config loading). The first `id`/`builtin`/`tag` entry (but not `url`) will be the homepage. (`[homepage]` from the sample config is obsolete)
 	// Complain and exit if any `id` entries are not in the list of loaded files.
+}
+
+func readMetadata(path string) (metadata, error) {
+	var data metadata
+	return data, nil
 }
