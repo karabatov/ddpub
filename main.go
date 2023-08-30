@@ -68,7 +68,27 @@ func main() {
 	validID.FindAllString("", 1)
 
 	// Read a list of “.md” files from the notes directory with names that match the regex.
+	allFiles, err := os.ReadDir(*notesDir)
+	if err != nil {
+		fmt.Printf("Could not read the notes directory: %v", err)
+		os.Exit(1)
+	}
+
+	type noteID = string
+
+	type metadata struct {
+		id       noteID
+		filename string
+	}
+
+	notes := map[noteID]metadata{}
+
+	for _, file := range allFiles {
+		fmt.Println("Filename:", file.Name())
+	}
+
 	// Print “Found N files.”
+	fmt.Printf("Read %d notes.", len(notes))
 
 	// Create a map of file ID to file metadata.
 	// Read metadata for the files in the list:
