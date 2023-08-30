@@ -79,6 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Create a map of file ID to file metadata.
 	notes := map[noteID]metadata{}
 
 	var isMarkdownFile = regexp.MustCompile(".md$")
@@ -86,33 +87,24 @@ func main() {
 		if file.IsDir() {
 			continue
 		}
-		var name = file.Name()
-		var id = validID.FindString(name)
-		if isMarkdownFile.MatchString(name) && len(id) > 0 {
-			var path = filepath.Join(*notesDir, name)
-			data, err := readMetadata(path)
-			if err != nil {
-				fmt.Println("Could not read metadata from file:", name)
-				continue
-			}
-			notes[id] = data
+
+		var filename = file.Name()
+		var id = validID.FindString(filename)
+		if !isMarkdownFile.MatchString(filename) || len(id) == 0 {
+			continue
 		}
+
+		var path = filepath.Join(*notesDir, filename)
+		fileMetadata, err := readMetadata(path)
+		if err != nil {
+			fmt.Println("Could not read metadata from file:", filename)
+			continue
+		}
+
+		notes[id] = fileMetadata
 	}
 
-	// Print “Found N files.”
 	fmt.Printf("Loaded metadata for %d notes.", len(notes))
-
-	// Create a map of file ID to file metadata.
-	// Read metadata for the files in the list:
-	// * File ID
-	// * Filename with extension (to be able to read it)
-	// * File creation date
-	// * Title (if present, defaults to blank)
-	// * List of tags (if present, defaults to empty), with hashtag characters stripped
-	// * Slug (if present, defaults to file ID)
-	// * Date (if present, defaults to file modification date)
-	// * Language (if present, defaults to default language code, currently "en-US")
-	// Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
 
 	// Create a full list of unique tags (case-sensitive) present in the posts.
 	// Create a map of tag to list of file IDs with that tag.
@@ -121,6 +113,16 @@ func main() {
 	// Complain and exit if any `id` entries are not in the list of loaded files.
 }
 
+// Read metadata for the files in the list:
+// * File ID
+// * Filename with extension (to be able to read it)
+// * File creation date
+// * Title (if present, defaults to blank)
+// * List of tags (if present, defaults to empty), with hashtag characters stripped
+// * Slug (if present, defaults to file ID)
+// * Date (if present, defaults to file modification date)
+// * Language (if present, defaults to default language code, currently "en-US")
+// Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
 func readMetadata(path string) (metadata, error) {
 	var data metadata
 	return data, nil
