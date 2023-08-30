@@ -132,10 +132,21 @@ func main() {
 		notes[id] = fileMetadata
 	}
 
-	fmt.Printf("Loaded metadata for %d notes.", len(notes))
+	fmt.Printf("Loaded metadata for %d notes.\n", len(notes))
 
 	// Create a full list of unique tags (case-sensitive) present in the posts.
 	// Create a map of tag to list of file IDs with that tag.
+	notesByTag := map[tag][]noteID{}
+	for id, data := range notes {
+		for _, t := range data.tags {
+			if tags, ok := notesByTag[t]; ok {
+				notesByTag[t] = append(tags, id)
+			} else {
+				notesByTag[t] = []tag{id}
+			}
+		}
+	}
+	fmt.Printf("Loaded %d tags.\n", len(notesByTag))
 
 	// Verify the menu entries (loaded as part of config loading). The first `id`/`builtin`/`tag` entry (but not `url`) will be the homepage. (`[homepage]` from the sample config is obsolete)
 	// Complain and exit if any `id` entries are not in the list of loaded files.
