@@ -52,4 +52,26 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("address:", cfg.Address)
+
+	// Load file ID regex from config and try to compile.
+	// Read a list of “.md” files from the notes directory with names that match the regex.
+	// Print “Found N files.”
+
+	// Create a map of file ID to file metadata.
+	// Read metadata for the files in the list:
+	// * File ID
+	// * Filename with extension (to be able to read it)
+	// * File creation date
+	// * Title (if present, defaults to blank)
+	// * List of tags (if present, defaults to empty), with hashtag characters stripped
+	// * Slug (if present, defaults to file ID)
+	// * Date (if present, defaults to file creation date)
+	// * Language (if present, defaults to default language code, currently "en-US")
+	// Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
+
+	// Create a full list of unique tags (case-sensitive) present in the posts.
+	// Create a map of tag to list of file IDs with that tag.
+
+	// Verify the menu entries (loaded as part of config loading). The first `id`/`builtin`/`tag` entry (but not `url`) will be the homepage. (`[homepage]` from the sample config is obsolete)
+	// Complain and exit if any `id` entries are not in the list of loaded files.
 }
