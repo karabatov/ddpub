@@ -41,13 +41,13 @@ var (
 	// Matches title line.
 	matchLineTitle = regexp.MustCompile(`^#\s(.*)$`)
 	// Matches the line with the date.
-	matchLineDate = regexp.MustCompile(`^Date: `)
+	matchLineDate = regexp.MustCompile(`^Date:\s(.*)\s*$`)
 	// Matches the line with the language.
-	matchLineLanguage = regexp.MustCompile(`^Language: `)
+	matchLineLanguage = regexp.MustCompile(`^Language:\s(.*)\s*$`)
 	// Matches the line with the slug.
-	matchLineSlug = regexp.MustCompile(`^Slug: `)
+	matchLineSlug = regexp.MustCompile(`^Slug:\s(.*)\s*$`)
 	// Matches the line with tags.
-	matchLineTags = regexp.MustCompile(`^Tags: `)
+	matchLineTags = regexp.MustCompile(`^Tags:\s(.*)\s*$`)
 	// Matches one tag without the pound sign.
 	matchOneTag = regexp.MustCompile(`#(\S+)\s*`)
 )
@@ -163,10 +163,38 @@ func readMetadata(filename, directory string) (metadata, error) {
 
 	s := bufio.NewScanner(file)
 	for s.Scan() {
+		if title, ok := firstSubmatch(matchLineTitle, s.Text()); ok {
+			data.title = title
+			continue
+		}
+
+		if tags, ok := firstSubmatch(matchLineTags, s.Text()); ok {
+			data.tags = tagsFromLine(tags)
+			continue
+		}
+
+		if slug, ok := firstSubmatch(matchLineSlug, s.Text()); ok {
+			data.slug = slug
+			continue
+		}
+
+		if lang, ok := firstSubmatch(matchLineLanguage, s.Text()); ok {
+			// TODO: Add validation.
+			data.language = lang
+			continue
+		}
+
+		if _, ok := firstSubmatch(matchLineDate, s.Text()); ok {
+			// TODO: Define date format and parse.
+			continue
+		}
 
 		// If no matchers match, we are done.
 		break
 	}
+
+	// Default to mod time for now instead of parsing the date.
+	data.date = data.modTime
 
 	return data, nil
 }
@@ -177,4 +205,20 @@ func fileModTime(file *os.File) time.Time {
 	} else {
 		return time.Now()
 	}
+}
+
+func firstSubmatch(re *regexp.Regexp, line string) (string, bool) {
+	if matches := re.FindStringSubmatch(line); len(matches) > 1 {
+		return matches[1], true
+	}
+
+	return "", false
+}
+
+func tagsFromLine(line string) []tag {
+	tags := []tag{}
+	for _, tagPair := range matchOneTag.FindAllStringSubmatch(line, -1) {
+		tags = append(tags, tagPair[1])
+	}
+	return tags
 }
