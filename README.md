@@ -20,6 +20,9 @@ $ ddpub check --config "~/notes/website" --notes "~/notes"
 $ ddpub serve --config "~/notes/website" --notes "~/notes" --port 33075
 ```
 
+* Preview?
+* Autoreload?
+
 ### Further development
 
 Serving from an empty state and getting pushes is not essential to launching.
