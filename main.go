@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
+	"time"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -20,9 +22,35 @@ type DDConfig struct {
 
 type noteID = string
 
+type tag = string
+
+type language = string
+
 type metadata struct {
 	filename string
+	modTime  time.Time
+	date     time.Time
+	title    string
+	slug     string
+	tags     []tag
+	language string
 }
+
+var (
+	matchMarkdownFile = regexp.MustCompile(`.md$`)
+	// Matches title line.
+	matchLineTitle = regexp.MustCompile(`^#\s(.*)$`)
+	// Matches the line with the date.
+	matchLineDate = regexp.MustCompile(`^Date: `)
+	// Matches the line with the language.
+	matchLineLanguage = regexp.MustCompile(`^Language: `)
+	// Matches the line with the slug.
+	matchLineSlug = regexp.MustCompile(`^Slug: `)
+	// Matches the line with tags.
+	matchLineTags = regexp.MustCompile(`^Tags: `)
+	// Matches one tag without the pound sign.
+	matchOneTag = regexp.MustCompile(`#(\S+)\s*`)
+)
 
 func main() {
 	argsLen := len(os.Args[1:])
@@ -82,7 +110,6 @@ func main() {
 	// Create a map of file ID to file metadata.
 	notes := map[noteID]metadata{}
 
-	var isMarkdownFile = regexp.MustCompile(".md$")
 	for _, file := range allFiles {
 		if file.IsDir() {
 			continue
@@ -90,12 +117,11 @@ func main() {
 
 		var filename = file.Name()
 		var id = validID.FindString(filename)
-		if !isMarkdownFile.MatchString(filename) || len(id) == 0 {
+		if !matchMarkdownFile.MatchString(filename) || len(id) == 0 {
 			continue
 		}
 
-		var path = filepath.Join(*notesDir, filename)
-		fileMetadata, err := readMetadata(path)
+		fileMetadata, err := readMetadata(filename, *notesDir)
 		if err != nil {
 			fmt.Println("Could not read metadata from file:", filename)
 			continue
@@ -114,16 +140,41 @@ func main() {
 }
 
 // Read metadata for the files in the list:
-// * File ID
 // * Filename with extension (to be able to read it)
-// * File creation date
+// * File modification date
 // * Title (if present, defaults to blank)
 // * List of tags (if present, defaults to empty), with hashtag characters stripped
 // * Slug (if present, defaults to file ID)
 // * Date (if present, defaults to file modification date)
 // * Language (if present, defaults to default language code, currently "en-US")
 // Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
-func readMetadata(path string) (metadata, error) {
+func readMetadata(filename, directory string) (metadata, error) {
+	var path = filepath.Join(directory, filename)
 	var data metadata
+
+	file, err := os.Open(path)
+	if err != nil {
+		return data, err
+	}
+	defer file.Close()
+
+	data.filename = filename
+	data.modTime = fileModTime(file)
+
+	s := bufio.NewScanner(file)
+	for s.Scan() {
+
+		// If no matchers match, we are done.
+		break
+	}
+
 	return data, nil
+}
+
+func fileModTime(file *os.File) time.Time {
+	if stat, err := file.Stat(); err == nil {
+		return stat.ModTime()
+	} else {
+		return time.Now()
+	}
 }
