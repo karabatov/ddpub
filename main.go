@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -12,6 +13,9 @@ import (
 // DDConfig represents a configuration file for a single website.
 type DDConfig struct {
 	Address string
+	Notes   struct {
+		IdFormat string `toml:"id_format"`
+	}
 }
 
 func main() {
@@ -54,6 +58,15 @@ func main() {
 	fmt.Println("address:", cfg.Address)
 
 	// Load file ID regex from config and try to compile.
+	validID, err := regexp.Compile(cfg.Notes.IdFormat)
+	if err != nil {
+		fmt.Printf("Could not compile id_format regular expression '%s': %v", cfg.Notes.IdFormat, err)
+		os.Exit(1)
+	}
+
+	fmt.Println("ID format:", cfg.Notes.IdFormat)
+	validID.FindAllString("", 1)
+
 	// Read a list of “.md” files from the notes directory with names that match the regex.
 	// Print “Found N files.”
 
