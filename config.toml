@@ -1,8 +1,8 @@
-address = "ddpub.org"
+address = "norikitech.com"
 
 [notes]
 id_format = '^\d{12}'
 
 [[tags]]
-tag = "two"
-title = "T-W-O"
+tag = "books"
+title = "Books"
