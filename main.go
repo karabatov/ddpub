@@ -34,6 +34,34 @@ type PublicTag struct {
 	Title string
 }
 
+// MenuEntry always has a title and can be either of:
+//   - builtin
+//   - named note with id
+//   - tag
+//   - url
+type MenuEntry struct {
+	Title   string
+	Builtin string
+	ID      noteID `toml:"id"`
+	Tag     tag
+	URL     string `toml:"url"`
+}
+
+const (
+	MenuInvalid = iota
+	MenuBuiltinFeed
+	MenuBuiltinSearch
+	MenuBuiltinTags
+	MenuNoteID
+	MenuTag
+	MenuURL
+)
+
+// Returns one of the Menu* const values.
+func (m MenuEntry) kind() int {
+	return MenuInvalid
+}
+
 // DDConfig represents a configuration file for a single website.
 type DDConfig struct {
 	Address string
