@@ -124,27 +124,20 @@ var (
 
 func main() {
 	fmt.Println(os.Args)
-	argsLen := len(os.Args[1:])
-	// At least the command must be present.
-	if argsLen == 0 {
+
+	// Maybe refactor to `FlagSet` later, per command.
+
+	checkCmd := flag.Bool("check", false, "Check the config")
+	serveCmd := flag.Bool("serve", false, "Serve the notes")
+	configDir := flag.String("config", ".", "Directory that has `config.toml`")
+	notesDir := flag.String("notes", ".", "Directory that stores notes")
+	flag.Parse()
+
+	if !(*checkCmd || *serveCmd) {
 		fmt.Println("Command is missing. Example:")
 		fmt.Println("    ddpub --check --config <dir> --notes <dir>")
 		os.Exit(1)
 	}
-	command := os.Args[1]
-	if command != "--check" {
-		fmt.Println("Only check command is supported")
-		fmt.Println("    ddpub --check --config <dir> --notes <dir>")
-		os.Exit(1)
-	}
-
-	// Maybe refactor to `FlagSet` later, per command.
-
-	checkCmd := flag.Bool("check", true, "Check the config")
-	configDir := flag.String("config", ".", "Directory that has `config.toml`")
-	notesDir := flag.String("notes", ".", "Directory that stores notes")
-	flag.Parse()
-	fmt.Println(*checkCmd, *configDir, *notesDir)
 
 	// Try to read the config file.
 	*configDir = filepath.Clean(*configDir)
@@ -294,6 +287,16 @@ func main() {
 	}
 
 	fmt.Printf("Loaded %d menu entries.\n", len(menu))
+
+	// At this point the surface check is complete! There may be more
+	// errors like duplicate tags or bad URLs, but these will be caught later.
+	fmt.Println("OK")
+	if *checkCmd && !*serveCmd {
+		os.Exit(0)
+	}
+	if !*serveCmd {
+		os.Exit(1)
+	}
 }
 
 // Read metadata for the files in the list:
