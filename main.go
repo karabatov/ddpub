@@ -174,9 +174,15 @@ func main() {
 			t.Title = t.Tag
 		}
 		// If note ID is present, it must be valid.
-		if len(t.ID) > 0 && !isValidNoteID(t.ID) {
-			fmt.Printf("Invalid note ID '%s' in published tag '%s'.", t.ID, t.Tag)
-			os.Exit(1)
+		if len(t.ID) > 0 {
+			if !isValidNoteID(t.ID) {
+				fmt.Printf("Invalid note ID '%s' in published tag '%s'.", t.ID, t.Tag)
+				os.Exit(1)
+			}
+			if _, ok := notes[t.ID]; !ok {
+				fmt.Printf("Unable to find note with ID '%s' for published tag '%s'.", t.ID, t.Tag)
+				os.Exit(1)
+			}
 		}
 		// Tag description is good.
 		publishedTags = append(publishedTags, t)
