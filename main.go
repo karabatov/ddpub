@@ -12,14 +12,6 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-// DDConfig represents a configuration file for a single website.
-type DDConfig struct {
-	Address string
-	Notes   struct {
-		IdFormat string `toml:"id_format"`
-	}
-}
-
 type noteID = string
 
 type tag = string
@@ -34,6 +26,21 @@ type metadata struct {
 	slug     string
 	tags     []tag
 	language language
+}
+
+type PublicTag struct {
+	Tag   tag
+	ID    noteID `toml:"id"`
+	Title string
+}
+
+// DDConfig represents a configuration file for a single website.
+type DDConfig struct {
+	Address string
+	Notes   struct {
+		IdFormat string `toml:"id_format"`
+	}
+	Tags []PublicTag
 }
 
 var (
@@ -100,6 +107,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	isValidNoteID := func(test noteID) bool {
+		var id = validID.FindString(test)
+		return len(id) > 0 && id == test
+	}
+
 	fmt.Println("ID format:", cfg.Notes.IdFormat)
 
 	// Read a list of “.md” files from the notes directory with names that match the regex.
@@ -119,7 +131,7 @@ func main() {
 
 		var filename = file.Name()
 		var id = validID.FindString(filename)
-		if !matchMarkdownFile.MatchString(filename) || len(id) == 0 {
+		if !matchMarkdownFile.MatchString(filename) || !isValidNoteID(id) {
 			continue
 		}
 
@@ -150,6 +162,27 @@ func main() {
 
 	// Verify the published tags before menu entries. Menu entries can link to tags,
 	// but only published tags are allowed (all other tags are stripped).
+	publishedTags := []PublicTag{}
+	for _, t := range cfg.Tags {
+		// At least the tag must be present.
+		if len(t.Tag) == 0 {
+			fmt.Println("Error in [[tags]]: cannot publish empty tag.")
+			os.Exit(1)
+		}
+		// Default title to the tag itself.
+		if len(t.Title) == 0 {
+			t.Title = t.Tag
+		}
+		// If note ID is present, it must be valid.
+		if len(t.ID) > 0 && !isValidNoteID(t.ID) {
+			fmt.Printf("Invalid note ID '%s' in published tag '%s'.", t.ID, t.Tag)
+			os.Exit(1)
+		}
+		// Tag description is good.
+		publishedTags = append(publishedTags, t)
+	}
+
+	fmt.Printf("Loaded %d published tags.\n", len(publishedTags))
 
 	// Verify the menu entries (loaded as part of config loading). The first `id`/`builtin`/`tag` entry (but not `url`) will be the homepage. (`[homepage]` from the sample config is obsolete)
 	// Complain and exit if any `id` entries are not in the list of loaded files.
