@@ -146,7 +146,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("Loaded %d tags.\n", len(notesByTag))
+	fmt.Printf("Loaded %d internal tags.\n", len(notesByTag))
 
 	// Verify the menu entries (loaded as part of config loading). The first `id`/`builtin`/`tag` entry (but not `url`) will be the homepage. (`[homepage]` from the sample config is obsolete)
 	// Complain and exit if any `id` entries are not in the list of loaded files.
