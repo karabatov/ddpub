@@ -76,8 +76,6 @@ theme = "default"
 
 time_offset = -3600 # seconds from UTC
 
-posts_url_prefix = "posts"
-
 [notes]
 id_format = '\d{12}'
 id_link_format = '§\d{12}' # Format in Markdown links: [Link](§202212011301), [[§202212011301]]
@@ -110,8 +108,10 @@ builtin = "search"
 
 # Tags for posts and previews
 
-[publish_tags]
-posts = "norikitech_posts"
+[feed]
+tag = "norikitech_posts"
+url_prefix = "pub"
+
 preview = "norikitech_preview" # not linked, found under /preview/<id>
 publish = "norikitech_publish" # not on feed, public if linked from posts
 
@@ -122,4 +122,33 @@ tag = "internal_tag"
 published = "External Tag"
 page_id = "202212030303"
 
+```
+
+All variations on the menu:
+```toml
+# `title` is always required.
+
+[[menu]]
+url = "https://ddpub.org"
+title = "External URL"
+
+[[menu]]
+id = "202308311839"
+title = "Note ID"
+
+[[menu]]
+tag = "some_tag" # Must be in [[tags]]
+title = "Tag page"
+
+[[menu]]
+builtin = "tags"
+title = "Built-in page with all published tags"
+
+[[menu]]
+builtin = "search"
+title = "Built-in search page"
+
+[[menu]]
+builtin = "feed"
+title = "Built-in page with a list of published notes (non-transient)"
 ```
