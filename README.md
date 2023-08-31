@@ -109,18 +109,18 @@ builtin = "search"
 # Tags for posts and previews
 
 [feed]
-tag = "norikitech_posts"
+tag = "norikitech_feed" # internal tag, does not have to be in [[tags]]
 url_prefix = "pub"
 
-preview = "norikitech_preview" # not linked, found under /preview/<id>
-publish = "norikitech_publish" # not on feed, public if linked from posts
+# preview = "norikitech_preview" # not linked, found under /preview/<id>
+# publish = "norikitech_publish" # not on feed, public if linked from posts
 
 # Any tags not present in [[tags]] are stripped
 
 [[tags]]
 tag = "internal_tag"
 published = "External Tag"
-page_id = "202212030303"
+id = "202212030303"
 
 ```
 
@@ -150,5 +150,5 @@ title = "Built-in search page"
 
 [[menu]]
 builtin = "feed"
-title = "Built-in page with a list of published notes (non-transient)"
+title = "Built-in page with a list of all published notes"
 ```
