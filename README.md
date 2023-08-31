@@ -11,19 +11,27 @@
 `website` is a directory containing `config.toml`.
 
 ```bash
-$ ddpub check --config "~/notes/website" --notes "~/notes"
+$ ddpub --check --config "~/notes/website" --notes "~/notes"
 ```
 
 ### Serve from the local notes directory
 
 ```bash
-$ ddpub serve --config "~/notes/website" --notes "~/notes" --port 33075
+$ ddpub --serve --config "~/notes/website" --notes "~/notes" --port 33075
 ```
+
+### Export website config, all published and named notes and files
+
+Exporting is useful if you want to re-publish part of your notes in public. It's also good for automation because you can then run `ddput --serve` from the export directory without any parameters.
+
+```bash
+$ ddpub --export --config "~/notes/website" --notes "~/notes" --to "~/website-export"
+```
+
+### Further development
 
 * Preview?
 * Autoreload?
-
-### Further development
 
 Serving from an empty state and getting pushes is not essential to launching.
 
