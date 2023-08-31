@@ -127,8 +127,8 @@ url_prefix = "pub"
 
 [[tags]]
 tag = "internal_tag"
-published = "External Tag"
-id = "202212030303"
+title = "External Tag" # title is optional, defaults to tag itself
+id = "202212030303" # id is optional
 
 ```
 
