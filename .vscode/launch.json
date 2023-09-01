@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["check"]
+            "args": ["--check"]
         },
         {
             "name": "Real notes",
@@ -19,6 +19,14 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "args": ["--check", "--notes", "/Users/ykar/Documents/notes"]
+        },
+        {
+            "name": "Real notes W",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "args": ["--check", "--notes", "C:/Users/1/Documents/notes"]
         }
     ]
 }
