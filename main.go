@@ -123,6 +123,7 @@ var (
 )
 
 func main() {
+	startTime := time.Now()
 	fmt.Println(os.Args)
 
 	// Maybe refactor to `FlagSet` later, per command.
@@ -290,7 +291,7 @@ func main() {
 
 	// At this point the surface check is complete! There may be more
 	// errors like duplicate tags or bad URLs, but these will be caught later.
-	fmt.Println("OK")
+	fmt.Printf("Config OK. Startup took %v.", time.Since(startTime))
 	if *checkCmd && !*serveCmd {
 		os.Exit(0)
 	}
