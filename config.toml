@@ -4,5 +4,6 @@ address = "norikitech.com"
 id_format = '^\d{12}'
 
 [[tags]]
-tag = "books"
+tag = "tech_books"
+slug = "books"
 title = "Books"

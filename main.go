@@ -31,6 +31,7 @@ type metadata struct {
 type PublicTag struct {
 	Tag   tag
 	ID    noteID `toml:"id"`
+	Slug  string
 	Title string
 }
 
@@ -234,9 +235,13 @@ func main() {
 			fmt.Println("Error in [[tags]]: cannot publish empty tag.")
 			os.Exit(1)
 		}
-		// Default title to the tag itself.
+		// Default the slug to the tag itself.
+		if len(t.Slug) == 0 {
+			t.Slug = t.Tag
+		}
+		// Default the title to the mapped tag.
 		if len(t.Title) == 0 {
-			t.Title = t.Tag
+			t.Title = t.Slug
 		}
 		// If note ID is present, it must be valid.
 		if len(t.ID) > 0 && !isNoteIDValidAndExists(t.ID) {
@@ -272,7 +277,7 @@ func main() {
 		case MenuTag:
 			exists := false
 			for i := range publishedTags {
-				if publishedTags[i].Tag == m.Tag {
+				if publishedTags[i].Slug == m.Tag {
 					exists = true
 					break
 				}

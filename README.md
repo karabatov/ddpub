@@ -126,8 +126,9 @@ url_prefix = "pub"
 # Any tags not present in [[tags]] are stripped
 
 [[tags]]
-tag = "internal_tag"
-title = "External Tag" # title is optional, defaults to tag itself
+tag = "internal_tag" # Tag in the notes, required
+slug = "external_tag" # Tag slug when published, optional, defaults to original tag
+title = "External Tag" # Title is optional, defaults to tag itself
 id = "202212030303" # id is optional
 
 ```
