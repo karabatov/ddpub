@@ -294,6 +294,16 @@ func main() {
 
 	fmt.Printf("Loaded %d menu entries.\n", len(menu))
 
+	// Build the complete list of *known* note IDs to be published before parsing).
+	// They are all valid, verified and exist in `notes`.
+	exportedNotes := map[noteID]metadata{}
+
+	// First, add all named notes from [[menu]] to the list.
+	// Second, add all named notes from [[tags]] to the list.
+	// Finally, add all notes with a publish tag from [[feed]].
+
+	fmt.Printf("Preparing to publish %d notes…\n", len(exportedNotes))
+
 	// At this point the surface check is complete! There may be more
 	// errors like duplicate tags or bad URLs, but these will be caught later.
 	fmt.Printf("Config OK. Startup took %v.", time.Since(startTime))
