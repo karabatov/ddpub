@@ -100,8 +100,11 @@ func (m MenuEntry) kind() int {
 // DDConfig represents a configuration file for a single website.
 type DDConfig struct {
 	Address string
-	Menu    []MenuEntry
-	Notes   struct {
+	Feed    struct {
+		Tag tag
+	}
+	Menu  []MenuEntry
+	Notes struct {
 		IdFormat string `toml:"id_format"`
 	}
 	Tags []PublicTag
@@ -310,7 +313,12 @@ func main() {
 			exportedNotes[t.ID] = true
 		}
 	}
-	// Finally, add all notes with a publish tag from [[feed]].
+	// Finally, add all notes with a publish tag from [[feed]] if it's there.
+	if len(cfg.Feed.Tag) > 0 {
+		for _, id := range notesByTag[cfg.Feed.Tag] {
+			exportedNotes[id] = true
+		}
+	}
 
 	fmt.Printf("Preparing to publish %d notes…\n", len(exportedNotes))
 
