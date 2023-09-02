@@ -3,7 +3,10 @@ address = "norikitech.com"
 [notes]
 id_format = '^\d{12}'
 
+[feed]
+tag = "norikitech_publish"
+
 [[tags]]
-tag = "tech_books"
+tag = "books_tech"
 slug = "books"
 title = "Books"

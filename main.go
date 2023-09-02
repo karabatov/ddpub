@@ -296,10 +296,20 @@ func main() {
 
 	// Build the complete list of *known* note IDs to be published before parsing).
 	// They are all valid, verified and exist in `notes`.
-	exportedNotes := map[noteID]metadata{}
+	exportedNotes := map[noteID]bool{}
 
 	// First, add all named notes from [[menu]] to the list.
+	for _, m := range menu {
+		if m.kind() == MenuNoteID {
+			exportedNotes[m.ID] = true
+		}
+	}
 	// Second, add all named notes from [[tags]] to the list.
+	for _, t := range publishedTags {
+		if len(t.ID) > 0 {
+			exportedNotes[t.ID] = true
+		}
+	}
 	// Finally, add all notes with a publish tag from [[feed]].
 
 	fmt.Printf("Preparing to publish %d notes…\n", len(exportedNotes))
