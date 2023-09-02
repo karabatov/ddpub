@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/gomarkdown/markdown/ast"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -108,6 +109,11 @@ type DDConfig struct {
 		IdFormat string `toml:"id_format"`
 	}
 	Tags []PublicTag
+}
+
+type note struct {
+	meta metadata
+	doc  ast.Node
 }
 
 var (
@@ -322,6 +328,26 @@ func main() {
 
 	fmt.Printf("Preparing to publish %d notes…\n", len(exportedNotes))
 
+	// Load up the notes' content. Convention: note content is considered
+	// to start after the first blank line. So content is everything between
+	// the first blank line and EOF.
+	parsedNotes := map[noteID]note{}
+
+	// Set up markdown parser.
+
+	// Load note content.
+	for id, _ := range exportedNotes {
+		meta := notes[id]
+		content, err := readContent(meta.filename, *notesDir)
+		if err != nil {
+			fmt.Printf("Failed to load note with ID '%s': %v", id, err)
+			os.Exit(1)
+		}
+		// Parse note content with markdown parser.
+	}
+
+	fmt.Printf("Loaded %d notes.\n", len(parsedNotes))
+
 	// At this point the surface check is complete! There may be more
 	// errors like duplicate tags or bad URLs, but these will be caught later.
 	fmt.Printf("Config OK. Startup took %v.", time.Since(startTime))
@@ -334,13 +360,14 @@ func main() {
 }
 
 // Read metadata for the files in the list:
-// * Filename with extension (to be able to read it)
-// * File modification date
-// * Title (if present, defaults to blank)
-// * List of tags (if present, defaults to empty), with hashtag characters stripped
-// * Slug (if present, defaults to file ID)
-// * Date (if present, defaults to file modification date)
-// * Language (if present, defaults to default language code, currently "en-US")
+//   - Filename with extension (to be able to read it)
+//   - File modification date
+//   - Title (if present, defaults to blank)
+//   - List of tags (if present, defaults to empty), with hashtag characters stripped
+//   - Slug (if present, defaults to file ID)
+//   - Date (if present, defaults to file modification date)
+//   - Language (if present, defaults to default language code, currently "en-US")
+//
 // Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
 func readMetadata(filename, directory string) (metadata, error) {
 	var path = filepath.Join(directory, filename)
@@ -391,6 +418,31 @@ func readMetadata(filename, directory string) (metadata, error) {
 	data.date = data.modTime
 
 	return data, nil
+}
+
+func readContent(filename, directory string) ([]byte, error) {
+	var path = filepath.Join(directory, filename)
+	content := []byte{}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	s := bufio.NewScanner(file)
+	appendLine := false
+	for s.Scan() {
+		if !appendLine {
+			appendLine = appendLine || len(s.Bytes()) == 0
+			continue
+		}
+
+		content = append(content, byte('\n'))
+		content = append(content, s.Bytes()...)
+	}
+
+	return content, nil
 }
 
 func fileModTime(file *os.File) time.Time {
