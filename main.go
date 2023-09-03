@@ -350,6 +350,13 @@ func main() {
 		// https://github.com/gomarkdown/markdown/issues/280
 		mp := parser.NewWithExtensions(parserExtensions)
 		noteAst := mp.Parse(content)
+
+		// Modify the AST:
+		//  - Replace note links with URLs.
+		//  - Complain and quit if any linked notes are not published.
+		//  - Collect any links out to files (distinguish .md links from files?).
+		// AST modification: https://github.com/gomarkdown/markdown/blob/master/examples/modify_ast.go
+
 		parsedNotes[id] = note{meta: meta, doc: noteAst}
 	}
 
