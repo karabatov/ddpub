@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -334,16 +335,22 @@ func main() {
 	parsedNotes := map[noteID]note{}
 
 	// Set up markdown parser.
+	parserExtensions := parser.Tables | parser.FencedCode | parser.Strikethrough
 
 	// Load note content.
-	for id, _ := range exportedNotes {
+	for id := range exportedNotes {
 		meta := notes[id]
 		content, err := readContent(meta.filename, *notesDir)
 		if err != nil {
 			fmt.Printf("Failed to load note with ID '%s': %v", id, err)
 			os.Exit(1)
 		}
+
 		// Parse note content with markdown parser.
+		// https://github.com/gomarkdown/markdown/issues/280
+		mp := parser.NewWithExtensions(parserExtensions)
+		noteAst := mp.Parse(content)
+		parsedNotes[id] = note{meta: meta, doc: noteAst}
 	}
 
 	fmt.Printf("Loaded %d notes.\n", len(parsedNotes))
