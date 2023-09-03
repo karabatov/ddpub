@@ -445,8 +445,8 @@ func readContent(filename, directory string) ([]byte, error) {
 			continue
 		}
 
-		content = append(content, byte('\n'))
 		content = append(content, s.Bytes()...)
+		content = append(content, byte('\n'))
 	}
 
 	return content, nil
