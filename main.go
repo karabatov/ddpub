@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -356,7 +357,19 @@ func main() {
 		//  - Complain and quit if any linked notes are not published.
 		//  - Collect any links out to files (distinguish .md links from files?).
 		modifyLinks(noteAst, func(link *ast.Link) {
-			fmt.Println("Link:", link.Destination)
+			fmt.Println("Link:", string(link.Destination))
+			u := &url.URL{}
+			if err := u.UnmarshalBinary(link.Destination); err != nil {
+				// Not a URI, might be a note link.
+			}
+
+			// Continue if the link is external.
+			if u.IsAbs() {
+				link.AdditionalAttributes = append(link.AdditionalAttributes, `target="_blank"`)
+				return
+			}
+
+			// Here we only care if the link is a file.
 		})
 
 		parsedNotes[id] = note{meta: meta, doc: noteAst}
