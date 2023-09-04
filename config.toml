@@ -2,6 +2,7 @@ address = "norikitech.com"
 
 [notes]
 id_format = '^\d{12}'
+id_link_format = '^§(\d{12})$' # Include submatch
 
 [feed]
 tag = "norikitech_publish"

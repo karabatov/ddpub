@@ -108,7 +108,8 @@ type DDConfig struct {
 	}
 	Menu  []MenuEntry
 	Notes struct {
-		IdFormat string `toml:"id_format"`
+		IdFormat     string `toml:"id_format"`
+		IdLinkFormat string `toml:"id_link_format"`
 	}
 	Tags []PublicTag
 }
@@ -182,6 +183,22 @@ func main() {
 	}
 
 	fmt.Println("ID format:", cfg.Notes.IdFormat)
+
+	// Load ID link format regex from config and try to compile.
+	idLinkFormat, err := regexp.Compile(cfg.Notes.IdLinkFormat)
+	if err != nil {
+		fmt.Printf("Could not compile id_link_format regular expression '%s': %v", cfg.Notes.IdFormat, err)
+		os.Exit(1)
+	}
+	fmt.Println("ID link format:", cfg.Notes.IdLinkFormat)
+
+	idFromLink := func(link string) (noteID, bool) {
+		id, ok := firstSubmatch(idLinkFormat, link)
+		if !ok {
+			return "", false
+		}
+		return id, isValidNoteID(id)
+	}
 
 	// Read a list of “.md” files from the notes directory with names that match the regex.
 	allFiles, err := os.ReadDir(*notesDir)
@@ -357,10 +374,18 @@ func main() {
 		//  - Complain and quit if any linked notes are not published.
 		//  - Collect any links out to files (distinguish .md links from files?).
 		modifyLinks(noteAst, func(link *ast.Link) {
-			fmt.Println("Link:", string(link.Destination))
-			u := &url.URL{}
-			if err := u.UnmarshalBinary(link.Destination); err != nil {
+			linkStr := string(link.Destination)
+			fmt.Println("Link:", linkStr)
+			u, err := url.Parse(linkStr)
+			if err != nil {
 				// Not a URI, might be a note link.
+				id, ok := idFromLink(linkStr)
+				if !ok {
+					// Some weird link, continue.
+					return
+				}
+
+				fmt.Println("OK, note ID:", id)
 			}
 
 			// Continue if the link is external.
