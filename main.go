@@ -355,7 +355,9 @@ func main() {
 		//  - Replace note links with URLs.
 		//  - Complain and quit if any linked notes are not published.
 		//  - Collect any links out to files (distinguish .md links from files?).
-		// AST modification: https://github.com/gomarkdown/markdown/blob/master/examples/modify_ast.go
+		modifyLinks(noteAst, func(link *ast.Link) {
+			fmt.Println("Link:", link.Destination)
+		})
 
 		parsedNotes[id] = note{meta: meta, doc: noteAst}
 	}
@@ -481,4 +483,14 @@ func tagsFromLine(line string) []tag {
 		tags = append(tags, tagPair[1])
 	}
 	return tags
+}
+
+// AST modification: https://github.com/gomarkdown/markdown/blob/master/examples/modify_ast.go
+func modifyLinks(noteAst ast.Node, modify func(*ast.Link)) {
+	ast.WalkFunc(noteAst, func(node ast.Node, entering bool) ast.WalkStatus {
+		if link, ok := node.(*ast.Link); ok && entering {
+			modify(link)
+		}
+		return ast.GoToNext
+	})
 }
