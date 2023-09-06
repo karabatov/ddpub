@@ -18,7 +18,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["--check", "--notes", "/Users/ykar/Documents/notes"]
+            "args": ["--check", "--config", "/Users/ykar/Documents/notes/sites/ddpub.org", "--notes", "/Users/ykar/Documents/notes"]
         },
         {
             "name": "Real notes W",
