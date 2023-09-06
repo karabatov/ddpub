@@ -79,22 +79,28 @@ func (m MenuEntry) kind() int {
 	}
 
 	// Can't verify if the note ID is valid or not here.
-	if len(m.ID) > 0 && kind == MenuInvalid {
-		kind = MenuNoteID
-	} else {
-		return MenuInvalid
+	if len(m.ID) > 0 {
+		if kind == MenuInvalid {
+			kind = MenuNoteID
+		} else {
+			return MenuInvalid
+		}
 	}
 
-	if len(m.Tag) > 0 && kind == MenuInvalid {
-		kind = MenuTag
-	} else {
-		return MenuInvalid
+	if len(m.Tag) > 0 {
+		if kind == MenuInvalid {
+			kind = MenuTag
+		} else {
+			return MenuInvalid
+		}
 	}
 
-	if len(m.URL) > 0 && kind == MenuInvalid {
-		kind = MenuURL
-	} else {
-		return MenuInvalid
+	if len(m.URL) > 0 {
+		if kind == MenuInvalid {
+			kind = MenuURL
+		} else {
+			return MenuInvalid
+		}
 	}
 
 	return kind
