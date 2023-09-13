@@ -106,11 +106,33 @@ func (m MenuEntry) kind() int {
 	return kind
 }
 
+type Homepage struct {
+	ID noteID `toml:"id"`
+}
+
+type HomepageKind int
+
+const (
+	HomepageFeed HomepageKind = iota
+	HomepageNoteID
+)
+
+func (h Homepage) kind() HomepageKind {
+	if len(h.ID) > 0 {
+		return HomepageNoteID
+	}
+
+	return HomepageFeed
+}
+
 // DDConfig represents a configuration file for a single website.
 type DDConfig struct {
 	Address string
 	Feed    struct {
 		Tag tag
+	}
+	Homepage struct {
+		Id noteID
 	}
 	Menu  []MenuEntry
 	Notes struct {
