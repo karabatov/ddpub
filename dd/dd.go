@@ -16,6 +16,10 @@ const (
 	BuiltinTags
 )
 
+func IsBuiltinValid(b Builtin) bool {
+	return b >= BuiltinFeed && b <= BuiltinTags
+}
+
 // Language represents a supported language.
 type Language = string
 
