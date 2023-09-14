@@ -15,3 +15,10 @@ const (
 	BuiltinSearch
 	BuiltinTags
 )
+
+// Language represents a supported language.
+type Language = string
+
+const (
+	LanguageEnUS = "en-US"
+)

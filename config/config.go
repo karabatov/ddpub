@@ -1,28 +1,34 @@
 // Package config loads and validates website config from a directory.
 package config
 
-// MenuEntry always has a title and can be either of:
+import "github.com/karabatov/ddpub/dd"
+
+// MenuKind represents the type of the menu entry.
+type MenuKind = int
+
+const (
+	MenuKindInvalid = iota
+	MenuKindBuiltin
+	MenuKindNoteID
+	MenuKindTag
+	MenuKindURL
+)
+
+// MenuEntry can be either of:
 //   - builtin
 //   - named note with id
 //   - tag
 //   - url
 type MenuEntry struct {
-	Title   string
-	Builtin string
-	ID      string `toml:"id"`
-	Tag     string
-	URL     string `toml:"url"`
+	Kind  MenuKind
+	Title string
 }
 
-const (
-	MenuInvalid = iota
-	MenuBuiltinFeed
-	MenuBuiltinSearch
-	MenuBuiltinTags
-	MenuNoteID
-	MenuTag
-	MenuURL
-)
+type MenuBuiltin struct {
+	MenuEntry
+
+	Builtin dd.Builtin
+}
 
 // Returns one of the Menu* const values.
 func (m MenuEntry) kind() int {
