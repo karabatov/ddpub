@@ -123,14 +123,14 @@ func parseMenuBuiltin(m data.Menu) (Menu, error) {
 	return menu, nil
 }
 
-func parseMenuNoteID(m data.Menu, isValidID func(string) bool) (Menu, error) {
+func parseMenuNoteID(m data.Menu, isValidID dd.NoteIDValidFunc) (Menu, error) {
 	var menu MenuNoteID
 	menu.kind = MenuKindNoteID
 	menu.title = m.Title
 	if !isValidID(m.ID) {
 		return menuEntry{}, fmt.Errorf("invalid note id '%s'", m.ID)
 	}
-	menu.ID = m.ID
+	menu.ID = dd.NoteID(m.ID)
 	return menu, nil
 }
 
@@ -138,7 +138,7 @@ func parseMenuTag(m data.Menu) (Menu, error) {
 	var menu MenuTag
 	menu.kind = MenuKindTag
 	menu.title = m.Title
-	menu.Tag = m.Tag
+	menu.Tag = dd.Tag(m.Tag)
 	return menu, nil
 }
 

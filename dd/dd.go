@@ -4,6 +4,9 @@ package dd
 // NoteID is a valid note ID.
 type NoteID string
 
+// NoteIDValidFunc is the function type to check if the note ID is valid.
+type NoteIDValidFunc func(string) bool
+
 // Tag represents a tag (no hashtag).
 type Tag string
 
