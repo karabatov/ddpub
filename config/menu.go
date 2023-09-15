@@ -8,7 +8,7 @@ import (
 )
 
 // MenuKind represents the type of the menu entry.
-type MenuKind = int
+type MenuKind int
 
 const (
 	MenuKindBuiltin = iota + 1
@@ -25,10 +25,6 @@ type Menu interface {
 type menuEntry struct {
 	kind  MenuKind
 	title string
-}
-
-func emptyMenu() Menu {
-	return menuEntry{}
 }
 
 func (m menuEntry) Kind() MenuKind {
@@ -63,7 +59,7 @@ type MenuURL struct {
 	URL string
 }
 
-func parseMenu(m data.Menu) (Menu, error) {
+func validate(m data.Menu) error {
 	// Check that only one field is filled
 	filled := 0
 	if len(m.Builtin) > 0 {
@@ -78,8 +74,17 @@ func parseMenu(m data.Menu) (Menu, error) {
 	if len(m.URL) > 0 {
 		filled += 1
 	}
+
 	if filled != 1 {
-		return emptyMenu(), fmt.Errorf("menu entry can only have one type")
+		return fmt.Errorf("menu entry can only have one type")
+	}
+
+	return nil
+}
+
+func parse(m data.Menu) (Menu, error) {
+	if err := validate(m); err != nil {
+		return menuEntry{}, err
 	}
 
 	if len(m.Builtin) > 0 {
@@ -113,7 +118,7 @@ func parseMenuBuiltin(m data.Menu) (Menu, error) {
 	case "tags":
 		menu.Builtin = dd.BuiltinTags
 	default:
-		return emptyMenu(), fmt.Errorf("unknown builtin '%s'", m.Builtin)
+		return menuEntry{}, fmt.Errorf("unknown builtin '%s'", m.Builtin)
 	}
 	return menu, nil
 }
