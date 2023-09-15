@@ -82,7 +82,7 @@ func validate(m data.Menu) error {
 	return nil
 }
 
-func parse(m data.Menu) (Menu, error) {
+func parse(m data.Menu, isValidID func(string) bool) (Menu, error) {
 	if err := validate(m); err != nil {
 		return menuEntry{}, err
 	}
@@ -92,7 +92,7 @@ func parse(m data.Menu) (Menu, error) {
 	}
 
 	if len(m.ID) > 0 {
-		return parseMenuNoteID(m)
+		return parseMenuNoteID(m, isValidID)
 	}
 
 	if len(m.Tag) > 0 {
@@ -123,11 +123,13 @@ func parseMenuBuiltin(m data.Menu) (Menu, error) {
 	return menu, nil
 }
 
-func parseMenuNoteID(m data.Menu) (Menu, error) {
+func parseMenuNoteID(m data.Menu, isValidID func(string) bool) (Menu, error) {
 	var menu MenuNoteID
 	menu.kind = MenuKindNoteID
 	menu.title = m.Title
-	// Don't forget to verify the note ID.
+	if !isValidID(m.ID) {
+		return menuEntry{}, fmt.Errorf("invalid note id '%s'", m.ID)
+	}
 	menu.ID = m.ID
 	return menu, nil
 }
