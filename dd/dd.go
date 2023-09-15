@@ -2,13 +2,13 @@
 package dd
 
 // NoteID is a valid note ID.
-type NoteID = string
+type NoteID string
 
 // Tag represents a tag (no hashtag).
-type Tag = string
+type Tag string
 
 // Builtin enumerates built-in DDPub pages.
-type Builtin = int
+type Builtin int
 
 const (
 	BuiltinFeed = iota + 1
@@ -16,12 +16,12 @@ const (
 	BuiltinTags
 )
 
-func IsBuiltinValid(b Builtin) bool {
+func (b Builtin) IsValid() bool {
 	return b >= BuiltinFeed && b <= BuiltinTags
 }
 
 // Language represents a supported language.
-type Language = string
+type Language string
 
 const (
 	LanguageEnUS = "en-US"
