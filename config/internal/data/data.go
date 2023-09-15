@@ -20,7 +20,7 @@ type Tag struct {
 	Title string
 }
 
-// ConfigFile represents a configuration file for a single website.
+// ConfigFile represents a TOML configuration file for a single website.
 type ConfigFile struct {
 	Address string
 	Feed    struct {

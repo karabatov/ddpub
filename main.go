@@ -12,7 +12,6 @@ import (
 
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/pelletier/go-toml/v2"
 )
 
 func main() {
@@ -34,35 +33,6 @@ func main() {
 	}
 
 	// Try to read the config file.
-	*configDir = filepath.Clean(*configDir)
-	configPath := filepath.Join(*configDir, "config.toml")
-	configFile, err := os.ReadFile(configPath)
-	if err != nil {
-		fmt.Printf("Could not open config file '%s':\n\t%v", configPath, err)
-		os.Exit(1)
-	}
-
-	var cfg DDConfig
-	err = toml.Unmarshal(configFile, &cfg)
-	if err != nil {
-		fmt.Printf("Could not read config file '%s':\n\t%v", configPath, err)
-		os.Exit(1)
-	}
-	fmt.Println("address:", cfg.Address)
-
-	// Load file ID regex from config and try to compile.
-	validID, err := regexp.Compile(cfg.Notes.IdFormat)
-	if err != nil {
-		fmt.Printf("Could not compile id_format regular expression '%s': %v", cfg.Notes.IdFormat, err)
-		os.Exit(1)
-	}
-
-	isValidNoteID := func(test noteID) bool {
-		var id = validID.FindString(test)
-		return len(id) > 0 && id == test
-	}
-
-	fmt.Println("ID format:", cfg.Notes.IdFormat)
 
 	// Load ID link format regex from config and try to compile.
 	idLinkFormat, err := regexp.Compile(cfg.Notes.IdLinkFormat)
