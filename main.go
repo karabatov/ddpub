@@ -34,21 +34,6 @@ func main() {
 
 	// Try to read the config file.
 
-	// Load ID link format regex from config and try to compile.
-	idLinkFormat, err := regexp.Compile(cfg.Notes.IdLinkFormat)
-	if err != nil {
-		fmt.Printf("Could not compile id_link_format regular expression '%s': %v", cfg.Notes.IdFormat, err)
-		os.Exit(1)
-	}
-	fmt.Println("ID link format:", cfg.Notes.IdLinkFormat)
-
-	idFromLink := func(link string) (noteID, bool) {
-		id, ok := firstSubmatch(idLinkFormat, link)
-		if !ok {
-			return "", false
-		}
-		return id, isValidNoteID(id)
-	}
 
 	// Read a list of “.md” files from the notes directory with names that match the regex.
 	allFiles, err := os.ReadDir(*notesDir)
@@ -355,14 +340,6 @@ func fileModTime(file *os.File) time.Time {
 	} else {
 		return time.Now()
 	}
-}
-
-func firstSubmatch(re *regexp.Regexp, line string) (string, bool) {
-	if matches := re.FindStringSubmatch(line); len(matches) > 1 {
-		return matches[1], true
-	}
-
-	return "", false
 }
 
 func tagsFromLine(line string) []tag {

@@ -17,6 +17,7 @@ type Website struct {
 	Homepage      Homepage
 	Menu          []Menu
 	IsValidNoteID dd.NoteIDValidFunc
+	IDFromLink    dd.IDFromLinkFunc
 }
 
 func Load(configDir string) (Website, error) {
@@ -27,16 +28,17 @@ func Load(configDir string) (Website, error) {
 		return w, err
 	}
 
-	// Load file ID regex from config and try to compile.
-	validID, err := regexp.Compile(cfg.Notes.IdFormat)
+	noteIDValidator, err := makeNoteIDValidator(cfg.Notes.IdFormat)
 	if err != nil {
-		return w, fmt.Errorf("could not compile id_format regular expression '%s': %v", cfg.Notes.IdFormat, err)
+		return w, err
 	}
+	w.IsValidNoteID = noteIDValidator
 
-	w.IsValidNoteID = func(test string) bool {
-		var id = validID.FindString(test)
-		return len(id) > 0 && id == test
+	idLinkExtractor, err := makeIDFromLinkFunc(cfg.Notes.IdLinkFormat, w.IsValidNoteID)
+	if err != nil {
+		return w, err
 	}
+	w.IDFromLink = idLinkExtractor
 
 	return w, nil
 }
@@ -56,4 +58,34 @@ func readConfigFile(configDir string) (data.ConfigFile, error) {
 	}
 
 	return cfg, nil
+}
+
+// Compile `id_format` regex and return validator func.
+func makeNoteIDValidator(r string) (dd.NoteIDValidFunc, error) {
+	// Load file ID regex from config and try to compile.
+	validID, err := regexp.Compile(r)
+	if err != nil {
+		return nil, fmt.Errorf("could not compile regular expression '%s': %v", r, err)
+	}
+
+	return func(test string) bool {
+		var id = validID.FindString(test)
+		return len(id) > 0 && id == test
+	}, nil
+}
+
+func makeIDFromLinkFunc(r string, isValid dd.NoteIDValidFunc) (dd.IDFromLinkFunc, error) {
+	// Load ID link format regex from config and try to compile.
+	idLinkFormat, err := regexp.Compile(r)
+	if err != nil {
+		return nil, fmt.Errorf("could not compile regular expression '%s': %v", r, err)
+	}
+
+	return func(link string) (dd.NoteID, bool) {
+		id, ok := dd.FirstSubmatch(idLinkFormat, link)
+		if !ok {
+			return "", false
+		}
+		return dd.NoteID(id), isValid(id)
+	}, nil
 }
