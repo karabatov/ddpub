@@ -43,6 +43,14 @@ func Load(configDir string) (Website, error) {
 		return w, err
 	}
 
+	for _, m := range cfg.Menu {
+		menu, err := parseMenu(m, w.IsValidNoteID)
+		if err != nil {
+			return w, err
+		}
+		w.Menu = append(w.Menu, menu)
+	}
+
 	return w, nil
 }
 

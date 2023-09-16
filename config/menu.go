@@ -82,7 +82,7 @@ func validate(m data.Menu) error {
 	return nil
 }
 
-func parseMenu(m data.Menu, isValidID func(string) bool) (Menu, error) {
+func parseMenu(m data.Menu, isValidID dd.NoteIDValidFunc) (Menu, error) {
 	if err := validate(m); err != nil {
 		return menuEntry{}, err
 	}
