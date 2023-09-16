@@ -6,8 +6,10 @@ type Homepage struct {
 }
 
 type Feed struct {
-	ID  string `toml:"id"`
-	Tag string
+	Tag       string
+	URLPrefix string `toml:"url_prefix"`
+	ID        string `toml:"id"`
+	Title     string
 }
 
 type Menu struct {

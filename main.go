@@ -87,55 +87,6 @@ func main() {
 		return ok
 	}
 
-	// Verify the published tags before menu entries. Menu entries can link to tags,
-	// but only published tags are allowed (all other tags are stripped).
-	publishedTags := []PublicTag{}
-	for _, t := range cfg.Tags {
-		publishedTags = append(publishedTags, t)
-	}
-
-	fmt.Printf("Loaded %d published tags.\n", len(publishedTags))
-
-	// Verify the menu entries (loaded as part of config loading). The first `id`/`builtin`/`tag` entry (but not `url`) will be the homepage. (`[homepage]` from the sample config is obsolete)
-	// Complain and exit if any `id` entries or tags are not in the list of loaded files.
-	menu := []MenuEntry{}
-
-	for _, m := range cfg.Menu {
-		if len(m.Title) == 0 {
-			fmt.Println("Error in [[menu]]: entry title cannot be empty.")
-			os.Exit(1)
-		}
-		switch m.kind() {
-		case MenuInvalid:
-			fmt.Printf("Invalid menu entry '%s'.", m.Title)
-			os.Exit(1)
-		case MenuBuiltinFeed, MenuBuiltinSearch, MenuBuiltinTags:
-			// OK
-		case MenuNoteID:
-			if !isNoteIDValidAndExists(m.ID) {
-				fmt.Printf("Invalid or non-existing note ID '%s' in menu entry '%s'.", m.ID, m.Title)
-				os.Exit(1)
-			}
-		case MenuTag:
-			exists := false
-			for i := range publishedTags {
-				if publishedTags[i].Slug == m.Tag {
-					exists = true
-					break
-				}
-			}
-			if !exists {
-				fmt.Printf("Error: tag '%s' in menu entry '%s' must be published in [[tags]].", m.Tag, m.Title)
-				os.Exit(1)
-			}
-		case MenuURL:
-			// OK
-		}
-		menu = append(menu, m)
-	}
-
-	fmt.Printf("Loaded %d menu entries.\n", len(menu))
-
 	// Build the complete list of *known* note IDs to be published before parsing).
 	// They are all valid, verified and exist in `notes`.
 	exportedNotes := map[noteID]bool{}

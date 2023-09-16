@@ -19,6 +19,7 @@ type Website struct {
 	Homepage      Homepage
 	Tags          map[dd.Tag]Tag
 	Menu          []Menu
+	Feed          Feed
 }
 
 func (w Website) isTagPublished(tag dd.Tag) bool {
@@ -60,6 +61,11 @@ func Load(configDir string) (Website, error) {
 			return w, err
 		}
 		w.Menu = append(w.Menu, menu)
+	}
+
+	w.Feed, err = parseFeed(cfg.Feed, "Feed", w.IsValidNoteID)
+	if err != nil {
+		return w, err
 	}
 
 	return w, nil
