@@ -28,17 +28,20 @@ func Load(configDir string) (Website, error) {
 		return w, err
 	}
 
-	noteIDValidator, err := makeNoteIDValidator(cfg.Notes.IdFormat)
+	w.IsValidNoteID, err = makeNoteIDValidator(cfg.Notes.IDFormat)
 	if err != nil {
 		return w, err
 	}
-	w.IsValidNoteID = noteIDValidator
 
-	idLinkExtractor, err := makeIDFromLinkFunc(cfg.Notes.IdLinkFormat, w.IsValidNoteID)
+	w.IDFromLink, err = makeIDFromLinkFunc(cfg.Notes.IDLinkFormat, w.IsValidNoteID)
 	if err != nil {
 		return w, err
 	}
-	w.IDFromLink = idLinkExtractor
+
+	w.Homepage, err = parseHomepage(cfg.Homepage, w.IsValidNoteID)
+	if err != nil {
+		return w, err
+	}
 
 	return w, nil
 }

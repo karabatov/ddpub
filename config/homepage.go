@@ -1,6 +1,11 @@
 package config
 
-import "github.com/karabatov/ddpub/dd"
+import (
+	"fmt"
+
+	"github.com/karabatov/ddpub/config/internal/data"
+	"github.com/karabatov/ddpub/dd"
+)
 
 type HomepageKind int
 
@@ -13,7 +18,7 @@ type Homepage interface {
 	Kind() HomepageKind
 }
 
-type HomepageFeed struct {}
+type HomepageFeed struct{}
 
 func (h HomepageFeed) Kind() HomepageKind {
 	return HomepageKindFeed
@@ -25,4 +30,16 @@ type HomepageNoteID struct {
 
 func (h HomepageNoteID) Kind() HomepageKind {
 	return HomepageKindNoteID
+}
+
+func parseHomepage(h data.Homepage, isValid dd.NoteIDValidFunc) (Homepage, error) {
+	if len(h.ID) > 0 {
+		if isValid(h.ID) {
+			return HomepageNoteID{dd.NoteID(h.ID)}, nil
+		}
+
+		return nil, fmt.Errorf("invalid note id '%s'", h.ID)
+	}
+
+	return HomepageFeed{}, nil
 }

@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"time"
 
 	"github.com/gomarkdown/markdown/ast"
@@ -33,7 +32,6 @@ func main() {
 	}
 
 	// Try to read the config file.
-
 
 	// Read a list of “.md” files from the notes directory with names that match the regex.
 	allFiles, err := os.ReadDir(*notesDir)

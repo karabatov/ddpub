@@ -2,7 +2,7 @@
 package data
 
 type Homepage struct {
-	Id string `toml:"id"`
+	ID string `toml:"id"`
 }
 
 type Menu struct {
@@ -29,8 +29,8 @@ type ConfigFile struct {
 	Homepage Homepage
 	Menu     []Menu
 	Notes    struct {
-		IdFormat     string `toml:"id_format"`
-		IdLinkFormat string `toml:"id_link_format"`
+		IDFormat     string `toml:"id_format"`
+		IDLinkFormat string `toml:"id_link_format"`
 	}
 	Tags []Tag
 }
