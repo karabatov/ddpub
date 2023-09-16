@@ -91,25 +91,6 @@ func main() {
 	// but only published tags are allowed (all other tags are stripped).
 	publishedTags := []PublicTag{}
 	for _, t := range cfg.Tags {
-		// At least the tag must be present.
-		if len(t.Tag) == 0 {
-			fmt.Println("Error in [[tags]]: cannot publish empty tag.")
-			os.Exit(1)
-		}
-		// Default the slug to the tag itself.
-		if len(t.Slug) == 0 {
-			t.Slug = t.Tag
-		}
-		// Default the title to the mapped tag.
-		if len(t.Title) == 0 {
-			t.Title = t.Slug
-		}
-		// If note ID is present, it must be valid.
-		if len(t.ID) > 0 && !isNoteIDValidAndExists(t.ID) {
-			fmt.Printf("Invalid or non-existing note ID '%s' in published tag '%s'.", t.ID, t.Tag)
-			os.Exit(1)
-		}
-		// Tag description is good.
 		publishedTags = append(publishedTags, t)
 	}
 

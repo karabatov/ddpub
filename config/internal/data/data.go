@@ -5,6 +5,11 @@ type Homepage struct {
 	ID string `toml:"id"`
 }
 
+type Feed struct {
+	ID  string `toml:"id"`
+	Tag string
+}
+
 type Menu struct {
 	Title   string
 	Builtin string
@@ -22,10 +27,8 @@ type Tag struct {
 
 // ConfigFile represents a TOML configuration file for a single website.
 type ConfigFile struct {
-	Address string
-	Feed    struct {
-		Tag string
-	}
+	Address  string
+	Feed     Feed
 	Homepage Homepage
 	Menu     []Menu
 	Notes    struct {

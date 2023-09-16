@@ -14,10 +14,16 @@ import (
 
 // Website represents the configuration of a website.
 type Website struct {
-	Homepage      Homepage
-	Menu          []Menu
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
+	Homepage      Homepage
+	Tags          map[dd.Tag]Tag
+	Menu          []Menu
+}
+
+func (w Website) isTagPublished(tag dd.Tag) bool {
+	_, ok := w.Tags[tag]
+	return ok
 }
 
 func Load(configDir string) (Website, error) {
@@ -43,8 +49,13 @@ func Load(configDir string) (Website, error) {
 		return w, err
 	}
 
+	w.Tags, err = loadTags(cfg.Tags, w.IsValidNoteID)
+	if err != nil {
+		return w, err
+	}
+
 	for _, m := range cfg.Menu {
-		menu, err := parseMenu(m, w.IsValidNoteID)
+		menu, err := parseMenu(m, w.IsValidNoteID, w.isTagPublished)
 		if err != nil {
 			return w, err
 		}
@@ -99,4 +110,19 @@ func makeIDFromLinkFunc(r string, isValid dd.NoteIDValidFunc) (dd.IDFromLinkFunc
 		}
 		return dd.NoteID(id), isValid(id)
 	}, nil
+}
+
+func loadTags(s []data.Tag, isValid dd.NoteIDValidFunc) (map[dd.Tag]Tag, error) {
+	tags := make(map[dd.Tag]Tag)
+	for _, t := range s {
+		tag, err := parseTag(t, isValid)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := tags[tag.Tag]; ok {
+			return nil, fmt.Errorf("tag '%s' already published", tag.Tag)
+		}
+		tags[tag.Tag] = tag
+	}
+	return tags, nil
 }

@@ -82,7 +82,7 @@ func validate(m data.Menu) error {
 	return nil
 }
 
-func parseMenu(m data.Menu, isValidID dd.NoteIDValidFunc) (Menu, error) {
+func parseMenu(m data.Menu, isValidID dd.NoteIDValidFunc, isTagPublished func(dd.Tag) bool) (Menu, error) {
 	if err := validate(m); err != nil {
 		return menuEntry{}, err
 	}
@@ -96,7 +96,7 @@ func parseMenu(m data.Menu, isValidID dd.NoteIDValidFunc) (Menu, error) {
 	}
 
 	if len(m.Tag) > 0 {
-		return parseMenuTag(m)
+		return parseMenuTag(m, isTagPublished)
 	}
 
 	if len(m.URL) > 0 {
@@ -134,11 +134,15 @@ func parseMenuNoteID(m data.Menu, isValidID dd.NoteIDValidFunc) (Menu, error) {
 	return menu, nil
 }
 
-func parseMenuTag(m data.Menu) (Menu, error) {
+func parseMenuTag(m data.Menu, isTagPublished func(dd.Tag) bool) (Menu, error) {
 	var menu MenuTag
 	menu.kind = MenuKindTag
 	menu.title = m.Title
-	menu.Tag = dd.Tag(m.Tag)
+	tag := dd.Tag(m.Tag)
+	if !isTagPublished(tag) {
+		return menuEntry{}, fmt.Errorf("non-published tag '%s' in menu", m.Tag)
+	}
+	menu.Tag = tag
 	return menu, nil
 }
 
