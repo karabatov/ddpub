@@ -7,15 +7,16 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/BurntSushi/toml"
 	"github.com/karabatov/ddpub/config/internal/data"
 	"github.com/karabatov/ddpub/dd"
+	"github.com/pelletier/go-toml/v2"
 )
 
 // Website represents the configuration of a website.
 type Website struct {
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
+	IDFromFile    dd.IDFromFileFunc
 	Homepage      Homepage
 	Tags          map[dd.Tag]Tag
 	Menu          []Menu
@@ -36,6 +37,11 @@ func Load(configDir string) (Website, error) {
 	}
 
 	w.IsValidNoteID, err = makeNoteIDValidator(cfg.Notes.IDFormat)
+	if err != nil {
+		return w, err
+	}
+
+	w.IDFromFile, err = makeIDFromFileFunc(cfg.Notes.IDFormat, w.IsValidNoteID)
 	if err != nil {
 		return w, err
 	}
@@ -114,6 +120,19 @@ func makeIDFromLinkFunc(r string, isValid dd.NoteIDValidFunc) (dd.IDFromLinkFunc
 		if !ok {
 			return "", false
 		}
+		return dd.NoteID(id), isValid(id)
+	}, nil
+}
+
+func makeIDFromFileFunc(r string, isValid dd.NoteIDValidFunc) (dd.IDFromFileFunc, error) {
+	// Load file ID regex from config and try to compile.
+	validID, err := regexp.Compile(r)
+	if err != nil {
+		return nil, fmt.Errorf("could not compile regular expression '%s': %v", r, err)
+	}
+
+	return func(test string) (dd.NoteID, bool) {
+		var id = validID.FindString(test)
 		return dd.NoteID(id), isValid(id)
 	}, nil
 }

@@ -13,6 +13,10 @@ type NoteIDValidFunc func(string) bool
 // It returns the extracted note ID and a boolean indicating whether the ID is valid.
 type IDFromLinkFunc func(string) (NoteID, bool)
 
+// IDFromFileFunc is the function type to extract the note ID from a filename.
+// It returns the extracted note ID and a boolean indicating whether the ID is valid.
+type IDFromFileFunc func(string) (NoteID, bool)
+
 // Tag represents a tag (no hashtag).
 type Tag string
 

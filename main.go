@@ -31,54 +31,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Try to read the config file.
-
-	// Read a list of “.md” files from the notes directory with names that match the regex.
-	allFiles, err := os.ReadDir(*notesDir)
-	if err != nil {
-		fmt.Printf("Could not read the notes directory: %v", err)
-		os.Exit(1)
-	}
-
-	// Create a map of file ID to file metadata.
-	notes := map[noteID]metadata{}
-
-	for _, file := range allFiles {
-		if file.IsDir() {
-			continue
-		}
-
-		var filename = file.Name()
-		var id = validID.FindString(filename)
-		if !matchMarkdownFile.MatchString(filename) || !isValidNoteID(id) {
-			continue
-		}
-
-		fileMetadata, err := readMetadata(filename, *notesDir)
-		if err != nil {
-			fmt.Println("Could not read metadata from file:", filename)
-			continue
-		}
-
-		notes[id] = fileMetadata
-	}
-
-	fmt.Printf("Loaded metadata for %d notes.\n", len(notes))
-
-	// Create a full list of unique tags (case-sensitive) present in the posts.
-	// Create a map of tag to list of file IDs with that tag.
-	notesByTag := map[tag][]noteID{}
-	for id, data := range notes {
-		for _, t := range data.tags {
-			if tags, ok := notesByTag[t]; ok {
-				notesByTag[t] = append(tags, id)
-			} else {
-				notesByTag[t] = []tag{id}
-			}
-		}
-	}
-	fmt.Printf("Loaded %d internal tags.\n", len(notesByTag))
-
 	isNoteIDValidAndExists := func(id noteID) bool {
 		if !isValidNoteID(id) {
 			return false
@@ -178,67 +130,6 @@ func main() {
 	}
 }
 
-// Read metadata for the files in the list:
-//   - Filename with extension (to be able to read it)
-//   - File modification date
-//   - Title (if present, defaults to blank)
-//   - List of tags (if present, defaults to empty), with hashtag characters stripped
-//   - Slug (if present, defaults to file ID)
-//   - Date (if present, defaults to file modification date)
-//   - Language (if present, defaults to default language code, currently "en-US")
-//
-// Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
-func readMetadata(filename, directory string) (metadata, error) {
-	var path = filepath.Join(directory, filename)
-	var data metadata
-
-	file, err := os.Open(path)
-	if err != nil {
-		return data, err
-	}
-	defer file.Close()
-
-	data.filename = filename
-	data.modTime = fileModTime(file)
-
-	s := bufio.NewScanner(file)
-	for s.Scan() {
-		if title, ok := firstSubmatch(matchLineTitle, s.Text()); ok {
-			data.title = title
-			continue
-		}
-
-		if tags, ok := firstSubmatch(matchLineTags, s.Text()); ok {
-			data.tags = tagsFromLine(tags)
-			continue
-		}
-
-		if slug, ok := firstSubmatch(matchLineSlug, s.Text()); ok {
-			data.slug = slug
-			continue
-		}
-
-		if lang, ok := firstSubmatch(matchLineLanguage, s.Text()); ok {
-			// TODO: Add validation.
-			data.language = lang
-			continue
-		}
-
-		if _, ok := firstSubmatch(matchLineDate, s.Text()); ok {
-			// TODO: Define date format and parse.
-			continue
-		}
-
-		// If no matchers match, we are done.
-		break
-	}
-
-	// Default to mod time for now instead of parsing the date.
-	data.date = data.modTime
-
-	return data, nil
-}
-
 func readContent(filename, directory string) ([]byte, error) {
 	var path = filepath.Join(directory, filename)
 	content := []byte{}
@@ -262,22 +153,6 @@ func readContent(filename, directory string) ([]byte, error) {
 	}
 
 	return content, nil
-}
-
-func fileModTime(file *os.File) time.Time {
-	if stat, err := file.Stat(); err == nil {
-		return stat.ModTime()
-	} else {
-		return time.Now()
-	}
-}
-
-func tagsFromLine(line string) []tag {
-	tags := []tag{}
-	for _, tagPair := range matchOneTag.FindAllStringSubmatch(line, -1) {
-		tags = append(tags, tagPair[1])
-	}
-	return tags
 }
 
 // AST modification: https://github.com/gomarkdown/markdown/blob/master/examples/modify_ast.go
