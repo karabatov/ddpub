@@ -11,7 +11,7 @@ import (
 type MenuKind int
 
 const (
-	MenuKindBuiltin = iota + 1
+	MenuKindBuiltin MenuKind = iota + 1
 	MenuKindNoteID
 	MenuKindTag
 	MenuKindURL

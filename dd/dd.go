@@ -24,7 +24,7 @@ type Tag string
 type Builtin int
 
 const (
-	BuiltinFeed = iota + 1
+	BuiltinFeed Builtin = iota + 1
 	BuiltinSearch
 	BuiltinTags
 )
@@ -37,7 +37,7 @@ func (b Builtin) IsValid() bool {
 type Language string
 
 const (
-	LanguageEnUS = "en-US"
+	LanguageEnUS Language = "en-US"
 )
 
 func FirstSubmatch(re *regexp.Regexp, line string) (string, bool) {
