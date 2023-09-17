@@ -88,6 +88,8 @@ func Load(w *config.Website, notesDir string) (*Store, error) {
 
 	s.byTag = makeNotesByTag(s.meta)
 
+	exportedNotes := notesForExport(w, s.byTag)
+
 	return &s, nil
 }
 
@@ -214,4 +216,73 @@ func tagsFromLine(line string) []dd.Tag {
 		tags = append(tags, dd.Tag(tagPair[1]))
 	}
 	return tags
+}
+
+// Build the complete list of *known* note IDs to be published before parsing).
+// They are all valid, verified and exist in `notes`.
+func notesForExport(w *config.Website, byTag map[dd.Tag][]dd.NoteID) map[dd.NoteID]struct{} {
+	e := map[dd.NoteID]struct{}{}
+
+	// First, add all named notes from [[menu]] to the list.
+	for _, m := range w.Menu {
+		if mid, ok := m.(config.MenuNoteID); ok {
+			e[mid.ID] = struct{}{}
+		}
+	}
+
+	// Second, add all named notes from [[tags]] to the list.
+	for _, t := range w.Tags {
+		if len(t.ID) > 0 {
+			e[t.ID] = struct{}{}
+		}
+	}
+
+	// Third, add the feed's note ID if it's there.
+	if len(w.Feed.ID) > 0 {
+		e[w.Feed.ID] = struct{}{}
+	}
+
+	// Finally, add all notes with a publish tag from [[feed]] if it's there.
+	if len(w.Feed.Tag) > 0 {
+		for _, id := range byTag[w.Feed.Tag] {
+			e[id] = struct{}{}
+		}
+	}
+
+	return e
+}
+
+func readContent(filename, directory string) ([]byte, error) {
+	var path = filepath.Join(directory, filename)
+	content := []byte{}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	s := bufio.NewScanner(file)
+	appendLine := false
+	for s.Scan() {
+		if !appendLine {
+			appendLine = appendLine || len(s.Bytes()) == 0
+			continue
+		}
+
+		content = append(content, s.Bytes()...)
+		content = append(content, byte('\n'))
+	}
+
+	return content, nil
+}
+
+// AST modification: https://github.com/gomarkdown/markdown/blob/master/examples/modify_ast.go
+func modifyLinks(noteAst ast.Node, modify func(*ast.Link)) {
+	ast.WalkFunc(noteAst, func(node ast.Node, entering bool) ast.WalkStatus {
+		if link, ok := node.(*ast.Link); ok && entering {
+			modify(link)
+		}
+		return ast.GoToNext
+	})
 }

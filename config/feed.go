@@ -17,9 +17,6 @@ type Feed struct {
 func parseFeed(f data.Feed, defaultTitle string, isValid dd.NoteIDValidFunc) (Feed, error) {
 	var feed Feed
 
-	if len(f.Tag) == 0 {
-		return Feed{}, fmt.Errorf("feed tag cannot be empty")
-	}
 	feed.Tag = dd.Tag(f.Tag)
 
 	// Don't forget to verify the URL prefix later when building the router.
