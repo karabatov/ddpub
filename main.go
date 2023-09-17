@@ -32,11 +32,6 @@ func main() {
 	}
 
 	isNoteIDValidAndExists := func(id noteID) bool {
-		if !isValidNoteID(id) {
-			return false
-		}
-		_, ok := notes[id]
-		return ok
 	}
 
 	// Build the complete list of *known* note IDs to be published before parsing).

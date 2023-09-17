@@ -57,6 +57,8 @@ type file struct {
 
 // Store captures the data necessary to publish the notes.
 type Store struct {
+	// Checks if the note ID is valid and metadata exists for it.
+	NoteExists dd.NoteIDValidFunc
 	// Metadata for all the notes in the notes directory.
 	meta map[dd.NoteID]metadata
 	// Notes grouped by tag.
@@ -74,6 +76,14 @@ func Load(w *config.Website, notesDir string) (*Store, error) {
 	s.meta, err = readAllMetadata(notesDir, w.IDFromFile)
 	if err != nil {
 		return nil, err
+	}
+
+	s.NoteExists = func(test string) bool {
+		if !w.IsValidNoteID(test) {
+			return false
+		}
+		_, ok := s.meta[dd.NoteID(test)]
+		return ok
 	}
 
 	s.byTag = makeNotesByTag(s.meta)
