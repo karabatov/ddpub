@@ -1,16 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/gomarkdown/markdown/ast"
-	"github.com/gomarkdown/markdown/parser"
+	"github.com/karabatov/ddpub/config"
+	"github.com/karabatov/ddpub/notes"
 )
 
 func main() {
@@ -31,60 +28,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Load up the notes' content. Convention: note content is considered
-	// to start after the first blank line. So content is everything between
-	// the first blank line and EOF.
-	parsedNotes := map[noteID]note{}
-
-	// Set up markdown parser.
-	parserExtensions := parser.Tables | parser.FencedCode | parser.Strikethrough
-
-	// Load note content.
-	for id := range exportedNotes {
-		meta := notes[id]
-		content, err := readContent(meta.filename, *notesDir)
-		if err != nil {
-			fmt.Printf("Failed to load note with ID '%s': %v", id, err)
-			os.Exit(1)
-		}
-
-		// Parse note content with markdown parser.
-		// https://github.com/gomarkdown/markdown/issues/280
-		mp := parser.NewWithExtensions(parserExtensions)
-		noteAst := mp.Parse(content)
-
-		// Modify the AST:
-		//  - Replace note links with URLs.
-		//  - Complain and quit if any linked notes are not published.
-		//  - Collect any links out to files (distinguish .md links from files?).
-		modifyLinks(noteAst, func(link *ast.Link) {
-			linkStr := string(link.Destination)
-			fmt.Println("Link:", linkStr)
-			u, err := url.Parse(linkStr)
-			if err != nil {
-				// Not a URI, might be a note link.
-				id, ok := idFromLink(linkStr)
-				if !ok {
-					// Some weird link, continue.
-					return
-				}
-
-				fmt.Println("OK, note ID:", id)
-			}
-
-			// Continue if the link is external.
-			if u.IsAbs() {
-				link.AdditionalAttributes = append(link.AdditionalAttributes, `target="_blank"`)
-				return
-			}
-
-			// Here we only care if the link is a file.
-		})
-
-		parsedNotes[id] = note{meta: meta, doc: noteAst}
+	cfg, err := config.Load(*configDir)
+	if err != nil {
+		fmt.Printf("Couldn't load website config: %v\n", err)
+		os.Exit(1)
 	}
 
-	fmt.Printf("Loaded %d notes.\n", len(parsedNotes))
+	store, err := notes.Load(cfg, *notesDir)
+	if err != nil {
+		fmt.Printf("Couldn't load notes: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("%v\n", store)
 
 	// At this point the surface check is complete! There may be more
 	// errors like duplicate tags or bad URLs, but these will be caught later.
@@ -96,4 +51,3 @@ func main() {
 		os.Exit(1)
 	}
 }
-

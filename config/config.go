@@ -28,53 +28,53 @@ func (w Website) isTagPublished(tag dd.Tag) bool {
 	return ok
 }
 
-func Load(configDir string) (Website, error) {
+func Load(configDir string) (*Website, error) {
 	var w Website
 
 	cfg, err := readConfigFile(configDir)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
 	w.IsValidNoteID, err = makeNoteIDValidator(cfg.Notes.IDFormat)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
 	w.IDFromFile, err = makeIDFromFileFunc(cfg.Notes.IDFormat, w.IsValidNoteID)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
 	w.IDFromLink, err = makeIDFromLinkFunc(cfg.Notes.IDLinkFormat, w.IsValidNoteID)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
 	w.Homepage, err = parseHomepage(cfg.Homepage, w.IsValidNoteID)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
 	w.Tags, err = loadTags(cfg.Tags, w.IsValidNoteID)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
 	for _, m := range cfg.Menu {
 		menu, err := parseMenu(m, w.IsValidNoteID, w.isTagPublished)
 		if err != nil {
-			return w, err
+			return nil, err
 		}
 		w.Menu = append(w.Menu, menu)
 	}
 
 	w.Feed, err = parseFeed(cfg.Feed, "Feed", w.IsValidNoteID)
 	if err != nil {
-		return w, err
+		return nil, err
 	}
 
-	return w, nil
+	return &w, nil
 }
 
 func readConfigFile(configDir string) (data.ConfigFile, error) {

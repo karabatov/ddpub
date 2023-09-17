@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
 )
@@ -88,7 +89,10 @@ func Load(w *config.Website, notesDir string) (*Store, error) {
 
 	s.byTag = makeNotesByTag(s.meta)
 
-	exportedNotes := notesForExport(w, s.byTag)
+	s.pub, err = readExportedContent(w, &s, notesDir)
+	if err != nil {
+		return nil, err
+	}
 
 	return &s, nil
 }
@@ -285,4 +289,64 @@ func modifyLinks(noteAst ast.Node, modify func(*ast.Link)) {
 		}
 		return ast.GoToNext
 	})
+}
+
+// Load up the notes' content. Convention: note content is considered
+// to start after the first blank line. So content is everything between
+// the first blank line and EOF.
+func readExportedContent(w *config.Website, s *Store, notesDir string) (map[dd.NoteID]note, error) {
+	p := map[dd.NoteID]note{}
+
+	// Set up markdown parser.
+	parserExtensions := parser.Tables | parser.FencedCode | parser.Strikethrough
+
+	exportedNotes := notesForExport(w, s.byTag)
+
+	// Load note content.
+	for id := range exportedNotes {
+		meta := s.meta[id]
+		content, err := readContent(meta.filename, notesDir)
+		if err != nil {
+			return p, fmt.Errorf("failed to load note with ID '%s': %v", id, err)
+		}
+
+		// Parse note content with markdown parser.
+		// https://github.com/gomarkdown/markdown/issues/280
+		mp := parser.NewWithExtensions(parserExtensions)
+		noteAst := mp.Parse(content)
+
+		/*
+			// Modify the AST:
+			//  - Replace note links with URLs.
+			//  - Complain and quit if any linked notes are not published.
+			//  - Collect any links out to files (distinguish .md links from files?).
+			modifyLinks(noteAst, func(link *ast.Link) {
+				linkStr := string(link.Destination)
+				fmt.Println("Link:", linkStr)
+				u, err := url.Parse(linkStr)
+				if err != nil {
+					// Not a URI, might be a note link.
+					id, ok := w.IDFromLink(linkStr)
+					if !ok {
+						// Some weird link, continue.
+						return
+					}
+
+					fmt.Println("OK, note ID:", id)
+				}
+
+				// Continue if the link is external.
+				if u.IsAbs() {
+					link.AdditionalAttributes = append(link.AdditionalAttributes, `target="_blank"`)
+					return
+				}
+
+				// Here we only care if the link is a file.
+			})
+		*/
+
+		p[id] = note{meta: meta, doc: noteAst}
+	}
+
+	return p, nil
 }
