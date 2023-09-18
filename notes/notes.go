@@ -89,8 +89,7 @@ func Load(w *config.Website, notesDir string) (*Store, error) {
 
 	s.byTag = makeNotesByTag(s.meta)
 
-	s.pub, err = readExportedContent(w, &s, notesDir)
-	if err != nil {
+	if err := s.readExportedContent(w, notesDir); err != nil {
 		return nil, err
 	}
 
@@ -294,7 +293,7 @@ func modifyLinks(noteAst ast.Node, modify func(*ast.Link)) {
 // Load up the notes' content. Convention: note content is considered
 // to start after the first blank line. So content is everything between
 // the first blank line and EOF.
-func readExportedContent(w *config.Website, s *Store, notesDir string) (map[dd.NoteID]note, error) {
+func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 	p := map[dd.NoteID]note{}
 
 	// Set up markdown parser.
@@ -307,7 +306,7 @@ func readExportedContent(w *config.Website, s *Store, notesDir string) (map[dd.N
 		meta := s.meta[id]
 		content, err := readContent(meta.filename, notesDir)
 		if err != nil {
-			return p, fmt.Errorf("failed to load note with ID '%s': %v", id, err)
+			return fmt.Errorf("failed to load note with ID '%s': %v", id, err)
 		}
 
 		// Parse note content with markdown parser.
@@ -348,5 +347,6 @@ func readExportedContent(w *config.Website, s *Store, notesDir string) (map[dd.N
 		p[id] = note{meta: meta, doc: noteAst}
 	}
 
-	return p, nil
+	s.pub = p
+	return nil
 }
