@@ -5,20 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Package",
+            "name": "Real notes - check",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
-            "args": ["--check"]
+            "program": "main.go",
+            "args": ["check", "--config", "/Users/ykar/Documents/notes/sites/ddpub.org", "--notes", "/Users/ykar/Documents/notes"]
         },
         {
-            "name": "Real notes",
+            "name": "Real notes - serve",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
-            "args": ["--check", "--config", "/Users/ykar/Documents/notes/sites/ddpub.org", "--notes", "/Users/ykar/Documents/notes"]
+            "program": "main.go",
+            "args": ["serve", "--config", "/Users/ykar/Documents/notes/sites/ddpub.org", "--notes", "/Users/ykar/Documents/notes"]
         },
         {
             "name": "Real notes W",
@@ -26,7 +26,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["--check", "--notes", "C:/Users/1/Documents/notes"]
+            "args": ["check", "--notes", "C:/Users/1/Documents/notes"]
         }
     ]
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -13,11 +15,11 @@ import (
 const (
 	usage = `ddpub is a tool to serve one set of notes as many websites.
 
-	Check config:
-			ddpub check --config <dir> --notes <dir>
+Check config:
+	ddpub check --config <dir> --notes <dir>
 
-	Serve notes:
-			ddpub serve --config <dir> --notes <dir> --port <port>`
+Serve notes:
+	ddpub serve --config <dir> --notes <dir> --port <port>`
 )
 
 var (
@@ -62,20 +64,21 @@ func main() {
 
 	cfg, err := config.Load(configDir)
 	if err != nil {
-		fmt.Printf("Couldn't load website config: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Couldn't load website config: %v\n", err)
 	}
 
 	store, err := notes.Load(cfg, notesDir)
 	if err != nil {
-		fmt.Printf("Couldn't load notes: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Couldn't load notes: %v\n", err)
 	}
-	fmt.Printf("%v\n", store)
+	// Temporary before I actually use store.
+	if store == nil {
+		log.Fatal("impossibru!")
+	}
 
 	// At this point the surface check is complete! There may be more
 	// errors like duplicate tags or bad URLs, but these will be caught later.
-	fmt.Printf("Config OK. Startup took %v.", time.Since(startTime))
+	log.Printf("Config OK. Startup took %v.", time.Since(startTime))
 
 	// If we were only checking the config, exit now.
 	if os.Args[1] == "check" {
@@ -83,4 +86,19 @@ func main() {
 	}
 
 	// Serve notes.
+	log.Println("Starting server...")
+	log.Printf("In your browser, open: http://localhost:%d", port)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello from DDPub")
+	})
+
+	s := &http.Server{
+		Addr:         fmt.Sprintf(":%d", port),
+		Handler:      mux,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
+	log.Fatal(s.ListenAndServe())
 }
