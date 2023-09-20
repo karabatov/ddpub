@@ -94,11 +94,11 @@ func main() {
 		fmt.Fprintf(w, "Hello from DDPub")
 	})
 
-	s := &http.Server{
+	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
 		Handler:      mux,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
-	log.Fatal(s.ListenAndServe())
+	log.Fatal(srv.ListenAndServe())
 }
