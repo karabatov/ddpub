@@ -62,12 +62,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := config.Load(configDir)
+	cfg, err := config.New(configDir)
 	if err != nil {
 		log.Fatalf("Couldn't load website config: %v\n", err)
 	}
 
-	store, err := notes.Load(cfg, notesDir)
+	store, err := notes.NewStore(cfg, notesDir)
 	if err != nil {
 		log.Fatalf("Couldn't load notes: %v\n", err)
 	}

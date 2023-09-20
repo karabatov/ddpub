@@ -70,7 +70,7 @@ type Store struct {
 	files map[link]file
 }
 
-func Load(w *config.Website, notesDir string) (*Store, error) {
+func NewStore(w *config.Website, notesDir string) (*Store, error) {
 	var s Store
 	var err error
 

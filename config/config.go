@@ -28,7 +28,7 @@ func (w Website) isTagPublished(tag dd.Tag) bool {
 	return ok
 }
 
-func Load(configDir string) (*Website, error) {
+func New(configDir string) (*Website, error) {
 	var w Website
 
 	cfg, err := readConfigFile(configDir)
