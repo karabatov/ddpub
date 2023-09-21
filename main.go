@@ -85,14 +85,14 @@ func main() {
 	log.Println("Starting server...")
 	log.Printf("In your browser, open: http://localhost:%d", port)
 
-	mux, err := notes.NewServeMux(cfg, store)
+	router, err := notes.NewRouter(cfg, store)
 	if err != nil {
 		log.Fatalf("Could not create router: %s", err)
 	}
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
-		Handler:      mux,
+		Handler:      router.ServeMux(),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
