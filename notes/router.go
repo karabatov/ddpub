@@ -20,8 +20,8 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 func (r Router) ServeMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	for k, v := range r.routes {
-		addHandler(mux, k, v)
+	for pattern, handler := range r.routes {
+		addHandler(mux, pattern, handler)
 	}
 
 	return mux
