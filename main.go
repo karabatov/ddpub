@@ -89,7 +89,10 @@ func main() {
 	log.Println("Starting server...")
 	log.Printf("In your browser, open: http://localhost:%d", port)
 
-	mux := notes.NewServeMux(cfg, store)
+	mux, err := notes.NewServeMux(cfg, store)
+	if err != nil {
+		log.Fatalf("Could not create router: %s", err)
+	}
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
