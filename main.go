@@ -89,10 +89,7 @@ func main() {
 	log.Println("Starting server...")
 	log.Printf("In your browser, open: http://localhost:%d", port)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello from DDPub")
-	})
+	mux := notes.NewServeMux(cfg, store)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
