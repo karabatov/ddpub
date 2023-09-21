@@ -71,10 +71,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't load notes: %v\n", err)
 	}
-	// Temporary before I actually use store.
-	if store == nil {
-		log.Fatal("impossibru!")
-	}
 
 	// At this point the surface check is complete! There may be more
 	// errors like duplicate tags or bad URLs, but these will be caught later.
