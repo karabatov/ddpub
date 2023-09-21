@@ -18,16 +18,6 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 }
 
 func (r Router) ServeMux() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	for pattern, handler := range r.routes {
-		addHandler(mux, pattern, handler)
-	}
-
-	return mux
-}
-
-func addHandler(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
 	defer func() {
 		// We shouldn't panic here, but it's better than crashing.
 		if err := recover(); err != nil {
@@ -35,5 +25,11 @@ func addHandler(mux *http.ServeMux, pattern string, handler http.HandlerFunc) {
 		}
 	}()
 
-	mux.HandleFunc(pattern, handler)
+	mux := http.NewServeMux()
+
+	for pattern, handler := range r.routes {
+		mux.HandleFunc(pattern, handler)
+	}
+
+	return mux
 }
