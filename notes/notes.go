@@ -32,6 +32,7 @@ var (
 )
 
 type metadata struct {
+	id       dd.NoteID
 	filename string
 	modTime  time.Time
 	date     time.Time
@@ -42,8 +43,9 @@ type metadata struct {
 }
 
 type note struct {
-	meta metadata
-	doc  ast.Node
+	metadata
+
+	doc ast.Node
 }
 
 // Link to a file.
@@ -115,7 +117,7 @@ func readAllMetadata(notesDir string, idFromFile dd.IDFromFileFunc) (map[dd.Note
 			continue
 		}
 
-		fileMetadata, err := readMetadata(filename, notesDir)
+		fileMetadata, err := readMetadata(id, filename, notesDir)
 		if err != nil {
 			fmt.Println("Could not read metadata from file:", filename)
 			continue
@@ -155,7 +157,7 @@ func makeNotesByTag(m map[dd.NoteID]metadata) map[dd.Tag][]dd.NoteID {
 //   - Language (if present, defaults to default language code, currently "en-US")
 //
 // Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
-func readMetadata(filename, directory string) (metadata, error) {
+func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 	var path = filepath.Join(directory, filename)
 	var data metadata
 
@@ -181,7 +183,11 @@ func readMetadata(filename, directory string) (metadata, error) {
 		}
 
 		if slug, ok := dd.FirstSubmatch(matchLineSlug, s.Text()); ok {
-			data.slug = slug
+			if len(slug) > 0 {
+				data.slug = slug
+			} else {
+				data.slug = string(id)
+			}
 			continue
 		}
 
@@ -243,6 +249,11 @@ func notesForExport(w *config.Website, byTag map[dd.Tag][]dd.NoteID) map[dd.Note
 	// Third, add the feed's note ID if it's there.
 	if len(w.Feed.ID) > 0 {
 		e[w.Feed.ID] = struct{}{}
+	}
+
+	// Fourth, add the homepage note ID if it's there.
+	if h, ok := w.Homepage.(config.HomepageNoteID); ok {
+		e[h.ID] = struct{}{}
 	}
 
 	// Finally, add all notes with a publish tag from [[feed]] if it's there.
@@ -344,7 +355,7 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 			})
 		*/
 
-		p[id] = note{meta: meta, doc: noteAst}
+		p[id] = note{metadata: meta, doc: noteAst}
 	}
 
 	s.pub = p
