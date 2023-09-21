@@ -9,6 +9,7 @@ import (
 const (
 	search = "search"
 	tags   = "tags"
+	theme  = "theme.css"
 )
 
 func (w Website) URLForBuiltin(b dd.Builtin) string {
@@ -34,4 +35,8 @@ func (w Website) URLForMenuNote(slug string) string {
 
 func (w Website) URLForFeedNote(slug string) string {
 	return fmt.Sprintf("%s%s/", w.URLForBuiltin(dd.BuiltinFeed), slug)
+}
+
+func (w Website) URLForThemeCSS() string {
+	return "/" + theme
 }
