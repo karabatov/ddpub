@@ -14,6 +14,14 @@ type Router struct {
 func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
+	// Add theme.css.
+	// Add homepage.
+	// Add builtin pages.
+	// Add pages from the menu.
+	// Add tags.
+	// Add published pages.
+	// Add files.
+
 	return &r, nil
 }
 
