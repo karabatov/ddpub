@@ -72,23 +72,23 @@ func main() {
 		log.Fatalf("Couldn't load notes: %v\n", err)
 	}
 
-	// At this point the surface check is complete! There may be more
-	// errors like duplicate tags or bad URLs, but these will be caught later.
-	log.Printf("Config OK. Startup took %v.", time.Since(startTime))
-
-	// Serve notes.
-	log.Println("Starting server...")
-	log.Printf("In your browser, open: http://localhost:%d", port)
-
 	router, err := notes.NewRouter(cfg, store)
 	if err != nil {
 		log.Fatalf("Could not create router: %s", err)
 	}
 
+	// At this point the surface check is complete! There may be more
+	// errors like duplicate tags or bad URLs, but these will be caught later.
+	log.Printf("Config OK. Startup took %v.", time.Since(startTime))
+
 	// If we were only checking the config, exit now.
 	if os.Args[1] == "check" {
 		os.Exit(0)
 	}
+
+	// Serve notes.
+	log.Println("Starting server...")
+	log.Printf("In your browser, open: http://localhost:%d", port)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
