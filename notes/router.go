@@ -1,6 +1,7 @@
 package notes
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -15,6 +16,10 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
 	// Add theme.css.
+	if err := r.addHandler(w.URLForThemeCSS(), handlerForFile(w.ThemeCSS)); err != nil {
+		return nil, err
+	}
+
 	// Add homepage.
 	// Add builtin pages.
 	// Add pages from the menu.
@@ -40,4 +45,26 @@ func (r Router) ServeMux() *http.ServeMux {
 	}
 
 	return mux
+}
+
+func (r *Router) hasPattern(p string) bool {
+	_, ok := r.routes[p]
+
+	return ok
+}
+
+func (r *Router) addHandler(pattern string, handler http.HandlerFunc) error {
+	if r.hasPattern(pattern) {
+		return fmt.Errorf("pattern '%s' already registered with router", pattern)
+	}
+
+	r.routes[pattern] = handler
+	return nil
+}
+
+// Add header for file type?
+func handlerForFile(f []byte) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Write(f)
+	}
 }
