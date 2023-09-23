@@ -1,0 +1,11 @@
+:root {
+    --black: #000;
+ }
+ 
+ a {
+    color: var(--black);
+ }
+ 
+ p {
+    color: var(--black);
+ }

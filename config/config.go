@@ -2,6 +2,7 @@
 package config
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,9 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+//go:embed theme.css
+var themeCSS []byte
+
 // Website represents the configuration of a website.
 type Website struct {
 	IsValidNoteID dd.NoteIDValidFunc
@@ -21,6 +25,7 @@ type Website struct {
 	Tags          map[dd.Tag]Tag
 	Menu          []Menu
 	Feed          Feed
+	ThemeCSS      []byte
 }
 
 func (w Website) isTagPublished(tag dd.Tag) bool {
@@ -73,6 +78,8 @@ func New(configDir string) (*Website, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	w.ThemeCSS = themeCSS
 
 	return &w, nil
 }
