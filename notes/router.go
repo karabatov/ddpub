@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/karabatov/ddpub/config"
+	"github.com/karabatov/ddpub/layout"
 )
 
 type Router struct {
@@ -15,12 +16,28 @@ type Router struct {
 func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
+	pageWith := func(title, content string) layout.Page {
+		return layout.Page{
+			Language: "en-US",
+			Head:     layout.Head{Title: title},
+			Header:   layout.Header{},
+			Content:  content,
+			Menu:     struct{}{},
+			Footer:   struct{}{},
+		}
+	}
+
 	// Add theme.css.
 	if err := r.addHandler(w.URLForThemeCSS(), handlerForFile(w.ThemeCSS)); err != nil {
 		return nil, err
 	}
 
 	// Add homepage.
+	home := pageWith("Home", "<p>Hello, World!</p>")
+	if err := r.addHandlerForPage("/", home); err != nil {
+		return nil, err
+	}
+
 	// Add builtin pages.
 	// Add pages from the menu.
 	// Add tags.
@@ -62,9 +79,29 @@ func (r *Router) addHandler(pattern string, handler http.HandlerFunc) error {
 	return nil
 }
 
+func (r *Router) addHandlerForPage(pattern string, page layout.Page) error {
+	h, err := handlerForPage(page)
+	if err != nil {
+		return err
+	}
+
+	return r.addHandler(pattern, h)
+}
+
 // Add header for file type?
 func handlerForFile(f []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write(f)
 	}
+}
+
+func handlerForPage(p layout.Page) (http.HandlerFunc, error) {
+	l, err := layout.FillPage(p)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Write(l)
+	}, nil
 }

@@ -17,16 +17,20 @@ var (
 	tmpl  = template.Must(template.ParseFS(files, "templates/*.html"))
 )
 
+type Head struct {
+	Title       string
+	ThemeCSSURL string
+}
+
+type Header struct {
+	Title    string
+	Subtitle string
+}
+
 type Page struct {
 	Language string
-	Head     struct {
-		Title       string
-		ThemeCSSURL string
-	}
-	Header struct {
-		Title    string
-		Subtitle string
-	}
+	Head     Head
+	Header   Header
 	// Convert to []byte maybe
 	Content string
 	Menu    struct{}
