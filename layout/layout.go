@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	//go:embed templates/*
+	//go:embed templates/*.html
 	files embed.FS
 	tmpl  = template.Must(template.ParseFS(files, "templates/*.html"))
 )
