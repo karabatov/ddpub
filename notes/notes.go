@@ -211,6 +211,11 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 	// Default to mod time for now instead of parsing the date.
 	data.date = data.modTime
 
+	// Set slug to id if no slug has been set.
+	if len(data.slug) == 0 {
+		data.slug = string(id)
+	}
+
 	return data, nil
 }
 
