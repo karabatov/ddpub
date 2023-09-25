@@ -17,6 +17,25 @@ type Router struct {
 func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
+	menu := []layout.Menu{}
+	for _, m := range w.Menu {
+		var url string
+		switch m := m.(type) {
+		case config.MenuBuiltin:
+			url = w.URLForBuiltin(m.Builtin)
+		case config.MenuNoteID:
+			url = w.URLForMenuNote(s.pub[m.ID].slug)
+		case config.MenuTag:
+			url = w.URLForTag(w.Tags[m.Tag])
+		case config.MenuURL:
+			url = m.URL
+		}
+		menu = append(menu, layout.Menu{
+			Title: m.Title(),
+			URL:   template.HTML(url),
+		})
+	}
+
 	pageWith := func(title string, content template.HTML) layout.Page {
 		return layout.Page{
 			Language: "en-US",
@@ -26,7 +45,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 			},
 			Header:  layout.Header{},
 			Content: content,
-			Menu:    struct{}{},
+			Menu:    menu,
 			Footer:  struct{}{},
 		}
 	}

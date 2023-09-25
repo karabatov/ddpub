@@ -22,12 +22,17 @@ type Header struct {
 	Subtitle string
 }
 
+type Menu struct {
+	Title string
+	URL   template.HTML
+}
+
 type Page struct {
 	Language string
 	Head     Head
 	Header   Header
 	Content  template.HTML
-	Menu     struct{}
+	Menu     []Menu
 	Footer   struct{}
 }
 

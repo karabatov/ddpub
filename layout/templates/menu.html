@@ -1,3 +1,9 @@
 {{define "menu"}}
-<aside><ul><li><a href="/">Home</a></li></ul></aside>
+{{if .}}
+<aside><ul>
+{{range .}}
+<li><a href="{{.URL}}">{{.Title}}</a></li>
+{{end}}
+</ul></aside>
+{{end}}
 {{end}}
