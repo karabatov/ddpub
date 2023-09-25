@@ -17,7 +17,7 @@ type Router struct {
 func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
-	pageWith := func(title, content string) layout.Page {
+	pageWith := func(title string, content template.HTML) layout.Page {
 		return layout.Page{
 			Language: "en-US",
 			Head: layout.Head{
@@ -25,7 +25,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 				ThemeCSSURL: template.HTML(w.URLForThemeCSS()),
 			},
 			Header:  layout.Header{},
-			Content: template.HTML(content),
+			Content: content,
 			Menu:    struct{}{},
 			Footer:  struct{}{},
 		}
@@ -37,9 +37,22 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	}
 
 	// Add homepage.
-	home := pageWith("Home", "<p>Hello, World!</p>")
-	if err := r.addHandlerForPage("/", home); err != nil {
-		return nil, err
+	if h, ok := w.Homepage.(config.HomepageNoteID); ok {
+		note := s.pub[h.ID]
+		cp := layout.ContentPage{
+			Title:   note.title,
+			Content: template.HTML(note.content),
+		}
+		rendered, err := layout.FillContentPage(cp)
+		if err != nil {
+			return nil, err
+		}
+		home := pageWith(note.title, template.HTML(rendered))
+		if err := r.addHandlerForPage("/", home); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("feed homepage not supported")
 	}
 
 	// Add builtin pages.

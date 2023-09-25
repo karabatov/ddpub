@@ -9,7 +9,9 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
@@ -45,7 +47,8 @@ type metadata struct {
 type note struct {
 	metadata
 
-	doc ast.Node
+	doc     ast.Node
+	content []byte
 }
 
 // Link to a file.
@@ -325,6 +328,11 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 		mp := parser.NewWithExtensions(parserExtensions)
 		noteAst := mp.Parse(content)
 
+		htmlFlags := html.CommonFlags | html.HrefTargetBlank
+		opts := html.RendererOptions{Flags: htmlFlags}
+		renderer := html.NewRenderer(opts)
+		noteContent := markdown.Render(noteAst, renderer)
+
 		/*
 			// Modify the AST:
 			//  - Replace note links with URLs.
@@ -355,7 +363,7 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 			})
 		*/
 
-		p[id] = note{metadata: meta, doc: noteAst}
+		p[id] = note{metadata: meta, doc: noteAst, content: noteContent}
 	}
 
 	s.pub = p
