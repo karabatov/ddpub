@@ -1,9 +1,5 @@
 package layout
 
-// Embed filesystem for the `templates` directory.
-// Preloads templates from the embedded files on start.
-// Provides types to be slotted into the templates (mapped by caller).
-
 import (
 	"bytes"
 	"embed"
