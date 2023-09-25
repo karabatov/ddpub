@@ -2,6 +2,7 @@ package notes
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -21,7 +22,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 			Language: "en-US",
 			Head:     layout.Head{Title: title},
 			Header:   layout.Header{},
-			Content:  content,
+			Content:  template.HTML(content),
 			Menu:     struct{}{},
 			Footer:   struct{}{},
 		}

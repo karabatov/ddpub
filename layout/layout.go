@@ -27,15 +27,14 @@ type Page struct {
 	Language string
 	Head     Head
 	Header   Header
-	// Convert to []byte maybe
-	Content string
-	Menu    struct{}
-	Footer  struct{}
+	Content  template.HTML
+	Menu     struct{}
+	Footer   struct{}
 }
 
 type ContentPage struct {
 	Title   string
-	Content string
+	Content template.HTML
 }
 
 func FillPage(p Page) ([]byte, error) {
