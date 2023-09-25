@@ -37,7 +37,9 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	}
 
 	// Add homepage.
-	if h, ok := w.Homepage.(config.HomepageNoteID); ok {
+	switch w.Homepage.Kind() {
+	case config.HomepageKindNoteID:
+		h := w.Homepage.(config.HomepageNoteID)
 		note := s.pub[h.ID]
 		cp := layout.ContentPage{
 			Title:   note.title,
@@ -51,8 +53,8 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		if err := r.addHandlerForPage("/", home); err != nil {
 			return nil, err
 		}
-	} else {
-		return nil, fmt.Errorf("feed homepage not supported")
+	case config.HomepageKindFeed:
+		return nil, fmt.Errorf("homepage feed not supported")
 	}
 
 	// Add builtin pages.
