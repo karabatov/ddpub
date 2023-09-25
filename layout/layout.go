@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
-	"strings"
 )
 
 var (
@@ -47,11 +46,11 @@ func FillPage(p Page) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func FillContentPage(p ContentPage) (string, error) {
-	s := new(strings.Builder)
-	if err := tmpl.ExecuteTemplate(s, "content_page", p); err != nil {
+func FillContentPage(p ContentPage) (template.HTML, error) {
+	var b bytes.Buffer
+	if err := tmpl.ExecuteTemplate(&b, "content_page", p); err != nil {
 		return "", err
 	}
 
-	return s.String(), nil
+	return template.HTML(b.Bytes()), nil
 }

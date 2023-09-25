@@ -39,18 +39,13 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	// Add homepage.
 	switch w.Homepage.Kind() {
 	case config.HomepageKindNoteID:
-		h := w.Homepage.(config.HomepageNoteID)
-		note := s.pub[h.ID]
-		cp := layout.ContentPage{
-			Title:   note.title,
-			Content: template.HTML(note.content),
-		}
-		rendered, err := layout.FillContentPage(cp)
+		id := w.Homepage.(config.HomepageNoteID).ID
+		note := s.pub[id]
+		rendered, err := contentPageForNote(&note, s)
 		if err != nil {
 			return nil, err
 		}
-		home := pageWith(note.title, template.HTML(rendered))
-		if err := r.addHandlerForPage("/", home); err != nil {
+		if err := r.addHandlerForPage("/", pageWith(note.title, rendered)); err != nil {
 			return nil, err
 		}
 	case config.HomepageKindFeed:
@@ -123,4 +118,16 @@ func handlerForPage(p layout.Page) (http.HandlerFunc, error) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write(l)
 	}, nil
+}
+
+func contentPageForNote(note *note, s *Store) (template.HTML, error) {
+	cp := layout.ContentPage{
+		Title:   note.title,
+		Content: template.HTML(note.content),
+	}
+	rendered, err := layout.FillContentPage(cp)
+	if err != nil {
+		return "", err
+	}
+	return rendered, nil
 }
