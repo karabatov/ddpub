@@ -41,7 +41,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	case config.HomepageKindNoteID:
 		id := w.Homepage.(config.HomepageNoteID).ID
 		note := s.pub[id]
-		rendered, err := contentPageForNote(&note, s)
+		rendered, err := htmlForNote(&note, s)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +120,7 @@ func handlerForPage(p layout.Page) (http.HandlerFunc, error) {
 	}, nil
 }
 
-func contentPageForNote(note *note, s *Store) (template.HTML, error) {
+func htmlForNote(note *note, s *Store) (template.HTML, error) {
 	cp := layout.ContentPage{
 		Title:   note.title,
 		Content: template.HTML(note.content),
