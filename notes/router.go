@@ -20,11 +20,14 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	pageWith := func(title, content string) layout.Page {
 		return layout.Page{
 			Language: "en-US",
-			Head:     layout.Head{Title: title},
-			Header:   layout.Header{},
-			Content:  template.HTML(content),
-			Menu:     struct{}{},
-			Footer:   struct{}{},
+			Head: layout.Head{
+				Title:       title,
+				ThemeCSSURL: template.HTML(w.URLForThemeCSS()),
+			},
+			Header:  layout.Header{},
+			Content: template.HTML(content),
+			Menu:    struct{}{},
+			Footer:  struct{}{},
 		}
 	}
 
