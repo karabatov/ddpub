@@ -162,7 +162,7 @@ func makeNotesByTag(m map[dd.NoteID]metadata) map[dd.Tag][]dd.NoteID {
 // Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
 func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 	var path = filepath.Join(directory, filename)
-	var data metadata
+	data := metadata{id: id}
 
 	file, err := os.Open(path)
 	if err != nil {
