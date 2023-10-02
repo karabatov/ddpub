@@ -1,0 +1,7 @@
+{{define "content_tag"}}
+<article>
+    <h2>{{.Title}}</h2>
+    {{if .Content}}<div class="post-content">{{.Content}}</div>{{end}}
+    <div class="post-list">(List of posts with tag…)</div>
+</article>
+{{end}}

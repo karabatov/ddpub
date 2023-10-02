@@ -73,7 +73,20 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		}
 	}
 
-	// Add tags.
+	// Add published tags.
+
+	for _, t := range w.Tags {
+		rendered, err := htmlForTag(&t, w, s)
+		if err != nil {
+			return nil, err
+		}
+		url := w.URLForTag(t)
+		page := pageWith(t.Title, rendered)
+		if err := r.addHandlerForPage(url, page); err != nil {
+			return nil, err
+		}
+	}
+
 	// Add published pages.
 	// Add files.
 
@@ -151,8 +164,26 @@ func htmlForNote(note *note, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func layoutMenu(w *config.Website, s *Store) []layout.Menu {
-	menu := []layout.Menu{}
+func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, error) {
+	var tagContent template.HTML
+	if len(t.ID) > 0 {
+		note := s.pub[t.ID]
+		tagContent = template.HTML(note.content)
+	}
+	tp := layout.TagPage{
+		Title:   t.Title,
+		Content: tagContent,
+		Notes:   []layout.NoteListItem{},
+	}
+	rendered, err := layout.FillTagPage(tp)
+	if err != nil {
+		return "", err
+	}
+	return rendered, nil
+}
+
+func layoutMenu(w *config.Website, s *Store) []layout.ListItem {
+	menu := []layout.ListItem{}
 	for _, m := range w.Menu {
 		var url string
 		switch m := m.(type) {
@@ -165,7 +196,7 @@ func layoutMenu(w *config.Website, s *Store) []layout.Menu {
 		case config.MenuURL:
 			url = m.URL
 		}
-		menu = append(menu, layout.Menu{
+		menu = append(menu, layout.ListItem{
 			Title: m.Title(),
 			URL:   template.HTML(url),
 		})
