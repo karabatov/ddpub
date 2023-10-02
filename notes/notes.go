@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"time"
 
 	"github.com/gomarkdown/markdown"
@@ -373,4 +374,20 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 
 	s.pub = p
 	return nil
+}
+
+func (s *Store) notesForTag(t dd.Tag) []note {
+	n := []note{}
+
+	for _, id := range s.byTag[t] {
+		if p, ok := s.pub[id]; ok {
+			n = append(n, p)
+		}
+	}
+
+	sort.Slice(n, func(i, j int) bool {
+		return n[i].date.After(n[j].date)
+	})
+
+	return n
 }

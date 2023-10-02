@@ -170,10 +170,23 @@ func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, erro
 		note := s.pub[t.ID]
 		tagContent = template.HTML(note.content)
 	}
+
+	notes := []layout.NoteListItem{}
+	for _, n := range s.notesForTag(t.Tag) {
+		nli := layout.NoteListItem{
+			ListItem: layout.ListItem{
+				Title: n.title,
+				URL:   template.HTML(w.URLForFeedNote(n.slug)),
+			},
+			Date: n.date,
+		}
+		notes = append(notes, nli)
+	}
+
 	tp := layout.TagPage{
 		Title:   t.Title,
 		Content: tagContent,
-		Notes:   []layout.NoteListItem{},
+		Notes:   notes,
 	}
 	rendered, err := layout.FillTagPage(tp)
 	if err != nil {
