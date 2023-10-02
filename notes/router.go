@@ -54,7 +54,25 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	}
 
 	// Add builtin pages.
+
 	// Add pages from the menu.
+
+	for _, m := range w.Menu {
+		switch m := m.(type) {
+		case config.MenuNoteID:
+			note := s.pub[m.ID]
+			rendered, err := htmlForNote(&note, s)
+			if err != nil {
+				return nil, err
+			}
+			url := w.URLForMenuNote(note.slug)
+			page := pageWith(note.title, rendered)
+			if err := r.addHandlerForPage(url, page); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	// Add tags.
 	// Add published pages.
 	// Add files.
