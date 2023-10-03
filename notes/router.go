@@ -87,7 +87,20 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		}
 	}
 
-	// Add published pages.
+	// Add published pages from the feed (if there are any).
+
+	for _, note := range s.notesForTag(w.Feed.Tag) {
+		rendered, err := htmlForNote(&note, w)
+		if err != nil {
+			return nil, err
+		}
+		url := w.URLForFeedNote(note.slug)
+		page := pageWith(note.title, rendered)
+		if err := r.addHandlerForPage(url, page); err != nil {
+			return nil, err
+		}
+	}
+
 	// Add files.
 
 	return &r, nil
@@ -183,12 +196,32 @@ func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, erro
 		notes = append(notes, nli)
 	}
 
-	tp := layout.TagPage{
+	tp := layout.ContentTagPage{
 		Title:   t.Title,
 		Content: tagContent,
 		Notes:   notes,
 	}
-	rendered, err := layout.FillTagPage(tp)
+	rendered, err := layout.FillContentTagPage(tp)
+	if err != nil {
+		return "", err
+	}
+	return rendered, nil
+}
+
+func htmlForNote(note *note, w *config.Website) (template.HTML, error) {
+	tags := []layout.ListItem{}
+	for _, t := range w.TagsToPublished(note.tags) {
+		tags = append(tags, layout.ListItem{
+			Title: t.Title,
+			URL:   template.HTML(w.URLForTag(t)),
+		})
+	}
+	cn := layout.ContentNote{
+		Title:   note.title,
+		Content: template.HTML(note.content),
+		Tags:    tags,
+	}
+	rendered, err := layout.FillContentNote(cn)
 	if err != nil {
 		return "", err
 	}

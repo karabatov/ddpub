@@ -50,10 +50,16 @@ type NoteListItem struct {
 	Date time.Time
 }
 
-type TagPage struct {
+type ContentTagPage struct {
 	Title   string
 	Content template.HTML
 	Notes   []NoteListItem
+}
+
+type ContentNote struct {
+	Title   string
+	Tags    []ListItem
+	Content template.HTML
 }
 
 func FillPage(p Page) ([]byte, error) {
@@ -66,20 +72,27 @@ func FillPage(p Page) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func FillContentPage(p ContentPage) (template.HTML, error) {
+type content interface {
+	ContentPage | ContentTagPage | ContentNote
+}
+
+func fillContent[C content](content C, tName string) (template.HTML, error) {
 	var b bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&b, "content_page", p); err != nil {
+	if err := tmpl.ExecuteTemplate(&b, tName, content); err != nil {
 		return "", err
 	}
 
 	return template.HTML(b.Bytes()), nil
 }
 
-func FillTagPage(p TagPage) (template.HTML, error) {
-	var b bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&b, "content_tag", p); err != nil {
-		return "", err
-	}
+func FillContentPage(p ContentPage) (template.HTML, error) {
+	return fillContent(p, "content_page")
+}
 
-	return template.HTML(b.Bytes()), nil
+func FillContentTagPage(p ContentTagPage) (template.HTML, error) {
+	return fillContent(p, "content_tag")
+}
+
+func FillContentNote(p ContentNote) (template.HTML, error) {
+	return fillContent(p, "content_note")
 }

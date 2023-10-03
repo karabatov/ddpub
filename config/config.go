@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 
 	"github.com/karabatov/ddpub/config/internal/data"
 	"github.com/karabatov/ddpub/dd"
@@ -157,4 +158,20 @@ func loadTags(s []data.Tag, isValid dd.NoteIDValidFunc) (map[dd.Tag]Tag, error) 
 		tags[tag.Tag] = tag
 	}
 	return tags, nil
+}
+
+func (w *Website) TagsToPublished(t []dd.Tag) []Tag {
+	tags := []Tag{}
+
+	for _, tag := range t {
+		if p, ok := w.Tags[tag]; ok {
+			tags = append(tags, p)
+		}
+	}
+
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].Title < tags[j].Title
+	})
+
+	return tags
 }
