@@ -7,18 +7,22 @@ import (
 	"net/http"
 
 	"github.com/karabatov/ddpub/config"
+	"github.com/karabatov/ddpub/dd"
 	"github.com/karabatov/ddpub/layout"
 )
 
+type contentFunc func() (template.HTML, error)
+
 type Router struct {
-	routes map[string]http.HandlerFunc
+	routes   map[string]http.HandlerFunc
+	pageWith func(title string, content template.HTML) layout.Page
 }
 
 func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
 	menu := layoutMenu(w, s)
-	pageWith := func(title string, content template.HTML) layout.Page {
+	r.pageWith = func(title string, content template.HTML) layout.Page {
 		return layout.Page{
 			Language: "en-US",
 			Head: layout.Head{
@@ -45,18 +49,27 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	case config.HomepageKindNoteID:
 		id := w.Homepage.(config.HomepageNoteID).ID
 		note := s.pub[id]
-		rendered, err := htmlForPage(&note, s)
-		if err != nil {
-			return nil, err
-		}
-		if err := r.addHandlerForPage("/", pageWith(note.title, rendered)); err != nil {
+		if err := r.addHandlerFor("/", note.title, func() (template.HTML, error) {
+			return htmlForPage(&note, s)
+		}); err != nil {
 			return nil, err
 		}
 	case config.HomepageKindFeed:
-		return nil, fmt.Errorf("homepage feed not supported")
+		if err := r.addHandlerFor("/", w.Feed.Title, func() (template.HTML, error) {
+			return htmlForBuiltinFeed(w, s)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
 	// Add builtin pages.
+
+	// Builtin - feed.
+	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinFeed), w.Feed.Title, func() (template.HTML, error) {
+		return htmlForBuiltinFeed(w, s)
+	}); err != nil {
+		return nil, err
+	}
 
 	// Add pages from the menu.
 
@@ -69,7 +82,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 				return nil, err
 			}
 			url := w.URLForMenuNote(note.slug)
-			page := pageWith(note.title, rendered)
+			page := r.pageWith(note.title, rendered)
 			if err := r.addHandlerForPage(url, page); err != nil {
 				return nil, err
 			}
@@ -84,7 +97,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 			return nil, err
 		}
 		url := w.URLForTag(t)
-		page := pageWith(t.Title, rendered)
+		page := r.pageWith(t.Title, rendered)
 		if err := r.addHandlerForPage(url, page); err != nil {
 			return nil, err
 		}
@@ -98,7 +111,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 			return nil, err
 		}
 		url := w.URLForFeedNote(note.slug)
-		page := pageWith(note.title, rendered)
+		page := r.pageWith(note.title, rendered)
 		if err := r.addHandlerForPage(url, page); err != nil {
 			return nil, err
 		}
@@ -150,6 +163,21 @@ func (r *Router) addHandlerForPage(pattern string, page layout.Page) error {
 	return r.addHandler(pattern, h)
 }
 
+func (r *Router) addHandlerFor(url string, title string, content contentFunc) error {
+	rendered, err := content()
+	if err != nil {
+		return err
+	}
+
+	page := r.pageWith(title, rendered)
+
+	if err := r.addHandlerForPage(url, page); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Add header for file type?
 func handlerForFile(f []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -180,15 +208,9 @@ func htmlForPage(note *note, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, error) {
-	var tagContent template.HTML
-	if len(t.ID) > 0 {
-		note := s.pub[t.ID]
-		tagContent = template.HTML(note.content)
-	}
-
+func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteListItem {
 	notes := []layout.NoteListItem{}
-	for _, n := range s.notesForTag(t.Tag) {
+	for _, n := range s.notesForTag(t) {
 		nli := layout.NoteListItem{
 			ListItem: layout.ListItem{
 				Title: n.title,
@@ -198,11 +220,39 @@ func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, erro
 		}
 		notes = append(notes, nli)
 	}
+	return notes
+}
+
+func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
+	var content template.HTML
+	if len(w.Feed.ID) > 0 {
+		note := s.pub[w.Feed.ID]
+		content = template.HTML(note.content)
+	}
+
+	p := layout.BuiltinFeed{
+		Title:   w.Feed.Title,
+		Content: content,
+		Notes:   feedNotesListItems(w.Feed.Tag, w, s),
+	}
+	rendered, err := layout.FillBuiltinFeed(p)
+	if err != nil {
+		return "", err
+	}
+	return rendered, nil
+}
+
+func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, error) {
+	var content template.HTML
+	if len(t.ID) > 0 {
+		note := s.pub[t.ID]
+		content = template.HTML(note.content)
+	}
 
 	tp := layout.ContentTagPage{
 		Title:   t.Title,
-		Content: tagContent,
-		Notes:   notes,
+		Content: content,
+		Notes:   feedNotesListItems(t.Tag, w, s),
 	}
 	rendered, err := layout.FillContentTagPage(tp)
 	if err != nil {

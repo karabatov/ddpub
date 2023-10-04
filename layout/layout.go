@@ -38,6 +38,13 @@ type Page struct {
 	Footer   struct{}
 }
 
+// BuiltinFeed contains data to render the content of the builtin feed page.
+type BuiltinFeed struct {
+	Title   string
+	Content template.HTML
+	Notes   []NoteListItem
+}
+
 type ContentPage struct {
 	Title   string
 	Content template.HTML
@@ -73,7 +80,7 @@ func FillPage(p Page) ([]byte, error) {
 }
 
 type content interface {
-	ContentPage | ContentTagPage | ContentNote
+	BuiltinFeed | ContentPage | ContentTagPage | ContentNote
 }
 
 func fillContent[C content](content C, tName string) (template.HTML, error) {
@@ -83,6 +90,10 @@ func fillContent[C content](content C, tName string) (template.HTML, error) {
 	}
 
 	return template.HTML(b.Bytes()), nil
+}
+
+func FillBuiltinFeed(p BuiltinFeed) (template.HTML, error) {
+	return fillContent(p, "builtin_feed")
 }
 
 func FillContentPage(p ContentPage) (template.HTML, error) {
