@@ -19,6 +19,8 @@ var themeCSS []byte
 
 // Website represents the configuration of a website.
 type Website struct {
+	Title         string
+	Subtitle      string
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
 	IDFromFile    dd.IDFromFileFunc
@@ -41,6 +43,9 @@ func New(configDir string) (*Website, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	w.Title = cfg.Title
+	w.Subtitle = cfg.Subtitle
 
 	w.IsValidNoteID, err = makeNoteIDValidator(cfg.Notes.IDFormat)
 	if err != nil {

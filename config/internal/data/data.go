@@ -30,6 +30,8 @@ type Tag struct {
 // ConfigFile represents a TOML configuration file for a single website.
 type ConfigFile struct {
 	Address  string
+	Title    string
+	Subtitle string
 	Feed     Feed
 	Homepage Homepage
 	Menu     []Menu
