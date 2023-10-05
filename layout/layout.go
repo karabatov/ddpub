@@ -45,6 +45,12 @@ type BuiltinFeed struct {
 	Notes   []NoteListItem
 }
 
+// BuiltinTags contains data to render the content of the builtin tags page.
+type BuiltinTags struct {
+	Title string
+	Tags  []ListItem
+}
+
 type ContentPage struct {
 	Title   string
 	Content template.HTML
@@ -80,7 +86,7 @@ func FillPage(p Page) ([]byte, error) {
 }
 
 type content interface {
-	BuiltinFeed | ContentPage | ContentTagPage | ContentNote
+	BuiltinFeed | BuiltinTags | ContentPage | ContentTagPage | ContentNote
 }
 
 func fillContent[C content](content C, tName string) (template.HTML, error) {
@@ -94,6 +100,10 @@ func fillContent[C content](content C, tName string) (template.HTML, error) {
 
 func FillBuiltinFeed(p BuiltinFeed) (template.HTML, error) {
 	return fillContent(p, "builtin_feed")
+}
+
+func FillBuiltinTags(p BuiltinTags) (template.HTML, error) {
+	return fillContent(p, "builtin_tags")
 }
 
 func FillContentPage(p ContentPage) (template.HTML, error) {

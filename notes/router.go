@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
@@ -67,6 +68,13 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	// Builtin - feed.
 	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinFeed), w.Feed.Title, func() (template.HTML, error) {
 		return htmlForBuiltinFeed(w, s)
+	}); err != nil {
+		return nil, err
+	}
+
+	// Builtin - tags.
+	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinTags), "Tags", func() (template.HTML, error) {
+		return htmlForBuiltinTags(w)
 	}); err != nil {
 		return nil, err
 	}
@@ -223,6 +231,21 @@ func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteList
 	return notes
 }
 
+func tagsListItems(w *config.Website) []layout.ListItem {
+	tags := []layout.ListItem{}
+	for _, t := range w.Tags {
+		li := layout.ListItem{
+			Title: t.Title,
+			URL:   template.HTML(w.URLForTag(t)),
+		}
+		tags = append(tags, li)
+	}
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].Title < tags[j].Title
+	})
+	return tags
+}
+
 func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 	var content template.HTML
 	if len(w.Feed.ID) > 0 {
@@ -236,6 +259,18 @@ func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 		Notes:   feedNotesListItems(w.Feed.Tag, w, s),
 	}
 	rendered, err := layout.FillBuiltinFeed(p)
+	if err != nil {
+		return "", err
+	}
+	return rendered, nil
+}
+
+func htmlForBuiltinTags(w *config.Website) (template.HTML, error) {
+	p := layout.BuiltinTags{
+		Title: "Tags",
+		Tags:  tagsListItems(w),
+	}
+	rendered, err := layout.FillBuiltinTags(p)
 	if err != nil {
 		return "", err
 	}
