@@ -84,13 +84,9 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		switch m := m.(type) {
 		case config.MenuNoteID:
 			note := s.pub[m.ID]
-			rendered, err := htmlForPage(&note, s)
-			if err != nil {
-				return nil, err
-			}
-			url := w.URLForMenuNote(note.slug)
-			page := r.pageWith(note.title, rendered)
-			if err := r.addHandlerForPage(url, page); err != nil {
+			if err := r.addHandlerFor(w.URLForMenuNote(note.slug), note.title, func() (template.HTML, error) {
+				return htmlForPage(&note, s)
+			}); err != nil {
 				return nil, err
 			}
 		}
@@ -99,13 +95,9 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	// Add published tags.
 
 	for _, t := range w.Tags {
-		rendered, err := htmlForTag(&t, w, s)
-		if err != nil {
-			return nil, err
-		}
-		url := w.URLForTag(t)
-		page := r.pageWith(t.Title, rendered)
-		if err := r.addHandlerForPage(url, page); err != nil {
+		if err := r.addHandlerFor(w.URLForTag(t), t.Title, func() (template.HTML, error) {
+			return htmlForTag(&t, w, s)
+		}); err != nil {
 			return nil, err
 		}
 	}
@@ -113,13 +105,9 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	// Add published pages from the feed (if there are any).
 
 	for _, note := range s.notesForTag(w.Feed.Tag) {
-		rendered, err := htmlForNote(&note, w)
-		if err != nil {
-			return nil, err
-		}
-		url := w.URLForFeedNote(note.slug)
-		page := r.pageWith(note.title, rendered)
-		if err := r.addHandlerForPage(url, page); err != nil {
+		if err := r.addHandlerFor(w.URLForFeedNote(note.slug), note.title, func() (template.HTML, error) {
+			return htmlForNote(&note, w)
+		}); err != nil {
 			return nil, err
 		}
 	}
