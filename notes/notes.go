@@ -4,6 +4,7 @@ package notes
 import (
 	"bufio"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -334,40 +335,48 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 		mp := parser.NewWithExtensions(parserExtensions)
 		noteAst := mp.Parse(content)
 
+		// Modify the AST:
+		//  - Replace note links with URLs.
+		//  - Complain and quit if any linked notes are not published.
+		//  - Collect any links out to files (distinguish .md links from files?).
+		modifyLinks(noteAst, func(link *ast.Link) {
+			linkStr := string(link.Destination)
+			fmt.Println("Link:", linkStr)
+			u, err := url.Parse(linkStr)
+			if err != nil {
+				return
+			}
+			// Might be a note link.
+			id, ok := w.IDFromLink(u.Path)
+			if !ok {
+				// Some weird link, continue.
+				return
+			}
+
+			fmt.Println("OK, note ID:", id)
+			if linkedMeta, ok := s.meta[id]; ok {
+				var newLink string
+				if s.isFeedNote(w, id) {
+					newLink = w.URLForFeedNote(linkedMeta.slug)
+				} else {
+					newLink = w.URLForMenuNote(linkedMeta.slug)
+				}
+				link.Destination = []byte(newLink)
+			}
+
+			// Continue if the link is external.
+			if u.IsAbs() {
+				link.AdditionalAttributes = append(link.AdditionalAttributes, `target="_blank"`)
+				return
+			}
+
+			// Here we only care if the link is a file.
+		})
+
 		htmlFlags := html.CommonFlags | html.HrefTargetBlank
 		opts := html.RendererOptions{Flags: htmlFlags}
 		renderer := html.NewRenderer(opts)
 		noteContent := markdown.Render(noteAst, renderer)
-
-		/*
-			// Modify the AST:
-			//  - Replace note links with URLs.
-			//  - Complain and quit if any linked notes are not published.
-			//  - Collect any links out to files (distinguish .md links from files?).
-			modifyLinks(noteAst, func(link *ast.Link) {
-				linkStr := string(link.Destination)
-				fmt.Println("Link:", linkStr)
-				u, err := url.Parse(linkStr)
-				if err != nil {
-					// Not a URI, might be a note link.
-					id, ok := w.IDFromLink(linkStr)
-					if !ok {
-						// Some weird link, continue.
-						return
-					}
-
-					fmt.Println("OK, note ID:", id)
-				}
-
-				// Continue if the link is external.
-				if u.IsAbs() {
-					link.AdditionalAttributes = append(link.AdditionalAttributes, `target="_blank"`)
-					return
-				}
-
-				// Here we only care if the link is a file.
-			})
-		*/
 
 		p[id] = note{metadata: meta, doc: noteAst, content: noteContent}
 	}
@@ -390,4 +399,18 @@ func (s *Store) notesForTag(t dd.Tag) []note {
 	})
 
 	return n
+}
+
+func (s *Store) isFeedNote(w *config.Website, id dd.NoteID) bool {
+	if len(w.Feed.Tag) == 0 {
+		return false
+	}
+
+	for _, t := range s.meta[id].tags {
+		if t == w.Feed.Tag {
+			return true
+		}
+	}
+
+	return false
 }
