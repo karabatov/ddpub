@@ -31,6 +31,7 @@
    --backgroundColor: var(--white);
    --textColor: var(--black);
    --linkColor: var(--blue);
+   --footerColor: var(--grey);
  }
 
  body {
@@ -49,6 +50,27 @@
    border-bottom-style: solid;
  }
 
- header {
-   display: block;
+ header h1 {
+   font-size: 16px;
+   font-weight: bold;
+   line-height: 20px;
+   margin: 0;
+ }
+
+ header span {
+   font-size: 16px;
+ }
+
+ main, footer {
+   margin: 0 2% 40px 2%;
+   width: 96%;
+ }
+
+ footer span {
+   color: var(--footerColor);
+ }
+
+ footer span a {
+   color: var(--footerColor);
+   border-bottom-color: var(--footerColor);
  }
