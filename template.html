@@ -1,100 +1,78 @@
 <!DOCTYPE html>
-<!-- HTML Standard: https://html.spec.whatwg.org/multipage/ -->
-<html lang="en-GB">
+<html lang="en-US">
 
-  <head>
-
-    <title>A Book, Written: 50,000 Words in 50 Days - NorikiTech</title>
-
-    <!-- CSS goes here. -->
-    <style>
-    </style>
-
+<head>
+    <title>A case for a new blog engine</title>
+    <link rel="stylesheet" type="text/css" href="config/theme.css">
     <!-- Reload page when refocusing. -->
     <script>window.addEventListener('focus', ()=>{document.location = document.location})</script>
+</head>
 
-  </head>
 
-  <body>
+<body>
 
-    <header>
-      <h1>NorikiTech</h1>
-      <span>Chaotic Software Development™</span>
-    </header>
+<header>
+    <h1><a href="/">DDPub</a></h1>
+    <span>Note multiplexer</span>
+</header>
 
-    <main>
-      <article>
-        <h2>A Book, Written: 50,000 Words in 50 Days</h2>
+<main>
 
-        <div class="post-meta">
-          <span><i>📅</i>&nbsp;Jan 20, 2021</span>
-        </div>
+<article>
+    <h2>A case for a new blog engine</h2>
+    <div class="post-meta">
+    <span>Tags:</span><ul>
+        <li><a href="/tags/blog/">Blog</a></li>
+    </ul>
+    </div>
+    <div class="post-content"><p>Bear with me here. I&rsquo;m trying to convince myself that it&rsquo;s worth it to write my own blog engine.</p>
 
-        <div class="post-content">
-          <p>I created a blank document on November 2<sup>nd</sup> and published my book “<a href="https://gum.co/junior-to-senior/" target="_blank">Junior to Senior: How to Level Up as a Software Engineer</a>” on December 21<sup>st</sup> 2020, exactly 50 days later. This initial version of the book is 52,660 words (the PDF file is 135 pages).</p>
-          <p>Here’s why and how I did it.</p>
-          <h2 id="why-write-a-book">Why write a book?</h2>
-          <p>Writing a book is a rite of passage. I was always a hoarder of knowledge and rarely shared what I had collected, except for writing documentation and guides at work, and teaching people in person.</p>
-          <p>As is the case with most developers, my personal blog has been sitting almost empty for years: why share something if it’s you who has a problem, and you are the one solving it? The effort to write up a solution in a linear, organized way seemed excessive; I had my notes and they were enough.</p>
-          <p>It was supposed to go like this:</p>
-          <p><img src="https://norikitech.com/posts/a-book-written/files/202101201313/lateral_move.png" alt="“Lateral Move” cover and table of contents"></p>
-          <p>Notice the subtitle: “The bored software developer’s guide to researching, learning and getting excited about new tech.” There is a large crossover with the contents of “Junior to Senior,” but when I started writing the introduction I realized that you had to be in a very specific situation for the advice to be useful—and what I suggested didn’t suit many people either. I would be better off not following this advice myself, as I mentioned in the section <em>Help your company teach you</em> of “Junior to Senior”:</p>
-          <blockquote>
-            <p>Earlier in my career, I have left companies over lack of learning, but looking back, I understand that I could have had more learning freedom in a familiar project and in a company that trusted me.</p>
-          </blockquote>
-          <p>I scrapped everything and started again.</p>
-          <h3 id="junior-to-senior">“Junior to Senior”</h3>
-          <p><em>(begin excerpt)</em></p>
-          <p>As I began writing this book, I knew that I would face strong resistance (because “write a book” is the vaguest todo item in the world), so I used every trick that I knew to help myself write every day:</p>
-          <ul>
-            <li><strong>Make other people expect your work.</strong> Probably, the best thing I did was to offer the book for preorder with a set release date. I’m very serious about my promises to other people (Rick Astley starts playing). Just the thought that I’ve promised to do something by some day helps me sit down and do the work. If you only do something for yourself, you can easily make an excuse and avoid working, but you can’t go back on your promise and make up an excuse for other people. At work, I know my teammates expect and rely on the tasks I do, so I try to never let them down. Reputation beats procrastination.</li>
-            <li><strong>Remove distractions, at least in the beginning.</strong> Often the bump that we need to cross to begin working on a big task is relatively small, but when there’s a distraction available without friction, we choose that instead. I write on a very slow Linux computer that can’t play music, has no internet, and my phone is on silent, face down, in another room. There is “fog” in my head when I sit down to write, and I sit there and stare at the screen for ten minutes. But the fog is me thinking about how to start and what I want to say in the section. I need those ten minutes of initial concentration to break through the resistance of the task. If I had a distraction, I would probably take it. What also helps is having a notebook that you keep in front of you when starting, so that you can write down what you want to do about the task first, like a small todo list. I find that after I start, I can stay in work mode until I’m done, even through small distractions.</li>
-          </ul>
-          <p><em>(end excerpt)</em></p>
-          <p>For generating the PDF, I started with <a href="https://gitlab.com/pianomanfrazier/pandoc-markdown-book" target="_blank">this code</a> and modified it for my needs, while still using the <a href="https://github.com/Wandmalfarbe/pandoc-latex-template" target="_blank">Eisvogel</a> template. I also used <a href="https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/" target="_blank">PDFtk</a> to attach the cover after compiling the PDF. The generation script is as follows:</p>
-          <pre><code>
-pandoc --pdf-engine=latexmk --template=./templates/eisvogel.latex --highlight-style tango --shift-heading-level-by=-1 --number-sections --top-level-division=chapter -o build/text.pdf src/title.txt src/01.md
+<p>As a clever man said:
+<img src="A%20case%20for%20a%20new%20blog%20engine/build-another-blog.png" alt="" /></p>
 
-pdftk cover.pdf build/text.pdf cat output build/junior-to-senior.pdf
-          </code></pre>
-          <p>LaTeX (required by Pandoc for the PDF conversion) was <a href="https://twitter.com/karabatov/status/1340222431361978374" target="_blank">a little tricky</a> to set up, but finally I went with <a href="https://miktex.org/" target="_blank">MiKTeX</a> and it went smoothly.</p>
-          <p>A friend told me that I was the first person they knew who decided to write a book and wrote it. That’s worth something?</p>
-        </div>
-      </article>
+<p>In the past few years I&rsquo;ve been trying to store my writing locally, but writing in public is powerful. It is excruciating to keep writing on the web (especially with inline images, like here) up to date with local notes. And “local” here doesn&rsquo;t mean “stored in a repo”, like for a static site, because a repo is separate from where I&rsquo;m writing: it has been Evernote, then Notational Velocity, then nvALT, now Bear, and soon, hopefully, my own open-source project.</p>
 
-      <aside>
-        <ul>    
-            <li>
-                <a href="/posts/">Posts</a>
-            </li>
-            <li>
-                <a href="https://gum.co/junior-to-senior/">“Junior to Senior” 📖</a>
-            </li>
-            <li>
-                <a href="/about/">About</a>
-            </li>
-            <li>
-                <a href=""> </a>
-            </li>
-            <li>
-                <a href="/search/">Search 🔍</a>
-            </li>
-            <li>
-                <a href=""> </a>
-            </li>
-            <li>
-                <a href="/index.xml">RSS</a>
-            </li>
-        </ul>
-      </aside>
-    </main>
+<p>I offer a new paradigm: own your writing, publish everywhere. Now it&rsquo;s usually backwards, you&rsquo;re writing on the internet somewhere and then maybe, if the service lets you, export what you&rsquo;ve written.</p>
 
-    <footer>
-      <span>&copy; 2020-2023 <a href="https://norikitech.com">Yuri Karabatov</a>
-        ∴ Powered by <a href="https://ddpub.org" target="_blank">DDPub</a>
-      </span>
-    </footer>
-    
-  </body>
+<p>What does this have to do with a blog engine? It&rsquo;s a start, where the CMS, or the publishing platform, will only be a container for published writing, not its master location.</p>
+
+<p>My current engine, Aegea, is woefully inadequate due to it being closed-source. And Wordpress and the like are either too cumbersome to setup the way I need (I have a small, but <em>opinionated</em> (as they say) set of necessary features) or don&rsquo;t have what I need at all.</p>
+
+<p>A static site would fit the bill but it doesn&rsquo;t have comments, and no, Disqus won&rsquo;t cut it.</p>
+
+<p>In the end, I <em>want</em> to write one. I&rsquo;ve been learning some Go and this is a great opportunity to write a medium-sized web-service, which I have never done before. And it&rsquo;s very motivating because I want to keep my writing published. I&rsquo;m quite sure a minimal version can be done in a week, so that I can migrate to it, and its incompleteness should motivate me to work on it further.</p>
+
+<p>I have already compiled a minimal list of features to implement first and it&rsquo;s manageable, so there&rsquo;s hope.</p>
+
+<p>Can&rsquo;t wait to share what I come up with.</p>
+
+<p><em>Also published on <a href="https://yurikarabatov.com/en/all/a-case-for-a-new-blog-engine/" target="_blank">yurikarabatov.com</a>.</em></p>
+</div>
+</article>
+
+
+
+<aside><ul>
+
+<li><a href="/tags/docs/">Documentation</a></li>
+
+<li><a href="/tags/blog/">Blog</a></li>
+
+<li><a href="https://github.com/karabatov/ddpub">GitHub</a></li>
+
+<li><a href="/202309061921/">About</a></li>
+
+<li><a href="/changelog/">Changelog</a></li>
+
+</ul></aside>
+
+
+</main>
+
+<footer>
+    <span>∴ Powered by <a href="https://ddpub.org" target="_blank">DDPub</a></span>
+</footer>
+
+</body>
 
 </html>

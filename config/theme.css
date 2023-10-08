@@ -1,11 +1,53 @@
+/* https://personal.sron.nl/~pault/ */
 :root {
-    --black: #000;
+   --white: #fff;
+   --black: #000;
+   --blue: #47a;
+   --cyan: #6ce;
+   --green: #283;
+   --yellow: #cb4;
+   --red: #e67;
+   --purple: #a37;
+   --grey: #bbb;
+
+   --contrast-yellow: #da3;
+   --contrast-red: #b56;
+   --contrast-blue: #048;
+
+   --pale-blue: #bce;
+   --pale-cyan: #cef;
+   --pale-green: #cda;
+   --pale-yellow: #eeb;
+   --pale-red: #fcc;
+   --pale-grey: #ddd;
+
+   --dark-blue: #225;
+   --dark-cyan: #255;
+   --dark-green: #252;
+   --dark-yellow: #663;
+   --dark-red: #633;
+   --dark-grey: #555;
+
+   --backgroundColor: var(--white);
+   --textColor: var(--black);
+   --linkColor: var(--blue);
+ }
+
+ body {
+   margin: 0;
+   padding: 0;
+   background-color: var(--backgroundColor);
+   font-size: 19px;
  }
  
- a {
-    color: var(--black);
+ a, a:visited {
+   color: var(--linkColor);
+   text-decoration: none;
+   border-bottom-color: var(--linkColor);
+   border-bottom-width: 1px;
+   border-bottom-style: solid;
  }
- 
- p {
-    color: var(--black);
+
+ header {
+   display: block;
  }
