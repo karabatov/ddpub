@@ -38,6 +38,7 @@
    padding: 0;
    background-color: var(--backgroundColor);
    font-size: 19px;
+   color: var(--textColor);
  }
  
  a, a:visited {
