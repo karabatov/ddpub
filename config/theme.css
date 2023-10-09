@@ -32,45 +32,64 @@
    --textColor: var(--black);
    --linkColor: var(--blue);
    --footerColor: var(--grey);
- }
+}
 
- body {
+body {
    margin: 0;
    padding: 0;
    background-color: var(--backgroundColor);
    font-size: 19px;
    color: var(--textColor);
- }
+}
  
- a, a:visited {
+a, a:visited {
    color: var(--linkColor);
    text-decoration: none;
    border-bottom-color: var(--linkColor);
    border-bottom-width: 1px;
    border-bottom-style: solid;
- }
+}
 
- header h1 {
+header h1 {
+   display: inline-block;
    font-size: 16px;
    font-weight: bold;
    line-height: 20px;
    margin: 0;
- }
+}
 
- header span {
+.site-description {
    font-size: 16px;
- }
+}
 
- main, footer {
-   margin: 0 2% 40px 2%;
+.menu {
+   display: inline-block;
+   font-size: 16px;
+   line-height: 20px;
+   margin: 0;
+}
+
+.menu ul {
+   display: inline-block;
+   margin: 0 0 0 20px;
+   padding: 0;
+}
+
+.menu ul li {
+   display: inline-block;
+   margin-right: 4px;
+}
+
+header, main, footer {
+   margin: 10px 2% 30px 2%;
    width: 96%;
- }
+}
 
- footer span {
+footer span {
    color: var(--footerColor);
- }
+}
 
- footer span a {
+footer span a {
    color: var(--footerColor);
    border-bottom-color: var(--footerColor);
- }
+}
