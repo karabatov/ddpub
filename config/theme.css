@@ -38,7 +38,7 @@ body {
    margin: 0;
    padding: 0;
    background-color: var(--backgroundColor);
-   font-size: 19px;
+   font-size: 19pt;
    color: var(--textColor);
 }
  
@@ -46,38 +46,38 @@ a, a:visited {
    color: var(--linkColor);
    text-decoration: none;
    border-bottom-color: var(--linkColor);
-   border-bottom-width: 1px;
+   border-bottom-width: 1pt;
    border-bottom-style: solid;
 }
 
 header h1 {
    display: inline-block;
-   font-size: 16px;
+   font-size: 16pt;
    font-weight: bold;
-   line-height: 20px;
+   line-height: 20pt;
    margin: 0;
 }
 
 .menu {
    display: inline-block;
-   font-size: 16px;
-   line-height: 20px;
+   font-size: 16pt;
+   line-height: 20pt;
    margin: 0;
 }
 
 .menu ul {
    display: inline-block;
-   margin: 0 0 0 20px;
+   margin: 0 0 0 20pt;
    padding: 0;
 }
 
 .menu ul li {
    display: inline-block;
-   margin-right: 4px;
+   margin-right: 4pt;
 }
 
 header, main, footer {
-   margin: 10px 2% 30px 2%;
+   margin: 10pt 2% 30pt 2%;
    width: 96%;
 }
 
