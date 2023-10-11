@@ -30,17 +30,16 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 				ThemeCSSURL: template.HTML(w.URLForThemeCSS()),
 			},
 			Header: layout.Header{
-				Title:    w.Title,
-				Subtitle: w.Subtitle,
+				Title: w.Title,
+				Menu:  menu,
 			},
 			Content: content,
-			Menu:    menu,
 			Footer:  struct{}{},
 		}
 	}
 
 	// Add theme.css.
-	if err := r.addHandler(w.URLForThemeCSS(), handlerForFile(w.ThemeCSS)); err != nil {
+	if err := r.addHandler(w.URLForThemeCSS(), handlerForFile(w.ThemeCSS, "text/css")); err != nil {
 		return nil, err
 	}
 
@@ -174,8 +173,9 @@ func (r *Router) addHandlerFor(url string, title string, content contentFunc) er
 }
 
 // Add header for file type?
-func handlerForFile(f []byte) http.HandlerFunc {
+func handlerForFile(f []byte, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", contentType)
 		w.Write(f)
 	}
 }

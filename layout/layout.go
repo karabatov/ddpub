@@ -19,8 +19,8 @@ type Head struct {
 }
 
 type Header struct {
-	Title    string
-	Subtitle string
+	Title string
+	Menu  []ListItem
 }
 
 // ListItem represents an item in the list with a link and title.
@@ -34,7 +34,6 @@ type Page struct {
 	Head     Head
 	Header   Header
 	Content  template.HTML
-	Menu     []ListItem
 	Footer   struct{}
 }
 
@@ -71,6 +70,7 @@ type ContentTagPage struct {
 
 type ContentNote struct {
 	Title   string
+	Date    string
 	Tags    []ListItem
 	Content template.HTML
 }

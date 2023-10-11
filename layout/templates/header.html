@@ -1,6 +1,6 @@
 {{define "header"}}
 <header>
-    <h1><a href="/">{{.Title}}</a></h1>
-    <span>{{.Subtitle}}</span>
+<h1><a href="/">{{.Title}}</a></h1>
+{{template "menu" .Menu}}
 </header>
 {{end}}

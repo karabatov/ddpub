@@ -1,11 +1,15 @@
 {{define "content_tag"}}
 <article>
-    <h2>{{.Title}}</h2>
-    {{if .Content}}<div class="post-content">{{.Content}}</div>{{end}}
-    {{if .Notes}}<div class="post-list"><ul>
-    {{range .Notes}}
-    <li><span>{{.Date}}</span>&nbsp;<a href="{{.URL}}">{{.Title}}</a></li>
-    {{end}}
-    </ul></div>{{end}}
+<h2>{{.Title}}</h2>
+{{if .Content}}<div class="post-content">
+{{.Content}}
+</div>
+{{end}}
+{{if .Notes}}
+<div class="post-list"><ul>
+{{range .Notes}}
+<li><span>{{.Date}}</span>&nbsp;<a href="{{.URL}}">{{.Title}}</a></li>
+{{end}}
+</ul></div>{{end}}
 </article>
 {{end}}

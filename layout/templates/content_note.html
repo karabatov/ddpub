@@ -1,11 +1,10 @@
 {{define "content_note"}}
 <article>
-    <h2>{{.Title}}</h2>
-    <div class="post-meta">
-    {{if .Tags}}<span>Tags:</span><ul>
-        {{range .Tags}}<li><a href="{{.URL}}">{{.Title}}</a></li>{{end}}
-    </ul>{{end}}
-    </div>
-    <div class="post-content">{{.Content}}</div>
+<h2>{{.Title}}</h2>
+<div class="post-content">{{.Content}}</div>
+<div class="post-meta">
+{{if .Tags}}<span title="Date here">{{.Date}}</span> {{range .Tags}} &nbsp; <a href="{{.URL}}">{{.Title}}</a>{{end}}
+{{end}}
+</div>
 </article>
 {{end}}
