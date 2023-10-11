@@ -38,7 +38,7 @@ body {
    margin: 0;
    padding: 0;
    background-color: var(--backgroundColor);
-   font-size: 19pt;
+   font-size: 16pt;
    color: var(--textColor);
 }
  
@@ -79,6 +79,11 @@ header h1 {
 header, main, footer {
    margin: 10pt 2% 30pt 2%;
    width: 96%;
+}
+
+.post-meta {
+   font-size: 12pt;
+   line-height: 16pt;
 }
 
 footer span {
