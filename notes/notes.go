@@ -4,6 +4,7 @@ package notes
 import (
 	"bufio"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -53,14 +54,13 @@ type note struct {
 	content []byte
 }
 
-// Link to a file.
-type link string
-
 type file struct {
 	// Link in the note.
-	link link
+	link string
 	// Path on the file system.
 	path string
+	// Content type.
+	contentType string
 }
 
 // Store captures the data necessary to publish the notes.
@@ -74,7 +74,7 @@ type Store struct {
 	// Published notes.
 	pub map[dd.NoteID]note
 	// Files found while scanning the note contents.
-	files map[link]file
+	files map[string]file
 }
 
 func NewStore(w *config.Website, notesDir string) (*Store, error) {
@@ -302,10 +302,17 @@ func readContent(filename, directory string) ([]byte, error) {
 }
 
 // AST modification: https://github.com/gomarkdown/markdown/blob/master/examples/modify_ast.go
-func modifyLinks(noteAst ast.Node, modify func(*ast.Link)) {
+func modifyContent(noteAst ast.Node, modifyLink func(*ast.Link), modifyImage func(*ast.Image)) {
 	ast.WalkFunc(noteAst, func(node ast.Node, entering bool) ast.WalkStatus {
-		if link, ok := node.(*ast.Link); ok && entering {
-			modify(link)
+		if !entering {
+			return ast.GoToNext
+		}
+
+		switch typed := node.(type) {
+		case *ast.Link:
+			modifyLink(typed)
+		case *ast.Image:
+			modifyImage(typed)
 		}
 		return ast.GoToNext
 	})
@@ -339,7 +346,7 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 		//  - Replace note links with URLs.
 		//  - Complain and quit if any linked notes are not published.
 		//  - Collect any links out to files (distinguish .md links from files?).
-		modifyLinks(noteAst, func(link *ast.Link) {
+		modifyContent(noteAst, func(link *ast.Link) {
 			linkStr := string(link.Destination)
 			fmt.Println("Link:", linkStr)
 			u, err := url.Parse(linkStr)
@@ -371,6 +378,16 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 			}
 
 			// Here we only care if the link is a file.
+			if newFile, err := tryFileFromLink(linkStr, notesDir, w); err == nil {
+				s.files[newFile.link] = newFile
+				link.Destination = []byte(newFile.link)
+			}
+		}, func(image *ast.Image) {
+			linkStr := string(image.Destination)
+			if newFile, err := tryFileFromLink(linkStr, notesDir, w); err == nil {
+				s.files[newFile.link] = newFile
+				image.Destination = []byte(newFile.link)
+			}
 		})
 
 		htmlFlags := html.CommonFlags | html.HrefTargetBlank
@@ -413,4 +430,41 @@ func (s *Store) isFeedNote(w *config.Website, id dd.NoteID) bool {
 	}
 
 	return false
+}
+
+func fileContentType(f *os.File) string {
+	buffer := make([]byte, 512)
+
+	_, err := f.Read(buffer)
+	if err != nil {
+		return "application/octet-stream"
+	}
+
+	return http.DetectContentType(buffer)
+}
+
+func tryFileFromLink(link string, notesDir string, w *config.Website) (file, error) {
+	u, err := url.Parse(link)
+	if err != nil {
+		return file{}, err
+	}
+
+	// Not a local file if it's an absolute URL.
+	if u.IsAbs() {
+		return file{}, fmt.Errorf("not a file link")
+	}
+
+	path := filepath.Join(notesDir, u.Path)
+	f, err := os.Open(path)
+	if err != nil {
+		return file{}, err
+	}
+	defer f.Close()
+
+	newLink := w.URLForFile(path)
+	return file{
+		link:        newLink,
+		path:        path,
+		contentType: fileContentType(f),
+	}, nil
 }

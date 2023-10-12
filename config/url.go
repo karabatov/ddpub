@@ -1,7 +1,9 @@
 package config
 
 import (
+	"crypto/sha1"
 	"fmt"
+	"path/filepath"
 
 	"github.com/karabatov/ddpub/dd"
 )
@@ -39,4 +41,10 @@ func (w Website) URLForFeedNote(slug string) string {
 
 func (w Website) URLForThemeCSS() string {
 	return "/" + theme
+}
+
+func (w Website) URLForFile(file string) string {
+	h := sha1.New()
+	h.Write([]byte(file))
+	return fmt.Sprintf("/files/%s%s", h.Sum(nil), filepath.Ext(file))
 }
