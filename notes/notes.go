@@ -96,6 +96,8 @@ func NewStore(w *config.Website, notesDir string) (*Store, error) {
 
 	s.byTag = makeNotesByTag(s.meta)
 
+	s.files = make(map[string]file)
+
 	if err := s.readExportedContent(w, notesDir); err != nil {
 		return nil, err
 	}

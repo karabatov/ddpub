@@ -2,6 +2,7 @@ package config
 
 import (
 	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"path/filepath"
 
@@ -46,5 +47,7 @@ func (w Website) URLForThemeCSS() string {
 func (w Website) URLForFile(file string) string {
 	h := sha1.New()
 	h.Write([]byte(file))
-	return fmt.Sprintf("/files/%s%s", h.Sum(nil), filepath.Ext(file))
+	filename := hex.EncodeToString(h.Sum(nil))
+	extension := filepath.Ext(file)
+	return fmt.Sprintf("/files/%s%s", filename, extension)
 }
