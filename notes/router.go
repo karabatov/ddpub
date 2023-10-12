@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
@@ -112,6 +113,11 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	}
 
 	// Add files.
+	for _, f := range s.files {
+		if err := r.addHandler(f.link, handlerForLocalFile(f)); err != nil {
+			return nil, err
+		}
+	}
 
 	return &r, nil
 }
@@ -172,11 +178,21 @@ func (r *Router) addHandlerFor(url string, title string, content contentFunc) er
 	return nil
 }
 
-// Add header for file type?
 func handlerForFile(f []byte, contentType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", contentType)
 		w.Write(f)
+	}
+}
+
+func handlerForLocalFile(f file) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", f.contentType)
+		if r, err := os.ReadFile(f.path); err == nil {
+			w.Write(r)
+		} else {
+			w.Write([]byte{})
+		}
 	}
 }
 
