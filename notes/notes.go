@@ -350,7 +350,6 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 		//  - Collect any links out to files (distinguish .md links from files?).
 		modifyContent(noteAst, func(link *ast.Link) {
 			linkStr := string(link.Destination)
-			fmt.Println("Link:", linkStr)
 			u, err := url.Parse(linkStr)
 			if err != nil {
 				return
@@ -362,7 +361,6 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 				return
 			}
 
-			fmt.Println("OK, note ID:", id)
 			if linkedMeta, ok := s.meta[id]; ok {
 				var newLink string
 				if s.isFeedNote(w, id) {
