@@ -12,6 +12,10 @@ type Feed struct {
 	Title     string
 }
 
+type Pages struct {
+	Tag string
+}
+
 type Menu struct {
 	Title   string
 	Builtin string
@@ -33,6 +37,7 @@ type ConfigFile struct {
 	Title    string
 	Subtitle string
 	Feed     Feed
+	Pages    Pages
 	Homepage Homepage
 	Menu     []Menu
 	Notes    struct {

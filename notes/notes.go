@@ -268,7 +268,14 @@ func notesForExport(w *config.Website, byTag map[dd.Tag][]dd.NoteID) map[dd.Note
 		e[h.ID] = struct{}{}
 	}
 
-	// Finally, add all notes with a publish tag from [[feed]] if it's there.
+	// Fifth, add all notes with a publish tag from [pages] if it's there.
+	if len(w.Pages.Tag) > 0 {
+		for _, id := range byTag[w.Pages.Tag] {
+			e[id] = struct{}{}
+		}
+	}
+
+	// Finally, add all notes with a publish tag from [feed] if it's there.
 	if len(w.Feed.Tag) > 0 {
 		for _, id := range byTag[w.Feed.Tag] {
 			e[id] = struct{}{}

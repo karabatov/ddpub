@@ -28,6 +28,7 @@ type Website struct {
 	Tags          map[dd.Tag]Tag
 	Menu          []Menu
 	Feed          Feed
+	Pages         Pages
 	ThemeCSS      []byte
 }
 
@@ -84,6 +85,8 @@ func New(configDir string) (*Website, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	w.Pages.Tag = dd.Tag(cfg.Pages.Tag)
 
 	w.ThemeCSS = themeCSS
 
