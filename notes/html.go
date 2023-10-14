@@ -9,7 +9,7 @@ import (
 	"github.com/karabatov/ddpub/layout"
 )
 
-func htmlForPage(note *note, s *Store) (template.HTML, error) {
+func htmlForPage(note *noteContent, s *Store) (template.HTML, error) {
 	cp := layout.ContentPage{
 		Title:   note.title,
 		Content: template.HTML(note.content),
@@ -54,7 +54,7 @@ func tagsListItems(w *config.Website) []layout.ListItem {
 func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 	var content template.HTML
 	if len(w.Feed.ID) > 0 {
-		note := s.pub[w.Feed.ID]
+		note := s.noteContent[w.Feed.ID]
 		content = template.HTML(note.content)
 	}
 
@@ -85,7 +85,7 @@ func htmlForBuiltinTags(w *config.Website) (template.HTML, error) {
 func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, error) {
 	var content template.HTML
 	if len(t.ID) > 0 {
-		note := s.pub[t.ID]
+		note := s.noteContent[t.ID]
 		content = template.HTML(note.content)
 	}
 
@@ -101,7 +101,7 @@ func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, erro
 	return rendered, nil
 }
 
-func htmlForNote(note *note, w *config.Website) (template.HTML, error) {
+func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 	tags := []layout.ListItem{}
 	for _, t := range w.TagsToPublished(note.tags) {
 		tags = append(tags, layout.ListItem{

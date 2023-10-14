@@ -47,7 +47,21 @@ type metadata struct {
 	language dd.Language
 }
 
-type note struct {
+type publishTarget int
+
+const (
+	publishTargetBuiltin publishTarget = iota + 1
+	publishTargetFeed
+	publishTargetPage
+	publishTargetTag
+)
+
+type publishedNote struct {
+	id     dd.NoteID
+	target publishTarget
+}
+
+type noteContent struct {
 	metadata
 
 	doc     ast.Node
@@ -72,7 +86,9 @@ type Store struct {
 	// Notes grouped by tag.
 	byTag map[dd.Tag][]dd.NoteID
 	// Published notes.
-	pub map[dd.NoteID]note
+	pub []publishedNote
+	// Published notes' content.
+	noteContent map[dd.NoteID]noteContent
 	// Files found while scanning the note contents.
 	files map[string]file
 }
@@ -97,6 +113,8 @@ func NewStore(w *config.Website, notesDir string) (*Store, error) {
 	s.byTag = makeNotesByTag(s.meta)
 
 	s.files = make(map[string]file)
+
+	s.pub = notesForExport(w, s.byTag)
 
 	if err := s.readExportedContent(w, notesDir); err != nil {
 		return nil, err
@@ -241,44 +259,52 @@ func tagsFromLine(line string) []dd.Tag {
 
 // Build the complete list of *known* note IDs to be published before parsing).
 // They are all valid, verified and exist in `notes`.
-func notesForExport(w *config.Website, byTag map[dd.Tag][]dd.NoteID) map[dd.NoteID]struct{} {
-	e := map[dd.NoteID]struct{}{}
+func notesForExport(w *config.Website, byTag map[dd.Tag][]dd.NoteID) []publishedNote {
+	e := []publishedNote{}
 
-	// First, add all named notes from [[menu]] to the list.
-	for _, m := range w.Menu {
-		if mid, ok := m.(config.MenuNoteID); ok {
-			e[mid.ID] = struct{}{}
-		}
+	// Add the homepage note ID if it's there.
+	if h, ok := w.Homepage.(config.HomepageNoteID); ok {
+		e = append(e, publishedNote{
+			id:     h.ID,
+			target: publishTargetBuiltin,
+		})
 	}
 
-	// Second, add all named notes from [[tags]] to the list.
+	// Add the feed's note ID if it's there.
+	if len(w.Feed.ID) > 0 {
+		e = append(e, publishedNote{
+			id:     w.Feed.ID,
+			target: publishTargetBuiltin,
+		})
+	}
+
+	// Add all named notes from [[tags]] to the list.
 	for _, t := range w.Tags {
 		if len(t.ID) > 0 {
-			e[t.ID] = struct{}{}
+			e = append(e, publishedNote{
+				id:     t.ID,
+				target: publishTargetTag,
+			})
 		}
 	}
 
-	// Third, add the feed's note ID if it's there.
-	if len(w.Feed.ID) > 0 {
-		e[w.Feed.ID] = struct{}{}
-	}
-
-	// Fourth, add the homepage note ID if it's there.
-	if h, ok := w.Homepage.(config.HomepageNoteID); ok {
-		e[h.ID] = struct{}{}
-	}
-
-	// Fifth, add all notes with a publish tag from [pages] if it's there.
+	// Add all notes with a publish tag from [pages] if it's there.
 	if len(w.Pages.Tag) > 0 {
 		for _, id := range byTag[w.Pages.Tag] {
-			e[id] = struct{}{}
+			e = append(e, publishedNote{
+				id:     id,
+				target: publishTargetPage,
+			})
 		}
 	}
 
-	// Finally, add all notes with a publish tag from [feed] if it's there.
+	// Add all notes with a publish tag from [feed] if it's there.
 	if len(w.Feed.Tag) > 0 {
 		for _, id := range byTag[w.Feed.Tag] {
-			e[id] = struct{}{}
+			e = append(e, publishedNote{
+				id:     id,
+				target: publishTargetFeed,
+			})
 		}
 	}
 
@@ -331,19 +357,23 @@ func modifyContent(noteAst ast.Node, modifyLink func(*ast.Link), modifyImage fun
 // to start after the first blank line. So content is everything between
 // the first blank line and EOF.
 func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
-	p := map[dd.NoteID]note{}
+	p := map[dd.NoteID]noteContent{}
 
 	// Set up markdown parser.
 	parserExtensions := parser.Tables | parser.FencedCode | parser.Strikethrough
 
-	exportedNotes := notesForExport(w, s.byTag)
-
 	// Load note content.
-	for id := range exportedNotes {
-		meta := s.meta[id]
+	for _, pubNote := range s.pub {
+		meta := s.meta[pubNote.id]
+
+		// Skip if the content has already been read.
+		if _, ok := p[pubNote.id]; ok {
+			continue
+		}
+
 		content, err := readContent(meta.filename, notesDir)
 		if err != nil {
-			return fmt.Errorf("failed to load note with ID '%s': %v", id, err)
+			return fmt.Errorf("failed to load note with ID '%s': %v", pubNote.id, err)
 		}
 
 		// Parse note content with markdown parser.
@@ -369,12 +399,13 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 			}
 
 			if linkedMeta, ok := s.meta[id]; ok {
-				var newLink string
+				newLink := linkStr
 				if s.isFeedNote(w, id) {
 					newLink = w.URLForFeedNote(linkedMeta.slug)
-				} else {
-					newLink = w.URLForMenuNote(linkedMeta.slug)
+				} else if s.isPageNote(w, id) {
+					newLink = w.URLForPageNote(linkedMeta.slug)
 				}
+				// Identifying tags by note ids is guessing so we don't do it.
 				link.Destination = []byte(newLink)
 			}
 
@@ -400,20 +431,20 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 		htmlFlags := html.CommonFlags | html.HrefTargetBlank
 		opts := html.RendererOptions{Flags: htmlFlags}
 		renderer := html.NewRenderer(opts)
-		noteContent := markdown.Render(noteAst, renderer)
+		contentRendered := markdown.Render(noteAst, renderer)
 
-		p[id] = note{metadata: meta, doc: noteAst, content: noteContent}
+		p[pubNote.id] = noteContent{metadata: meta, doc: noteAst, content: contentRendered}
 	}
 
-	s.pub = p
+	s.noteContent = p
 	return nil
 }
 
-func (s *Store) notesForTag(t dd.Tag) []note {
-	n := []note{}
+func (s *Store) notesForTag(t dd.Tag) []noteContent {
+	n := []noteContent{}
 
 	for _, id := range s.byTag[t] {
-		if p, ok := s.pub[id]; ok {
+		if p, ok := s.noteContent[id]; ok {
 			n = append(n, p)
 		}
 	}
@@ -432,6 +463,20 @@ func (s *Store) isFeedNote(w *config.Website, id dd.NoteID) bool {
 
 	for _, t := range s.meta[id].tags {
 		if t == w.Feed.Tag {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *Store) isPageNote(w *config.Website, id dd.NoteID) bool {
+	if len(w.Pages.Tag) == 0 {
+		return false
+	}
+
+	for _, t := range s.meta[id].tags {
+		if t == w.Pages.Tag {
 			return true
 		}
 	}

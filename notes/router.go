@@ -48,7 +48,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	switch w.Homepage.Kind() {
 	case config.HomepageKindNoteID:
 		id := w.Homepage.(config.HomepageNoteID).ID
-		note := s.pub[id]
+		note := s.noteContent[id]
 		if err := r.addHandlerFor("/", note.title, func() (template.HTML, error) {
 			return htmlForPage(&note, s)
 		}); err != nil {
@@ -83,7 +83,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	for _, m := range w.Menu {
 		switch m := m.(type) {
 		case config.MenuNoteID:
-			note := s.pub[m.ID]
+			note := s.noteContent[m.ID]
 			if err := r.addHandlerFor(w.URLForMenuNote(note.slug), note.title, func() (template.HTML, error) {
 				return htmlForPage(&note, s)
 			}); err != nil {
@@ -215,7 +215,7 @@ func layoutMenu(w *config.Website, s *Store) []layout.ListItem {
 		case config.MenuBuiltin:
 			url = w.URLForBuiltin(m.Builtin)
 		case config.MenuNoteID:
-			url = w.URLForMenuNote(s.pub[m.ID].slug)
+			url = w.URLForMenuNote(s.noteContent[m.ID].slug)
 		case config.MenuTag:
 			url = w.URLForTag(w.Tags[m.Tag])
 		case config.MenuURL:

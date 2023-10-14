@@ -32,7 +32,7 @@ func (w Website) URLForTag(t Tag) string {
 	return fmt.Sprintf("%s%s/", w.URLForBuiltin(dd.BuiltinTags), t.Slug)
 }
 
-func (w Website) URLForMenuNote(slug string) string {
+func (w Website) URLForPageNote(slug string) string {
 	return fmt.Sprintf("/%s/", slug)
 }
 
