@@ -25,7 +25,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	menu := layoutMenu(w, s)
 	r.pageWith = func(title string, content template.HTML) layout.Page {
 		return layout.Page{
-			Language: w.Language.Code(),
+			Language: w.Language.String(),
 			Head: layout.Head{
 				Title:       title,
 				ThemeCSSURL: template.HTML(w.URLForThemeCSS()),

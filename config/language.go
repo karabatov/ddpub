@@ -4,37 +4,30 @@ import (
 	"fmt"
 
 	"github.com/karabatov/ddpub/config/internal/data"
-)
-
-type LangNumber int
-
-const (
-	LanguageEnUS = iota
-	LanguageEnUK
-	LanguageRuRU
+	"github.com/karabatov/ddpub/dd"
 )
 
 type lang struct {
-	num   LangNumber
+	num   dd.Language
 	code  string
 	short string
 }
 
-var supportedLanguages = map[LangNumber]lang{
-	LanguageEnUS: {LanguageEnUS, "en-US", "en"},
-	LanguageEnUK: {LanguageEnUK, "en-UK", "en"},
-	LanguageRuRU: {LanguageRuRU, "ru-RU", "ru"},
+var supportedLanguages = map[dd.Language]lang{
+	dd.LanguageEnUS: {dd.LanguageEnUS, "en-US", "en"},
+	dd.LanguageEnUK: {dd.LanguageEnUK, "en-UK", "en"},
+	dd.LanguageRuRU: {dd.LanguageRuRU, "ru-RU", "ru"},
 }
 
 type Language struct {
 	// Language code.
-	Number LangNumber
+	Code dd.Language
 	// If true, the URL would be /en/, not /en-US/.
 	Short bool
 }
 
-func (l Language) Code() string {
-	s := supportedLanguages[l.Number]
+func (l Language) String() string {
+	s := supportedLanguages[l.Code]
 	if l.Short {
 		return s.short
 	}
@@ -51,7 +44,7 @@ func parseLanguage(d data.Language) (Language, error) {
 
 	for _, s := range supportedLanguages {
 		if s.code == d.Code {
-			l.Number = s.num
+			l.Code = s.num
 			return l, nil
 		}
 	}

@@ -44,7 +44,7 @@ type metadata struct {
 	title    string
 	slug     string
 	tags     []dd.Tag
-	language dd.Language
+	language string
 }
 
 type publishTarget int
@@ -226,7 +226,7 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 		}
 
 		if lang, ok := dd.FirstSubmatch(matchLineLanguage, s.Text()); ok {
-			data.language = dd.Language(lang)
+			data.language = lang
 			continue
 		}
 

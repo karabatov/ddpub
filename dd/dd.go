@@ -34,10 +34,12 @@ func (b Builtin) IsValid() bool {
 }
 
 // Language represents a supported language.
-type Language string
+type Language int
 
 const (
-	LanguageEnUS Language = "en-US"
+	LanguageEnUS = iota
+	LanguageEnUK
+	LanguageRuRU
 )
 
 func FirstSubmatch(re *regexp.Regexp, line string) (string, bool) {
