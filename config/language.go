@@ -28,9 +28,17 @@ var supportedLanguages = map[LangNumber]lang{
 
 type Language struct {
 	// Language code.
-	Code LangNumber
+	Number LangNumber
 	// If true, the URL would be /en/, not /en-US/.
 	Short bool
+}
+
+func (l Language) Code() string {
+	s := supportedLanguages[l.Number]
+	if l.Short {
+		return s.short
+	}
+	return s.code
 }
 
 func parseLanguage(d data.Language) (Language, error) {
@@ -43,7 +51,7 @@ func parseLanguage(d data.Language) (Language, error) {
 
 	for _, s := range supportedLanguages {
 		if s.code == d.Code {
-			l.Code = s.num
+			l.Number = s.num
 			return l, nil
 		}
 	}
