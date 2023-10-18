@@ -35,7 +35,6 @@ type Tag struct {
 type ConfigFile struct {
 	Address  string
 	Title    string
-	Subtitle string
 	Feed     Feed
 	Pages    Pages
 	Homepage Homepage
