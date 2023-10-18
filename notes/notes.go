@@ -120,6 +120,15 @@ func NewStore(w *config.Website, notesDir string) (*Store, error) {
 		return nil, err
 	}
 
+	// Check that menu notes exist.
+	for _, m := range w.Menu {
+		if m, ok := m.(config.MenuNoteID); ok {
+			if !s.isPageNote(w, m.ID) {
+				return nil, fmt.Errorf("menu note not published: %s", m.ID)
+			}
+		}
+	}
+
 	return &s, nil
 }
 

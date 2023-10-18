@@ -78,13 +78,21 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		return nil, err
 	}
 
-	// Add pages from the menu.
+	// Add published pages and notes.
 
-	for _, m := range w.Menu {
-		switch m := m.(type) {
-		case config.MenuNoteID:
-			note := s.noteContent[m.ID]
-			if err := r.addHandlerFor(w.URLForMenuNote(note.slug), note.title, func() (template.HTML, error) {
+	for _, p := range s.pub {
+		note := s.noteContent[p.id]
+		switch p.target {
+		case publishTargetBuiltin, publishTargetTag:
+			continue
+		case publishTargetFeed:
+			if err := r.addHandlerFor(w.URLForFeedNote(note.slug), note.title, func() (template.HTML, error) {
+				return htmlForNote(&note, w)
+			}); err != nil {
+				return nil, err
+			}
+		case publishTargetPage:
+			if err := r.addHandlerFor(w.URLForPageNote(note.slug), note.title, func() (template.HTML, error) {
 				return htmlForPage(&note, s)
 			}); err != nil {
 				return nil, err
@@ -102,17 +110,8 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		}
 	}
 
-	// Add published pages from the feed (if there are any).
-
-	for _, note := range s.notesForTag(w.Feed.Tag) {
-		if err := r.addHandlerFor(w.URLForFeedNote(note.slug), note.title, func() (template.HTML, error) {
-			return htmlForNote(&note, w)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
 	// Add files.
+
 	for _, f := range s.files {
 		if err := r.addHandler(f.link, handlerForLocalFile(f)); err != nil {
 			return nil, err
@@ -215,7 +214,7 @@ func layoutMenu(w *config.Website, s *Store) []layout.ListItem {
 		case config.MenuBuiltin:
 			url = w.URLForBuiltin(m.Builtin)
 		case config.MenuNoteID:
-			url = w.URLForMenuNote(s.noteContent[m.ID].slug)
+			url = w.URLForPageNote(s.noteContent[m.ID].slug)
 		case config.MenuTag:
 			url = w.URLForTag(w.Tags[m.Tag])
 		case config.MenuURL:
