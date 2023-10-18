@@ -24,6 +24,7 @@ type Website struct {
 	IDFromLink    dd.IDFromLinkFunc
 	IDFromFile    dd.IDFromFileFunc
 	Homepage      Homepage
+	Language      Language
 	Tags          map[dd.Tag]Tag
 	Menu          []Menu
 	Feed          Feed
@@ -45,6 +46,11 @@ func New(configDir string) (*Website, error) {
 	}
 
 	w.Title = cfg.Title
+
+	w.Language, err = parseLanguage(cfg.Language)
+	if err != nil {
+		return nil, err
+	}
 
 	w.IsValidNoteID, err = makeNoteIDValidator(cfg.Notes.IDFormat)
 	if err != nil {

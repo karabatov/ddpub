@@ -5,6 +5,11 @@ type Homepage struct {
 	ID string `toml:"id"`
 }
 
+type Language struct {
+	Code  string
+	Short bool
+}
+
 type Feed struct {
 	Tag       string
 	URLPrefix string `toml:"url_prefix"`
@@ -35,6 +40,7 @@ type Tag struct {
 type ConfigFile struct {
 	Address  string
 	Title    string
+	Language Language
 	Feed     Feed
 	Pages    Pages
 	Homepage Homepage
