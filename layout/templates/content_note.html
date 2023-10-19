@@ -3,7 +3,7 @@
 <h2>{{.Title}}</h2>
 <div class="post-content">{{.Content}}</div>
 <div class="post-meta">
-{{if .Tags}}<span title="Date here">{{.Date}}</span> {{range .Tags}} &nbsp; <a href="{{.URL}}">{{.Title}}</a>{{end}}
+<span>{{.Date}}</span>{{if .Tags}}&emsp;{{range .Tags}}&emsp;<a href="{{.URL}}">{{.Title}}</a>{{end}}
 {{end}}
 </div>
 </article>
