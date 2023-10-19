@@ -2,8 +2,6 @@ package l10n
 
 import (
 	"fmt"
-
-	"github.com/karabatov/ddpub/dd"
 )
 
 type Key int
@@ -14,16 +12,15 @@ const (
 	TagsTitle
 )
 
-func (l *L10n) Str(key Key, lang dd.Language) string {
-	s := l.loc[lang]
+func (l *L10n) Str(key Key) string {
 	switch key {
 	case DateFormat:
-		return s.DateFormat
+		return l.loc.DateFormat
 	case FooterPoweredBy:
-		return s.FooterPoweredBy
+		return l.loc.FooterPoweredBy
 	case TagsTitle:
-		return s.TagsTitle
+		return l.loc.TagsTitle
 	default:
-		panic(fmt.Sprintf("Invalid key '%d' in language '%s'", key, dd.SupportedLanguages[lang].Full))
+		panic(fmt.Sprintf("Invalid key '%d' in language", key))
 	}
 }

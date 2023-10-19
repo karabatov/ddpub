@@ -16,20 +16,16 @@ var (
 )
 
 type L10n struct {
-	loc map[dd.Language]strings.Strings
+	loc strings.Strings
 }
 
-func New() (*L10n, error) {
-	l := L10n{make(map[dd.Language]strings.Strings)}
-
-	for lang := range dd.SupportedLanguages {
-		s, err := loadLanguage(lang, &stringsFiles)
-		if err != nil {
-			return nil, err
-		}
-		l.loc[lang] = s
+func New(lang dd.Language) (*L10n, error) {
+	var l L10n
+	s, err := loadLanguage(lang, &stringsFiles)
+	if err != nil {
+		return nil, err
 	}
-
+	l.loc = s
 	return &l, nil
 }
 

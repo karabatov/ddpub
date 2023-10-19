@@ -11,6 +11,7 @@ import (
 
 	"github.com/karabatov/ddpub/config/internal/data"
 	"github.com/karabatov/ddpub/dd"
+	"github.com/karabatov/ddpub/l10n"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -30,6 +31,7 @@ type Website struct {
 	Feed          Feed
 	Pages         Pages
 	ThemeCSS      []byte
+	localizer     *l10n.L10n
 }
 
 func (w Website) isTagPublished(tag dd.Tag) bool {
@@ -48,6 +50,11 @@ func New(configDir string) (*Website, error) {
 	w.Title = cfg.Title
 
 	w.Language, err = parseLanguage(cfg.Language)
+	if err != nil {
+		return nil, err
+	}
+
+	w.localizer, err = l10n.New(w.Language.Code)
 	if err != nil {
 		return nil, err
 	}
@@ -186,4 +193,8 @@ func (w *Website) TagsToPublished(t []dd.Tag) []Tag {
 	})
 
 	return tags
+}
+
+func (w *Website) Str(key l10n.Key) string {
+	return w.localizer.Str(key)
 }

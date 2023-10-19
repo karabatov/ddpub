@@ -37,7 +37,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 			},
 			Content: content,
 			Footer: layout.Footer{
-				PoweredBy: template.HTML(s.loc.Str(l10n.FooterPoweredBy, w.Language.Code)),
+				PoweredBy: template.HTML(w.Str(l10n.FooterPoweredBy)),
 			},
 		}
 	}
@@ -75,9 +75,8 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	}
 
 	// Builtin - tags.
-	tagsTitle := s.loc.Str(l10n.TagsTitle, w.Language.Code)
-	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinTags), tagsTitle, func() (template.HTML, error) {
-		return htmlForBuiltinTags(w, s)
+	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinTags), w.Str(l10n.TagsTitle), func() (template.HTML, error) {
+		return htmlForBuiltinTags(w)
 	}); err != nil {
 		return nil, err
 	}

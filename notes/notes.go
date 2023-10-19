@@ -18,7 +18,6 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
-	"github.com/karabatov/ddpub/l10n"
 )
 
 var (
@@ -92,7 +91,6 @@ type Store struct {
 	noteContent map[dd.NoteID]noteContent
 	// Files found while scanning the note contents.
 	files map[string]file
-	loc   *l10n.L10n
 }
 
 func NewStore(w *config.Website, notesDir string) (*Store, error) {
@@ -130,13 +128,6 @@ func NewStore(w *config.Website, notesDir string) (*Store, error) {
 			}
 		}
 	}
-
-	// Load localization.
-	loc, err := l10n.New()
-	if err != nil {
-		return nil, err
-	}
-	s.loc = loc
 
 	return &s, nil
 }
