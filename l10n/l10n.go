@@ -35,9 +35,9 @@ func New() (*L10n, error) {
 
 func loadLanguage(l dd.Language, fs *embed.FS) (strings.Strings, error) {
 	langCode := dd.SupportedLanguages[l]
-	file, err := fs.ReadFile(fmt.Sprintf("strings.%s.toml", langCode.Full))
+	file, err := fs.ReadFile(fmt.Sprintf("strings/strings.%s.toml", langCode.Full))
 	if err != nil {
-		return strings.Strings{}, nil
+		return strings.Strings{}, err
 	}
 
 	decoder := toml.NewDecoder(bytes.NewReader(file))
@@ -46,7 +46,7 @@ func loadLanguage(l dd.Language, fs *embed.FS) (strings.Strings, error) {
 	var s strings.Strings
 	err = decoder.Decode(&s)
 	if err != nil {
-		return strings.Strings{}, nil
+		return strings.Strings{}, err
 	}
 	return s, nil
 }

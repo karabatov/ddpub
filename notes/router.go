@@ -9,6 +9,7 @@ import (
 
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
+	"github.com/karabatov/ddpub/l10n"
 	"github.com/karabatov/ddpub/layout"
 )
 
@@ -72,7 +73,8 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	}
 
 	// Builtin - tags.
-	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinTags), "Tags", func() (template.HTML, error) {
+	tagsTitle := s.loc.Str(l10n.TagsTitle, w.Language.Code)
+	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinTags), tagsTitle, func() (template.HTML, error) {
 		return htmlForBuiltinTags(w)
 	}); err != nil {
 		return nil, err
