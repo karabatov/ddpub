@@ -6,7 +6,7 @@ type Homepage struct {
 }
 
 type Language struct {
-	Full     string
+	Code     string
 	UseShort bool `toml:"short"`
 }
 

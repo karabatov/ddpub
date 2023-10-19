@@ -9,13 +9,16 @@ import (
 type Key int
 
 const (
-	FooterPoweredBy = iota
+	DateFormat = iota
+	FooterPoweredBy
 	TagsTitle
 )
 
 func (l *L10n) Str(key Key, lang dd.Language) string {
 	s := l.loc[lang]
 	switch key {
+	case DateFormat:
+		return s.DateFormat
 	case FooterPoweredBy:
 		return s.FooterPoweredBy
 	case TagsTitle:

@@ -1,2 +1,3 @@
-FooterPoweredBy = 'Питается силой <a href="https://ddpub.org">%s</a>'
+DateFormat = "02.01.2006"
+FooterPoweredBy = 'Питается силой <a href="https://ddpub.org">DDPub</a>'
 TagsTitle = "Теги"

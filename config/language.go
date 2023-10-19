@@ -26,16 +26,16 @@ func parseLanguage(d data.Language) (Language, error) {
 	l := Language{UseShort: d.UseShort}
 
 	// Return en-US if the code is not specified.
-	if len(d.Full) == 0 {
+	if len(d.Code) == 0 {
 		return l, nil
 	}
 
 	for code, s := range dd.SupportedLanguages {
-		if s.Full == d.Full {
+		if s.Full == d.Code {
 			l.Code = code
 			return l, nil
 		}
 	}
 
-	return l, fmt.Errorf("language '%s' not supported", d.Full)
+	return l, fmt.Errorf("language '%s' not supported", d.Code)
 }

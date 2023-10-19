@@ -6,6 +6,7 @@ import (
 
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
+	"github.com/karabatov/ddpub/l10n"
 	"github.com/karabatov/ddpub/layout"
 )
 
@@ -23,13 +24,14 @@ func htmlForPage(note *noteContent, s *Store) (template.HTML, error) {
 
 func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteListItem {
 	notes := []layout.NoteListItem{}
+	dateFormat := s.loc.Str(l10n.DateFormat, w.Language.Code)
 	for _, n := range s.notesForTag(t) {
 		nli := layout.NoteListItem{
 			ListItem: layout.ListItem{
 				Title: n.title,
 				URL:   template.HTML(w.URLForFeedNote(n.slug)),
 			},
-			Date: n.date,
+			Date: n.date.Format(dateFormat),
 		}
 		notes = append(notes, nli)
 	}
@@ -70,9 +72,9 @@ func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func htmlForBuiltinTags(w *config.Website) (template.HTML, error) {
+func htmlForBuiltinTags(w *config.Website, s *Store) (template.HTML, error) {
 	p := layout.BuiltinTags{
-		Title: "Tags",
+		Title: s.loc.Str(l10n.TagsTitle, w.Language.Code),
 		Tags:  tagsListItems(w),
 	}
 	rendered, err := layout.FillBuiltinTags(p)

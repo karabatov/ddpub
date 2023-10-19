@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
-	"time"
 )
 
 var (
@@ -63,7 +62,7 @@ type ContentPage struct {
 type NoteListItem struct {
 	ListItem
 
-	Date time.Time
+	Date string
 }
 
 type ContentTagPage struct {
