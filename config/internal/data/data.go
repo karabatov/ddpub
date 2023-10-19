@@ -6,8 +6,8 @@ type Homepage struct {
 }
 
 type Language struct {
-	Code  string
-	Short bool
+	Full     string
+	UseShort bool `toml:"short"`
 }
 
 type Feed struct {

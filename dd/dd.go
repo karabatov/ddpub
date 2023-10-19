@@ -42,6 +42,17 @@ const (
 	LanguageRuRU
 )
 
+type LanguageCode struct {
+	Full  string
+	Short string
+}
+
+var SupportedLanguages = map[Language]LanguageCode{
+	LanguageEnUS: {"en-US", "en"},
+	LanguageEnUK: {"en-UK", "en"},
+	LanguageRuRU: {"ru-RU", "ru"},
+}
+
 func FirstSubmatch(re *regexp.Regexp, line string) (string, bool) {
 	if matches := re.FindStringSubmatch(line); len(matches) > 1 {
 		return matches[1], true
