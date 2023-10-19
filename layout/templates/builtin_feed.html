@@ -6,9 +6,10 @@
 </div>
 {{end}}
 {{if .Notes}}<div class="post-list"><ul>
+<table>
 {{range .Notes}}
-<li><span>{{.Date}}</span>&nbsp;&nbsp;<a href="{{.URL}}">{{.Title}}</a></li>
+<tr><td>{{.Date}}&emsp;</td><td><a href="{{.URL}}">{{.Title}}</a></td>
 {{end}}
-</ul></div>{{end}}
+</table></div>{{end}}
 </article>
 {{end}}

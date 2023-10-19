@@ -230,17 +230,17 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 			continue
 		}
 
-		if _, ok := dd.FirstSubmatch(matchLineDate, s.Text()); ok {
-			// TODO: Define date format and parse.
+		if date, ok := dd.FirstSubmatch(matchLineDate, s.Text()); ok {
+			data.date, err = time.Parse(time.DateOnly, date)
+			if err != nil {
+				data.date = data.modTime
+			}
 			continue
 		}
 
 		// If no matchers match, we are done.
 		break
 	}
-
-	// Default to mod time for now instead of parsing the date.
-	data.date = data.modTime
 
 	// Set slug to id if no slug has been set.
 	if len(data.slug) == 0 {
