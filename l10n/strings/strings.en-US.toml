@@ -1,3 +1,2 @@
-DDPubTitle = "DDPub"
-FooterPoweredBy = 'Powered by <a href="https://ddpub.org">%s</a>'
+FooterPoweredBy = 'Powered by <a href="https://ddpub.org" target="_blank">DDPub</a>'
 TagsTitle = "Tags"

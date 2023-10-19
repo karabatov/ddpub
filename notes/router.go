@@ -36,7 +36,9 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 				Menu:  menu,
 			},
 			Content: content,
-			Footer:  struct{}{},
+			Footer: layout.Footer{
+				PoweredBy: template.HTML(s.loc.Str(l10n.FooterPoweredBy, w.Language.Code)),
+			},
 		}
 	}
 

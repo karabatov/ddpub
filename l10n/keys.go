@@ -9,16 +9,13 @@ import (
 type Key int
 
 const (
-	DDPubTitle = iota
-	FooterPoweredBy
+	FooterPoweredBy = iota
 	TagsTitle
 )
 
 func (l *L10n) Str(key Key, lang dd.Language) string {
 	s := l.loc[lang]
 	switch key {
-	case DDPubTitle:
-		return s.DDPubTitle
 	case FooterPoweredBy:
 		return s.FooterPoweredBy
 	case TagsTitle:

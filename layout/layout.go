@@ -23,6 +23,10 @@ type Header struct {
 	Menu  []ListItem
 }
 
+type Footer struct {
+	PoweredBy template.HTML
+}
+
 // ListItem represents an item in the list with a link and title.
 type ListItem struct {
 	Title string
@@ -34,7 +38,7 @@ type Page struct {
 	Head     Head
 	Header   Header
 	Content  template.HTML
-	Footer   struct{}
+	Footer   Footer
 }
 
 // BuiltinFeed contains data to render the content of the builtin feed page.
