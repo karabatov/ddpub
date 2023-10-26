@@ -41,7 +41,7 @@ func tagsListItems(w *config.Website) []layout.ListItem {
 	tags := []layout.ListItem{}
 	for _, t := range w.Tags {
 		li := layout.ListItem{
-			Title: t.Title,
+			Title: template.HTML(t.Title),
 			URL:   template.HTML(w.URLForTag(t)),
 		}
 		tags = append(tags, li)
@@ -60,7 +60,7 @@ func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 	}
 
 	p := layout.BuiltinFeed{
-		Title:   w.Feed.Title,
+		Title:   template.HTML(w.Feed.Title),
 		Content: content,
 		Notes:   feedNotesListItems(w.Feed.Tag, w, s),
 	}
@@ -73,7 +73,7 @@ func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 
 func htmlForBuiltinTags(w *config.Website) (template.HTML, error) {
 	p := layout.BuiltinTags{
-		Title: w.Str(l10n.TagsTitle),
+		Title: template.HTML(w.Str(l10n.TagsTitle)),
 		Tags:  tagsListItems(w),
 	}
 	rendered, err := layout.FillBuiltinTags(p)
@@ -91,7 +91,7 @@ func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, erro
 	}
 
 	tp := layout.ContentTagPage{
-		Title:   t.Title,
+		Title:   template.HTML(t.Title),
 		Content: content,
 		Notes:   feedNotesListItems(t.Tag, w, s),
 	}
@@ -106,7 +106,7 @@ func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 	tags := []layout.ListItem{}
 	for _, t := range w.TagsToPublished(note.tags) {
 		tags = append(tags, layout.ListItem{
-			Title: t.Title,
+			Title: template.HTML(t.Title),
 			URL:   template.HTML(w.URLForTag(t)),
 		})
 	}

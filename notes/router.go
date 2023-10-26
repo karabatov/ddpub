@@ -32,7 +32,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 				ThemeCSSURL: template.HTML(w.URLForThemeCSS()),
 			},
 			Header: layout.Header{
-				Title: w.Title,
+				Title: template.HTML(w.Title),
 				Menu:  menu,
 			},
 			Content: content,
@@ -52,7 +52,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 	case config.HomepageKindNoteID:
 		id := w.Homepage.(config.HomepageNoteID).ID
 		note := s.noteContent[id]
-		if err := r.addHandlerFor("/", note.title, func() (template.HTML, error) {
+		if err := r.addHandlerFor("/", string(note.title), func() (template.HTML, error) {
 			return htmlForPage(&note, s)
 		}); err != nil {
 			return nil, err
@@ -89,13 +89,13 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		case publishTargetBuiltin, publishTargetTag:
 			continue
 		case publishTargetFeed:
-			if err := r.addHandlerFor(w.URLForFeedNote(note.slug), note.title, func() (template.HTML, error) {
+			if err := r.addHandlerFor(w.URLForFeedNote(note.slug), string(note.title), func() (template.HTML, error) {
 				return htmlForNote(&note, w)
 			}); err != nil {
 				return nil, err
 			}
 		case publishTargetPage:
-			if err := r.addHandlerFor(w.URLForPageNote(note.slug), note.title, func() (template.HTML, error) {
+			if err := r.addHandlerFor(w.URLForPageNote(note.slug), string(note.title), func() (template.HTML, error) {
 				return htmlForPage(&note, s)
 			}); err != nil {
 				return nil, err
@@ -224,7 +224,7 @@ func layoutMenu(w *config.Website, s *Store) []layout.ListItem {
 			url = m.URL
 		}
 		menu = append(menu, layout.ListItem{
-			Title: m.Title(),
+			Title: template.HTML(m.Title()),
 			URL:   template.HTML(url),
 		})
 	}

@@ -18,7 +18,7 @@ type Head struct {
 }
 
 type Header struct {
-	Title string
+	Title template.HTML
 	Menu  []ListItem
 }
 
@@ -28,7 +28,7 @@ type Footer struct {
 
 // ListItem represents an item in the list with a link and title.
 type ListItem struct {
-	Title string
+	Title template.HTML
 	URL   template.HTML
 }
 
@@ -42,19 +42,19 @@ type Page struct {
 
 // BuiltinFeed contains data to render the content of the builtin feed page.
 type BuiltinFeed struct {
-	Title   string
+	Title   template.HTML
 	Content template.HTML
 	Notes   []NoteListItem
 }
 
 // BuiltinTags contains data to render the content of the builtin tags page.
 type BuiltinTags struct {
-	Title string
+	Title template.HTML
 	Tags  []ListItem
 }
 
 type ContentPage struct {
-	Title   string
+	Title   template.HTML
 	Content template.HTML
 }
 
@@ -66,13 +66,13 @@ type NoteListItem struct {
 }
 
 type ContentTagPage struct {
-	Title   string
+	Title   template.HTML
 	Content template.HTML
 	Notes   []NoteListItem
 }
 
 type ContentNote struct {
-	Title   string
+	Title   template.HTML
 	Date    string
 	Tags    []ListItem
 	Content template.HTML

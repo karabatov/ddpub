@@ -4,6 +4,7 @@ package notes
 import (
 	"bufio"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"os"
@@ -41,7 +42,7 @@ type metadata struct {
 	filename string
 	modTime  time.Time
 	date     time.Time
-	title    string
+	title    template.HTML
 	slug     string
 	tags     []dd.Tag
 	language string
@@ -207,7 +208,7 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 	s := bufio.NewScanner(file)
 	for s.Scan() {
 		if title, ok := dd.FirstSubmatch(matchLineTitle, s.Text()); ok {
-			data.title = title
+			data.title = template.HTML(mdToHTML(title))
 			continue
 		}
 
@@ -528,4 +529,17 @@ func tryFileFromLink(link string, notesDir string, w *config.Website) (file, err
 		path:        path,
 		contentType: fileContentType(f),
 	}, nil
+}
+
+func mdToHTML(md string) []byte {
+	mdb := []byte(md)
+	extensions := parser.CommonExtensions
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse(mdb)
+
+	htmlFlags := html.CommonFlags
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	return markdown.Render(doc, renderer)
 }
