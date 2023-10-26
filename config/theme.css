@@ -89,6 +89,10 @@ header, main, footer {
    line-height: 14pt;
 }
 
+.post-list ul li a p {
+   display: inline;
+}
+
 footer span {
    color: var(--footerColor);
 }
