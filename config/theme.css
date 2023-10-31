@@ -102,6 +102,7 @@ header, main, footer {
 
 footer span {
    color: var(--footerColor);
+   font-size: 12pt;
 }
 
 footer span a {
