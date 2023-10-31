@@ -100,9 +100,14 @@ header, main, footer {
    display: inline;
 }
 
+.post-item p {
+   margin-bottom: 2pt;
+}
+
 footer span {
    color: var(--footerColor);
-   font-size: 12pt;
+   font-size: 11pt;
+   line-height: 14pt;
 }
 
 footer span a {
