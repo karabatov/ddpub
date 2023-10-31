@@ -44,6 +44,13 @@ body {
    font-family: var(--mainFontFamily);
    color: var(--textColor);
 }
+
+.post-content img {
+   max-width: 75%;
+   height: auto;
+   display: block;
+   margin: 0 auto;
+}
  
 a, a:visited {
    color: var(--linkColor);
