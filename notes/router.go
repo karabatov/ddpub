@@ -29,8 +29,9 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 		return layout.Page{
 			Language: w.Language.String(),
 			Head: layout.Head{
-				Title:       title,
-				ThemeCSSURL: template.HTML(w.URLForThemeCSS()),
+				Title:        title,
+				WebsiteTitle: w.Title,
+				ThemeCSSURL:  template.HTML(w.URLForThemeCSS()),
 			},
 			Header: layout.Header{
 				Title: template.HTML(w.Title),

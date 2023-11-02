@@ -13,8 +13,9 @@ var (
 )
 
 type Head struct {
-	Title       string
-	ThemeCSSURL template.HTML
+	Title        string
+	WebsiteTitle string
+	ThemeCSSURL  template.HTML
 }
 
 type Header struct {
