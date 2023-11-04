@@ -2,66 +2,119 @@
 <html lang="en-US">
 
 <head>
-    <title>A case for a new blog engine</title>
+    <title>How I learn SwiftUI - NorikiTech</title>
     <link rel="stylesheet" type="text/css" href="config/theme.css">
     <!-- Reload page when refocusing. -->
     <script>window.addEventListener('focus', ()=>{document.location = document.location})</script>
 </head>
 
-
 <body>
 
 <header>
-<h1><a href="/">DDPub</a></h1>
-<nav class="menu"><ul>
-<li><a href="/tags/docs/">Documentation</a></li>
-<li><a href="/tags/blog/">Blog</a></li>
-<li><a href="https://github.com/karabatov/ddpub">GitHub</a></li>
-<li><a href="/202309061921/">About</a></li>
-<li><a href="/changelog/">Changelog</a></li>
-</ul></nav>
+<h1><a href="/">NorikiTech</a></h1>
+
+
+<nav class="menu">
+<a href="/posts/">Blog</a>
+<a href="/about/">About</a>
+<a href="/about/">About</a>
+<a href="/about/">About</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="/about/">About</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="/about/">About</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="/about/">About</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="/about/">About</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+<a href="/about/">About</a>
+<a href="https://gum.co/junior-to-senior">“Junior to Senior”</a>
+</nav>
+
+
 </header>
 
 <main>
 
 <article>
-    <h2>A case for a new blog engine</h2>
-    <div class="post-content"><p>Bear with me here. I&rsquo;m trying to convince myself that it&rsquo;s worth it to write my own blog engine.</p>
+<h2><p>How I learn SwiftUI</p>
+</h2>
+<div class="post-content"><p><a href="https://developer.apple.com/xcode/swiftui/" target="_blank">SwiftUI</a> is Apple’s new(ish) “cross-platform” UI framework becoming dominant for new development on iOS, and now viable <a href="https://kean.blog/post/appkit-is-done" target="_blank">on macOS</a>.</p>
 
-<p>As a clever man said:
-<img src="A%20case%20for%20a%20new%20blog%20engine/build-another-blog.png" alt="" /></p>
+<p>I started writing Swift in 2014 when it just came out (<a href="https://github.com/karabatov/kidsinmuseums" target="_blank">here’s my first non-toy app</a> on GitHub), but I didn’t yet use SwiftUI. It was too new for commercial work in early 2020, and later I was learning other languages.</p>
 
-<p>In the past few years I&rsquo;ve been trying to store my writing locally, but writing in public is powerful. It is excruciating to keep writing on the web (especially with inline images, like here) up to date with local notes. And “local” here doesn&rsquo;t mean “stored in a repo”, like for a static site, because a repo is separate from where I&rsquo;m writing: it has been Evernote, then Notational Velocity, then nvALT, now Bear, and soon, hopefully, my own open-source project.</p>
+<p>Here are the resources I use to learn SwiftUI for work in 2021. <em>Last updated March 19, 2021.</em>
+<!--more--></p>
 
-<p>I offer a new paradigm: own your writing, publish everywhere. Now it&rsquo;s usually backwards, you&rsquo;re writing on the internet somewhere and then maybe, if the service lets you, export what you&rsquo;ve written.</p>
+<h2>Apple</h2>
 
-<p>What does this have to do with a blog engine? It&rsquo;s a start, where the CMS, or the publishing platform, will only be a container for published writing, not its master location.</p>
+<p>When SwiftUI just came out, its official documentation was notoriously poor. Over two years, the state of documentation (and SwiftUI itself) has significantly improved, and the macOS post I’ve linked above says:</p>
 
-<p>My current engine, Aegea, is woefully inadequate due to it being closed-source. And Wordpress and the like are either too cumbersome to setup the way I need (I have a small, but <em>opinionated</em> (as they say) set of necessary features) or don&rsquo;t have what I need at all.</p>
+<blockquote>
+<p>Prioritize watching WWDC and reading official documentation, there is now a lot of outdated information about SwiftUI online.</p>
+</blockquote>
 
-<p>A static site would fit the bill but it doesn&rsquo;t have comments, and no, Disqus won&rsquo;t cut it.</p>
+<p>The third-party information became outdated because SwiftUI moved fast and broke <em>all</em> the things. It was also the reason why I was reluctant to start learning it right away—I knew it would take a couple of years to settle down and not change from under you every month. (I’m not a big fan of the <a href="https://stevelosh.com/blog/2018/08/a-road-to-common-lisp/#s4-escaping-the-hamster-wheel-of-backwards-incompatibility" target="_blank">Hamster Wheel of Backwards Incompatibility</a> either.)</p>
 
-<p>In the end, I <em>want</em> to write one. I&rsquo;ve been learning some Go and this is a great opportunity to write a medium-sized web-service, which I have never done before. And it&rsquo;s very motivating because I want to keep my writing published. I&rsquo;m quite sure a minimal version can be done in a week, so that I can migrate to it, and its incompleteness should motivate me to work on it further.</p>
+<p>Anyway.</p>
 
-<p>I have already compiled a minimal list of features to implement first and it&rsquo;s manageable, so there&rsquo;s hope.</p>
+<p>The root of all things SwiftUI is, for some reason, <a href="https://developer.apple.com/xcode/swiftui/" target="_blank">under Xcode</a> and not directly linked to from the bottom of the Apple Developer homepage.</p>
 
-<p>Can&rsquo;t wait to share what I come up with.</p>
+<p>From there, we have links to <a href="https://developer.apple.com/videos/all-videos/?q=swiftui" target="_blank">WWDC videos</a>, <a href="https://developer.apple.com/documentation/swiftui" target="_blank">reference documentation</a> and (<em>new!</em>) <a href="https://developer.apple.com/tutorials/swiftui/" target="_blank">tutorials</a>.</p>
 
-<p><em>Also published on <a href="https://yurikarabatov.com/en/all/a-case-for-a-new-blog-engine/" target="_blank">yurikarabatov.com</a>.</em></p>
+<p>Compared to the earlier Apple’s practice of dumping inconsistent source code examples on (often unsuspecting) developers, SwiftUI tutorials are well-structured, split into sequential chapters and cover just the questions a developer already familiar with iOS—but not SwiftUI—would have.</p>
+
+<p>My preference is to first watch several of the earlier WWDC videos to get the basics (“<a href="https://developer.apple.com/videos/play/wwdc2019/204/" target="_blank">Introducing SwiftUI</a>,” “<a href="https://developer.apple.com/videos/play/wwdc2019/216/" target="_blank">SwiftUI Essentials</a>” and “<a href="https://developer.apple.com/videos/play/wwdc2019/226/" target="_blank">Data Flow Through SwiftUI</a>”), followed by those highlighting the latest developments (“<a href="https://developer.apple.com/videos/play/wwdc2020/10041/" target="_blank">What’s new in SwiftUI</a>” and “<a href="https://developer.apple.com/videos/play/wwdc2020/10037/" target="_blank">App Essentials in SwiftUI</a>”). After that, flick through the tutorials.</p>
+
+<p>It helps that I have <a href="/posts/freewriting-prompts-app-part-1/">an app idea I want to make</a> so that I can focus on specific SwiftUI features rather than just try and “learn” it.</p>
+
+<h2>Moving parts</h2>
+
+<p>Coming from “regular” Swift, SwiftUI is different in that it depends on three language features to work that may not be as frequent in other code. Here’s some sample SwiftUI code using all of them:</p>
+
+<pre><code class="language-swift">struct Sample: View {
+  @State private var value = 0
+
+  var body: some View {
+    VStack {
+      Text(&quot;Value equals \(value)&quot;)
+      Button(&quot;Increment&quot;) {
+        value += 1
+      }
+    }
+  }
+}
+</code></pre>
+
+<ul>
+<li><strong>Property wrappers.</strong> Whenever you see <code>@State</code>, <code>@Binding</code> or <code>$projectedValue</code>, it’s a property wrapper. Swift documentation <a href="https://docs.swift.org/swift-book/LanguageGuide/Properties.html#ID617" target="_blank">gives a good overview</a>, and I agree with Mattt that “<a href="https://nshipster.com/propertywrapper/" target="_blank">property wrappers further complicate Swift</a>.” There’s a guide to all available SwiftUI property wrappers <a href="https://www.hackingwithswift.com/quick-start/swiftui/all-swiftui-property-wrappers-explained-and-compared" target="_blank">on Hacking with Swift</a>.</li>
+<li><strong>Result builders</strong> (previously known as “function builders”). Listing several SwiftUI <code>View</code>s one after another separated only by newlines and no other syntax, for example in a <code>VStack</code> like above, makes use of a <em>result builder</em>. I found <a href="https://www.avanderlee.com/swift/result-builders/" target="_blank">this article</a> useful to understand how they work.</li>
+<li><strong>Opaque types.</strong> The <code>some View</code> that is the type of <code>body</code> above is an <em>opaque type</em>. Swift documentation <a href="https://docs.swift.org/swift-book/LanguageGuide/OpaqueTypes.html" target="_blank">goes into considerable detail</a> on what they are and why you might need them.</li>
+</ul>
+
+<p>The elephant in the room is, of course, the <a href="https://developer.apple.com/documentation/combine" target="_blank">Combine framework</a> that underpins bindings, but it seems for purely SwiftUI code we don’t need to know much about it. I’m sure I’ll dive into it separately, but it’s very similar to both RxSwift and ReactiveSwift that I’ve used for years, so I already know the concepts and how to think and write code over streams of values.</p>
+
+<h2>Awesome</h2>
+
+<p>There are <a href="https://github.com/vlondon/awesome-swiftui" target="_blank">several</a> <a href="https://github.com/chinsyo/awesome-swiftui" target="_blank"><code>awesome</code>-style</a> <a href="https://github.com/onmyway133/awesome-swiftui" target="_blank">lists</a> of links to SwiftUI articles and tutorials.</p>
+
+<p>I asked a few friends who’ve been working with SwiftUI almost since its release, and they recommended <a href="https://swiftui-lab.com" target="_blank">The SwiftUI Lab</a> and the SwiftUI articles on <a href="https://swiftwithmajid.com" target="_blank">Swift with Majid</a>.</p>
+
+<p><em>I will extend this post with more specific things that I found particularly helpful.</em></p>
 </div>
-    <div class="post-meta">
-    <span title="Date here">2018</span> &nbsp; <a href="/tags/blog/">Blog</a>
-    </div>
+<div class="post-meta">
+<span>March 16, 2021</span>
+</div>
 </article>
-
-
-
-
 
 </main>
 
 <footer>
-    <span>Powered by <a href="https://ddpub.org" target="_blank">DDPub</a>&nbsp;§</span>
+<span>Powered by <a href="https://ddpub.org" target="_blank">DDPub</a>&nbsp;§</span>
 </footer>
 
 </body>

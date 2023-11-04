@@ -40,7 +40,6 @@ body {
    margin: 0;
    padding: 0;
    background-color: var(--backgroundColor);
-   font-size: 14pt;
    font-family: var(--mainFontFamily);
    color: var(--textColor);
 }
@@ -56,34 +55,28 @@ a, a:visited {
    color: var(--linkColor);
    text-decoration: none;
    border-bottom-color: var(--linkColor);
-   border-bottom-width: 1pt;
+   border-bottom-width: 1px;
    border-bottom-style: solid;
 }
 
 header h1 {
-   display: inline-block;
-   font-size: 14pt;
+   display: block;
+   font-size: 2em;
    font-weight: bold;
-   line-height: 18pt;
+   line-height: 2.4em;
    margin: 0;
 }
 
-.menu {
-   display: inline-block;
-   font-size: 14pt;
-   line-height: 18pt;
+nav {
+   display: flex;
+   flex-wrap: wrap;
    margin: 0;
-}
-
-.menu ul {
-   display: inline-block;
-   margin: 0 0 0 20pt;
    padding: 0;
 }
 
-.menu ul li {
-   display: inline-block;
-   margin-right: 4pt;
+nav a {
+   text-wrap: nowrap;
+   margin-right: 1em;
 }
 
 header, main, footer {
