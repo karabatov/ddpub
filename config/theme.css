@@ -76,6 +76,7 @@ nav {
 
 nav a {
    text-wrap: nowrap;
+   margin-bottom: 0.5em;
    margin-right: 1em;
 }
 
