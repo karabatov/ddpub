@@ -30,6 +30,7 @@ type Website struct {
 	Menu          []Menu
 	Feed          Feed
 	Pages         Pages
+	HeadSuffix    string
 	ThemeCSS      []byte
 	localizer     *l10n.L10n
 }
@@ -100,6 +101,8 @@ func New(configDir string) (*Website, error) {
 	w.Pages.Tag = dd.Tag(cfg.Pages.Tag)
 
 	w.ThemeCSS = themeCSS
+
+	w.HeadSuffix = cfg.Segments.HeadSuffix
 
 	return &w, nil
 }

@@ -32,6 +32,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 				Title:        title,
 				WebsiteTitle: w.Title,
 				ThemeCSSURL:  template.HTML(w.URLForThemeCSS()),
+				Suffix:       template.HTML(w.HeadSuffix),
 			},
 			Header: layout.Header{
 				Title: template.HTML(w.Title),

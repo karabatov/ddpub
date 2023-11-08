@@ -36,6 +36,10 @@ type Tag struct {
 	Title string
 }
 
+type Segments struct {
+	HeadSuffix string `toml:"head_suffix"`
+}
+
 // ConfigFile represents a TOML configuration file for a single website.
 type ConfigFile struct {
 	Address  string
@@ -49,5 +53,6 @@ type ConfigFile struct {
 		IDFormat     string `toml:"id_format"`
 		IDLinkFormat string `toml:"id_link_format"`
 	}
-	Tags []Tag
+	Tags     []Tag
+	Segments Segments
 }

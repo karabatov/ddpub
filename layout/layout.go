@@ -16,6 +16,7 @@ type Head struct {
 	Title        string
 	WebsiteTitle string
 	ThemeCSSURL  template.HTML
+	Suffix       template.HTML
 }
 
 type Header struct {
