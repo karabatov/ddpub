@@ -31,6 +31,7 @@ type Website struct {
 	Feed          Feed
 	Pages         Pages
 	HeadSuffix    string
+	NoteSuffix    string
 	ThemeCSS      []byte
 	localizer     *l10n.L10n
 }
@@ -103,6 +104,7 @@ func New(configDir string) (*Website, error) {
 	w.ThemeCSS = themeCSS
 
 	w.HeadSuffix = cfg.Segments.HeadSuffix
+	w.NoteSuffix = cfg.Segments.NoteSuffix
 
 	return &w, nil
 }

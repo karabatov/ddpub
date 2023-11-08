@@ -115,6 +115,7 @@ func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 		Date:    note.date.Format(w.Str(l10n.DateFormat)),
 		Content: template.HTML(note.content),
 		Tags:    tags,
+		Suffix:  template.HTML(w.NoteSuffix),
 	}
 	rendered, err := layout.FillContentNote(cn)
 	if err != nil {

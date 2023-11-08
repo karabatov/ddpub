@@ -78,6 +78,7 @@ type ContentNote struct {
 	Date    string
 	Tags    []ListItem
 	Content template.HTML
+	Suffix  template.HTML
 }
 
 func FillPage(p Page) ([]byte, error) {
