@@ -32,6 +32,7 @@
    --textColor: var(--black);
    --linkColor: var(--blue);
    --footerColor: var(--grey);
+   --blockquoteColor: var(--grey);
 
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
 }
@@ -80,14 +81,25 @@ nav a {
    margin-right: 1em;
 }
 
-header, main, footer {
-   margin: 10pt 2% 30pt 2%;
-   width: 96%;
+.post-meta {
+   font-size: 0.9em;
+   line-height: 1.1em;
 }
 
-.post-meta {
-   font-size: 11pt;
-   line-height: 14pt;
+.post-meta a {
+   text-wrap: nowrap;
+   margin-right: 0.6em; 
+}
+
+main blockquote {
+   display: block;
+   margin-block: 0;
+   margin-inline: 0;
+   padding-inline-start: 1.5em;
+   padding-inline-end: 1.5em;
+   border-left-style: solid;
+   border-left-width: 1px;
+   border-left-color: var(--blockquoteColor);
 }
 
 .post-list ul li a p {
@@ -96,6 +108,11 @@ header, main, footer {
 
 .post-item p {
    margin-bottom: 2pt;
+}
+
+header, main, footer {
+   margin: 10pt 2% 30pt 2%;
+   width: 96%;
 }
 
 footer span {
