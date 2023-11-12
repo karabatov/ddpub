@@ -127,3 +127,11 @@ footer span a {
    color: var(--footerColor);
    border-bottom-color: var(--footerColor);
 }
+
+@media screen and (min-width: 1024px) {
+   header, main, footer {
+      margin-left: auto;
+      margin-right: auto;
+      width: 960px;
+   }
+}
