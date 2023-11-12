@@ -5,11 +5,12 @@
 {{.Content}}
 </div>
 {{end}}
-{{if .Notes}}
-<div class="post-list"><ul>
-{{range .Notes}}
-<li><span>{{.Date}}</span> <a href="{{.URL}}">{{.Title}}</a></li>
+{{if .Notes}}<div class="post-list">
+{{range .Notes}}<div class="post-item">
+<a href="{{.URL}}">{{.Title}}</a>
+<div class="post-meta">{{.Date}}</div>
+</div>
 {{end}}
-</ul></div>{{end}}
+{{end}}
 </article>
 {{end}}
