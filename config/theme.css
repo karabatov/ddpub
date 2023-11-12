@@ -119,8 +119,8 @@ header, main, footer {
 
 footer span {
    color: var(--footerColor);
-   font-size: 11pt;
-   line-height: 14pt;
+   font-size: 0.9em;
+   line-height: 1.1em;
 }
 
 footer span a {
