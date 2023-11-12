@@ -87,6 +87,8 @@ main blockquote {
    display: block;
    margin-block: 0;
    margin-inline: 0;
+   padding-block-start: 0.5em;
+   padding-block-end: 0.5em;
    padding-inline-start: 1.5em;
    padding-inline-end: 1.5em;
    border-left-style: solid;
