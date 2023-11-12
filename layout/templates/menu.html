@@ -1,9 +1,7 @@
 {{define "menu"}}
 {{if .}}
-<nav class="menu"><ul>
-{{range .}}
-<li><a href="{{.URL}}">{{.Title}}</a></li>
-{{end}}
-</ul></nav>
+<nav class="menu">
+{{range .}}<a href="{{.URL}}">{{.Title}}</a>{{end}}
+</nav>
 {{end}}
 {{end}}
