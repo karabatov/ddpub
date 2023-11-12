@@ -24,7 +24,7 @@ func htmlForPage(note *noteContent, s *Store) (template.HTML, error) {
 
 func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteListItem {
 	notes := []layout.NoteListItem{}
-	for _, n := range s.notesForTag(t) {
+	for _, n := range s.notesForTag(w, t) {
 		nli := layout.NoteListItem{
 			ListItem: layout.ListItem{
 				Title: n.title,

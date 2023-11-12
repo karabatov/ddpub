@@ -450,11 +450,11 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 	return nil
 }
 
-func (s *Store) notesForTag(t dd.Tag) []noteContent {
+func (s *Store) notesForTag(w *config.Website, t dd.Tag) []noteContent {
 	n := []noteContent{}
 
 	for _, id := range s.byTag[t] {
-		if p, ok := s.noteContent[id]; ok {
+		if p, ok := s.noteContent[id]; ok && s.isFeedNote(w, id) {
 			n = append(n, p)
 		}
 	}
