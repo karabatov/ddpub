@@ -1,6 +1,7 @@
 package notes
 
 import (
+	"fmt"
 	"html/template"
 	"sort"
 
@@ -30,7 +31,7 @@ func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteList
 				Title: n.title,
 				URL:   template.HTML(w.URLForFeedNote(n.slug)),
 			},
-			Date: n.date.Format(w.Str(l10n.DateFormat)),
+			Date: dateForNote(&n, w),
 		}
 		notes = append(notes, nli)
 	}
@@ -112,7 +113,7 @@ func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 	}
 	cn := layout.ContentNote{
 		Title:   note.title,
-		Date:    note.date.Format(w.Str(l10n.DateFormat)),
+		Date:    dateForNote(note, w),
 		Content: template.HTML(note.content),
 		Tags:    tags,
 		Suffix:  template.HTML(w.NoteSuffix),
@@ -122,4 +123,16 @@ func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 		return "", err
 	}
 	return rendered, nil
+}
+
+func dateForNote(note *noteContent, w *config.Website) string {
+	datePub := note.date.Format(w.Str(l10n.DateFormat))
+	datePubStr := fmt.Sprintf(w.Str(l10n.DatePublished), datePub)
+	if note.updatedDate != note.date {
+		dateUpd := note.updatedDate.Format(w.Str(l10n.DateFormat))
+		dateUpdStr := fmt.Sprintf(w.Str(l10n.DateUpdated), dateUpd)
+		return fmt.Sprintf("%s %s", dateUpdStr, datePubStr)
+	}
+
+	return datePubStr
 }

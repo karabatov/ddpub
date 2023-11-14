@@ -1,3 +1,5 @@
 DateFormat = "2 January 2006"
+DatePublished = "Published %s."
+DateUpdated = "Updated %s."
 FooterPoweredBy = 'Powered by <a href="https://ddpub.org">%s</a>'
 TagsTitle = "Tags"

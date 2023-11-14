@@ -27,6 +27,8 @@ var (
 	matchLineTitle = regexp.MustCompile(`^#\s(.*)$`)
 	// Matches the line with the date.
 	matchLineDate = regexp.MustCompile(`^Date:\s(.*)\s*$`)
+	// Matches the line with the updated date.
+	matchLineUpdatedDate = regexp.MustCompile(`^Updated:\s(.*)\s*$`)
 	// Matches the line with the language.
 	matchLineLanguage = regexp.MustCompile(`^Language:\s(.*)\s*$`)
 	// Matches the line with the slug.
@@ -38,14 +40,14 @@ var (
 )
 
 type metadata struct {
-	id       dd.NoteID
-	filename string
-	modTime  time.Time
-	date     time.Time
-	title    template.HTML
-	slug     string
-	tags     []dd.Tag
-	language string
+	id          dd.NoteID
+	filename    string
+	date        time.Time
+	updatedDate time.Time
+	title       template.HTML
+	slug        string
+	tags        []dd.Tag
+	language    string
 }
 
 type publishTarget int
@@ -203,7 +205,7 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 	defer file.Close()
 
 	data.filename = filename
-	data.modTime = fileModTime(file)
+	modTime := fileModTime(file)
 
 	s := bufio.NewScanner(file)
 	for s.Scan() {
@@ -234,13 +236,31 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 		if date, ok := dd.FirstSubmatch(matchLineDate, s.Text()); ok {
 			data.date, err = time.Parse(time.DateOnly, date)
 			if err != nil {
-				data.date = data.modTime
+				data.date = modTime
+			}
+			continue
+		}
+
+		if updatedDate, ok := dd.FirstSubmatch(matchLineUpdatedDate, s.Text()); ok {
+			data.updatedDate, err = time.Parse(time.DateOnly, updatedDate)
+			if err != nil {
+				data.updatedDate = data.date
 			}
 			continue
 		}
 
 		// If no matchers match, we are done.
 		break
+	}
+
+	// Set date to modTime if it's missing.
+	if data.date.IsZero() {
+		data.date = modTime
+	}
+
+	// Set updated date to date if it's missing.
+	if data.updatedDate.IsZero() {
+		data.updatedDate = data.date
 	}
 
 	// Set slug to id if no slug has been set.
@@ -460,7 +480,7 @@ func (s *Store) notesForTag(w *config.Website, t dd.Tag) []noteContent {
 	}
 
 	sort.Slice(n, func(i, j int) bool {
-		return n[i].date.After(n[j].date)
+		return n[i].updatedDate.After(n[j].updatedDate)
 	})
 
 	return n
