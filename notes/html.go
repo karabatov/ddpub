@@ -127,12 +127,10 @@ func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 
 func dateForNote(note *noteContent, w *config.Website) string {
 	datePub := note.date.Format(w.Str(l10n.DateFormat))
-	datePubStr := fmt.Sprintf(w.Str(l10n.DatePublished), datePub)
 	if note.updatedDate != note.date {
 		dateUpd := note.updatedDate.Format(w.Str(l10n.DateFormat))
-		dateUpdStr := fmt.Sprintf(w.Str(l10n.DateUpdated), dateUpd)
-		return fmt.Sprintf("%s %s", dateUpdStr, datePubStr)
+		return fmt.Sprintf(w.Str(l10n.DateUpdatedPublished), dateUpd, datePub)
 	}
 
-	return datePubStr
+	return fmt.Sprintf(w.Str(l10n.DatePublished), datePub)
 }

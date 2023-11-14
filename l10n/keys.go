@@ -9,7 +9,7 @@ type Key int
 const (
 	DateFormat Key = iota
 	DatePublished
-	DateUpdated
+	DateUpdatedPublished
 	FooterPoweredBy
 	TagsTitle
 )
@@ -20,8 +20,8 @@ func (l *L10n) Str(key Key) string {
 		return l.loc.DateFormat
 	case DatePublished:
 		return l.loc.DatePublished
-	case DateUpdated:
-		return l.loc.DateUpdated
+	case DateUpdatedPublished:
+		return l.loc.DateUpdatedPublished
 	case FooterPoweredBy:
 		return l.loc.FooterPoweredBy
 	case TagsTitle:

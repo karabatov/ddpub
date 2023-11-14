@@ -1,5 +1,5 @@
 DateFormat = "02.01.2006"
-DatePublished = "Опубликовано %s."
-DateUpdated = "Обновлено %s."
+DatePublished = "Опубликовано %s"
+DateUpdatedPublished = "Обновлено %s ・ Опубликовано %s"
 FooterPoweredBy = 'Питается силой <a href="https://ddpub.org">DDPub</a>'
 TagsTitle = "Теги"

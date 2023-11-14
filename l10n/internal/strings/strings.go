@@ -1,9 +1,9 @@
 package strings
 
 type Strings struct {
-	DateFormat      string
-	DatePublished   string
-	DateUpdated     string
-	FooterPoweredBy string
-	TagsTitle       string
+	DateFormat           string
+	DatePublished        string
+	DateUpdatedPublished string
+	FooterPoweredBy      string
+	TagsTitle            string
 }
