@@ -33,10 +33,14 @@
    --linkColor: var(--blue);
    --footerColor: var(--grey);
    --blockquoteColor: var(--grey);
+   --codeBorderColor: var(--contrast-blue);
+   --codeColor: var(--pale-yellow);
+   --codeBackgroundColor: var(--contrast-blue);
    --tagForegroundColor: var(--white);
    --tagBackgroundColor: var(--blue);
 
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
+   --monospaceFontFamily: monospace;
 }
 
 body {
@@ -92,8 +96,27 @@ main blockquote {
    padding-inline-start: 1.5em;
    padding-inline-end: 1.5em;
    border-left-style: solid;
-   border-left-width: 1px;
+   border-left-width: 3px;
    border-left-color: var(--blockquoteColor);
+}
+
+main pre code {
+   font-family: var(--monospaceFontFamily);
+   font-size: 1em;
+   line-height: 1.2em;
+   display: block;
+   box-sizing: border-box;
+   width: 100%;
+   padding-block-start: 1em;
+   padding-block-end: 1em;
+   padding-inline-start: 1.5em;
+   padding-inline-end: 1.5em;
+   border-left-style: solid;
+   border-left-width: 3px;
+   border-left-color: var(--codeBorderColor);
+   color: var(--codeColor);
+   background-color: var(--codeBackgroundColor);
+   overflow-x: scroll;
 }
 
 .post-meta {
