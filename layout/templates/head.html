@@ -1,6 +1,6 @@
 {{define "head"}}
 <head>
-    <title>{{.Title}} - {{.WebsiteTitle}}</title>
+    <title>{{if .Title}}{{.Title}} - {{end}}{{.WebsiteTitle}}</title>
     <link rel="stylesheet" type="text/css" href="{{.ThemeCSSURL}}">
     {{.Suffix}}
 </head>
