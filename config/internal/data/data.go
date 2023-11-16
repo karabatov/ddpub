@@ -37,8 +37,9 @@ type Tag struct {
 }
 
 type Segments struct {
-	HeadSuffix string `toml:"head_suffix"`
-	NoteSuffix string `toml:"note_suffix"`
+	HeadSuffix   string `toml:"head_suffix"`
+	NoteSuffix   string `toml:"note_suffix"`
+	FooterPrefix string `toml:"footer_prefix"`
 }
 
 // ConfigFile represents a TOML configuration file for a single website.

@@ -142,13 +142,13 @@ header, main, footer {
    width: 96%;
 }
 
-footer span {
+footer {
    color: var(--footerColor);
    font-size: 0.9em;
    line-height: 1.1em;
 }
 
-footer span a {
+footer a {
    color: var(--footerColor);
    border-bottom-color: var(--footerColor);
 }

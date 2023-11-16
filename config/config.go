@@ -32,6 +32,7 @@ type Website struct {
 	Pages         Pages
 	HeadSuffix    string
 	NoteSuffix    string
+	FooterPrefix  string
 	ThemeCSS      []byte
 	localizer     *l10n.L10n
 }
@@ -105,6 +106,7 @@ func New(configDir string) (*Website, error) {
 
 	w.HeadSuffix = cfg.Segments.HeadSuffix
 	w.NoteSuffix = cfg.Segments.NoteSuffix
+	w.FooterPrefix = cfg.Segments.FooterPrefix
 
 	return &w, nil
 }

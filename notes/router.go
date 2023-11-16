@@ -40,6 +40,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 			},
 			Content: content,
 			Footer: layout.Footer{
+				Prefix:    template.HTML(w.FooterPrefix),
 				PoweredBy: template.HTML(w.Str(l10n.FooterPoweredBy)),
 			},
 		}

@@ -25,6 +25,7 @@ type Header struct {
 }
 
 type Footer struct {
+	Prefix    template.HTML
 	PoweredBy template.HTML
 }
 
