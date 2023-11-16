@@ -3,7 +3,7 @@
 <h2>{{.Title}}</h2>
 {{if .Tags}}<div class="post-list"><ul>
 {{range .Tags}}
-<li><a href="{{.URL}}">{{.Title}}</a></li>
+<li><a href="{{.URL}}">{{.Title}}</a> ({{.Count}})</li>
 {{end}}
 </ul></div>{{end}}
 </article>

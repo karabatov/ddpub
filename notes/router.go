@@ -79,7 +79,7 @@ func NewRouter(w *config.Website, s *Store) (*Router, error) {
 
 	// Builtin - tags.
 	if err := r.addHandlerFor(w.URLForBuiltin(dd.BuiltinTags), w.Str(l10n.TagsTitle), func() (template.HTML, error) {
-		return htmlForBuiltinTags(w)
+		return htmlForBuiltinTags(w, s)
 	}); err != nil {
 		return nil, err
 	}

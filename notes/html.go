@@ -38,17 +38,20 @@ func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteList
 	return notes
 }
 
-func tagsListItems(w *config.Website) []layout.ListItem {
-	tags := []layout.ListItem{}
+func tagsListItems(w *config.Website, s *Store) []layout.TagListItem {
+	tags := []layout.TagListItem{}
 	for _, t := range w.Tags {
-		li := layout.ListItem{
-			Title: template.HTML(t.Title),
-			URL:   template.HTML(w.URLForTag(t)),
+		li := layout.TagListItem{
+			ListItem: layout.ListItem{
+				Title: template.HTML(t.Title),
+				URL:   template.HTML(w.URLForTag(t)),
+			},
+			Count: len(feedNotesListItems(t.Tag, w, s)),
 		}
 		tags = append(tags, li)
 	}
 	sort.Slice(tags, func(i, j int) bool {
-		return tags[i].Title < tags[j].Title
+		return tags[i].Count > tags[j].Count
 	})
 	return tags
 }
@@ -72,10 +75,10 @@ func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func htmlForBuiltinTags(w *config.Website) (template.HTML, error) {
+func htmlForBuiltinTags(w *config.Website, s *Store) (template.HTML, error) {
 	p := layout.BuiltinTags{
 		Title: template.HTML(w.Str(l10n.TagsTitle)),
-		Tags:  tagsListItems(w),
+		Tags:  tagsListItems(w, s),
 	}
 	rendered, err := layout.FillBuiltinTags(p)
 	if err != nil {

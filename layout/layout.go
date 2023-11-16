@@ -49,10 +49,18 @@ type BuiltinFeed struct {
 	Notes   []NoteListItem
 }
 
+// TagListItem represents the tag in a list of tags. Count is the number of
+// posts on the feed for a particular tag.
+type TagListItem struct {
+	ListItem
+
+	Count int
+}
+
 // BuiltinTags contains data to render the content of the builtin tags page.
 type BuiltinTags struct {
 	Title template.HTML
-	Tags  []ListItem
+	Tags  []TagListItem
 }
 
 type ContentPage struct {
