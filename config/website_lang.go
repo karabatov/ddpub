@@ -2,13 +2,10 @@
 package config
 
 import (
-	_ "embed"
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/karabatov/ddpub/config/internal/data"
 	"github.com/karabatov/ddpub/dd"
@@ -40,10 +37,10 @@ func (w WebsiteLang) isTagPublished(tag dd.Tag) bool {
 	return ok
 }
 
-func newLang(configDir string, lang dd.Language, isChild bool) (*WebsiteLang, error) {
+func newLang(configPath string, lang dd.Language, isChild bool) (*WebsiteLang, error) {
 	var w WebsiteLang
 
-	cfg, err := readConfigFile(configDir)
+	cfg, err := readConfigFile(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -111,16 +108,6 @@ func newLang(configDir string, lang dd.Language, isChild bool) (*WebsiteLang, er
 	w.FooterPrefix = cfg.Segments.FooterPrefix
 
 	return &w, nil
-}
-
-func configPath(configDir string, lang dd.Language, isChild bool) string {
-	configDir = filepath.Clean(configDir)
-	configName := []string{"config"}
-	if isChild {
-		configName = append(configName, dd.SupportedLanguages[lang].Full)
-	}
-	configName = append(configName, "toml")
-	return strings.Join(configName, ".")
 }
 
 func readConfigFile(configPath string) (data.ConfigFile, error) {
