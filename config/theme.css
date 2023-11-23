@@ -38,6 +38,7 @@
    --codeBackgroundColor: var(--contrast-blue);
    --tagForegroundColor: var(--white);
    --tagBackgroundColor: var(--blue);
+   --metaTextColor: var(--black);
 
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
    --monospaceFontFamily: monospace;
@@ -120,8 +121,9 @@ main pre code {
 }
 
 .post-meta {
-   font-size: 0.9em;
-   line-height: 1.1em;
+   font-size: 0.8em;
+   line-height: 1.2em;
+   color: var(--metaTextColor);
 }
 
 .post-meta .tag {
