@@ -20,8 +20,9 @@ type Head struct {
 }
 
 type Header struct {
-	Title template.HTML
-	Menu  []ListItem
+	HomepageURL template.HTML
+	Title       template.HTML
+	Menu        []ListItem
 }
 
 type Footer struct {

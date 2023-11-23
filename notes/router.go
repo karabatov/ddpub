@@ -34,8 +34,9 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 				Suffix:       template.HTML(w.HeadSuffix),
 			},
 			Header: layout.Header{
-				Title: template.HTML(w.Title),
-				Menu:  menu,
+				HomepageURL: template.HTML(w.URLForHomePage()),
+				Title:       template.HTML(w.Title),
+				Menu:        menu,
 			},
 			Content: content,
 			Footer: layout.Footer{
