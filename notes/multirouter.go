@@ -21,7 +21,7 @@ func NewMultiRouter(w *config.Website, m *MultiStore) (*MultiRouter, error) {
 	}
 	mr.main = mainRouter
 
-	mr.subRouters = make([]*Router, len(w.SubConfigs))
+	mr.subRouters = make([]*Router, 0)
 	for _, cfg := range w.SubConfigs {
 		router, err := newRouter(cfg, m.SubStores[cfg.Language.Code])
 		if err != nil {
