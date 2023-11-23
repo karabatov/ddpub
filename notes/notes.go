@@ -96,7 +96,7 @@ type Store struct {
 	files map[string]file
 }
 
-func NewStore(w *config.WebsiteLang, notesDir string) (*Store, error) {
+func newStore(w *config.WebsiteLang, notesDir string) (*Store, error) {
 	var s Store
 	var err error
 
