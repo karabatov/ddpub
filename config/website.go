@@ -1,7 +1,6 @@
 package config
 
 import (
-	_ "embed"
 	"errors"
 	"os"
 	"path/filepath"
@@ -10,14 +9,10 @@ import (
 	"github.com/karabatov/ddpub/dd"
 )
 
-//go:embed theme.css
-var themeCSS []byte
-
 // Website represents the configuration of a website.
 type Website struct {
 	Main       *WebsiteLang
 	SubConfigs []*WebsiteLang
-	ThemeCSS   []byte
 }
 
 func New(configDir string) (*Website, error) {
@@ -54,8 +49,6 @@ func New(configDir string) (*Website, error) {
 		}
 		w.SubConfigs = append(w.SubConfigs, cfg)
 	}
-
-	w.ThemeCSS = themeCSS
 
 	return &w, nil
 }

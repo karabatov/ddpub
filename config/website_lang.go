@@ -2,6 +2,7 @@
 package config
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"regexp"
@@ -12,6 +13,9 @@ import (
 	"github.com/karabatov/ddpub/l10n"
 	"github.com/pelletier/go-toml/v2"
 )
+
+//go:embed theme.css
+var themeCSS []byte
 
 // WebsiteLang represents the configuration of one language of a website.
 type WebsiteLang struct {
@@ -26,6 +30,7 @@ type WebsiteLang struct {
 	Menu          []Menu
 	Feed          Feed
 	Pages         Pages
+	ThemeCSS      []byte
 	HeadSuffix    string
 	NoteSuffix    string
 	FooterPrefix  string
@@ -106,6 +111,8 @@ func newLang(configPath string, lang dd.Language, isChild bool) (*WebsiteLang, e
 	w.HeadSuffix = cfg.Segments.HeadSuffix
 	w.NoteSuffix = cfg.Segments.NoteSuffix
 	w.FooterPrefix = cfg.Segments.FooterPrefix
+
+	w.ThemeCSS = themeCSS
 
 	return &w, nil
 }
