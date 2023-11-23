@@ -21,7 +21,7 @@ type Router struct {
 	pageWith func(title string, content template.HTML) layout.Page
 }
 
-func NewRouter(w *config.Website, s *Store) (*Router, error) {
+func NewRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
 	menu := layoutMenu(w, s)
@@ -213,7 +213,7 @@ func handlerForPage(p layout.Page) (http.HandlerFunc, error) {
 	}, nil
 }
 
-func layoutMenu(w *config.Website, s *Store) []layout.ListItem {
+func layoutMenu(w *config.WebsiteLang, s *Store) []layout.ListItem {
 	menu := []layout.ListItem{}
 	for _, m := range w.Menu {
 		var url string

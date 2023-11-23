@@ -96,7 +96,7 @@ type Store struct {
 	files map[string]file
 }
 
-func NewStore(w *config.Website, notesDir string) (*Store, error) {
+func NewStore(w *config.WebsiteLang, notesDir string) (*Store, error) {
 	var s Store
 	var err error
 
@@ -289,7 +289,7 @@ func tagsFromLine(line string) []dd.Tag {
 
 // Build the complete list of *known* note IDs to be published before parsing).
 // They are all valid, verified and exist in `notes`.
-func notesForExport(w *config.Website, byTag map[dd.Tag][]dd.NoteID) []publishedNote {
+func notesForExport(w *config.WebsiteLang, byTag map[dd.Tag][]dd.NoteID) []publishedNote {
 	e := []publishedNote{}
 
 	// Add the homepage note ID if it's there.
@@ -386,7 +386,7 @@ func modifyContent(noteAst ast.Node, modifyLink func(*ast.Link), modifyImage fun
 // Load up the notes' content. Convention: note content is considered
 // to start after the first blank line. So content is everything between
 // the first blank line and EOF.
-func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
+func (s *Store) readExportedContent(w *config.WebsiteLang, notesDir string) error {
 	p := map[dd.NoteID]noteContent{}
 
 	// Set up markdown parser.
@@ -470,7 +470,7 @@ func (s *Store) readExportedContent(w *config.Website, notesDir string) error {
 	return nil
 }
 
-func (s *Store) notesForTag(w *config.Website, t dd.Tag) []noteContent {
+func (s *Store) notesForTag(w *config.WebsiteLang, t dd.Tag) []noteContent {
 	n := []noteContent{}
 
 	for _, id := range s.byTag[t] {
@@ -486,7 +486,7 @@ func (s *Store) notesForTag(w *config.Website, t dd.Tag) []noteContent {
 	return n
 }
 
-func (s *Store) isFeedNote(w *config.Website, id dd.NoteID) bool {
+func (s *Store) isFeedNote(w *config.WebsiteLang, id dd.NoteID) bool {
 	if len(w.Feed.Tag) == 0 {
 		return false
 	}
@@ -500,7 +500,7 @@ func (s *Store) isFeedNote(w *config.Website, id dd.NoteID) bool {
 	return false
 }
 
-func (s *Store) isPageNote(w *config.Website, id dd.NoteID) bool {
+func (s *Store) isPageNote(w *config.WebsiteLang, id dd.NoteID) bool {
 	if len(w.Pages.Tag) == 0 {
 		return false
 	}
@@ -525,7 +525,7 @@ func fileContentType(f *os.File) string {
 	return http.DetectContentType(buffer)
 }
 
-func tryFileFromLink(link string, notesDir string, w *config.Website) (file, error) {
+func tryFileFromLink(link string, notesDir string, w *config.WebsiteLang) (file, error) {
 	u, err := url.Parse(link)
 	if err != nil {
 		return file{}, err

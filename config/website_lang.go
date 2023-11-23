@@ -18,8 +18,8 @@ import (
 //go:embed theme.css
 var themeCSS []byte
 
-// Website represents the configuration of a website.
-type Website struct {
+// WebsiteLang represents the configuration of one language of a website.
+type WebsiteLang struct {
 	Title         string
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
@@ -37,13 +37,13 @@ type Website struct {
 	localizer     *l10n.L10n
 }
 
-func (w Website) isTagPublished(tag dd.Tag) bool {
+func (w WebsiteLang) isTagPublished(tag dd.Tag) bool {
 	_, ok := w.Tags[tag]
 	return ok
 }
 
-func New(configDir string) (*Website, error) {
-	var w Website
+func New(configDir string, lang dd.Language) (*WebsiteLang, error) {
+	var w WebsiteLang
 
 	cfg, err := readConfigFile(configDir)
 	if err != nil {
@@ -186,7 +186,7 @@ func loadTags(s []data.Tag, isValid dd.NoteIDValidFunc) (map[dd.Tag]Tag, error) 
 	return tags, nil
 }
 
-func (w *Website) TagsToPublished(t []dd.Tag) []Tag {
+func (w *WebsiteLang) TagsToPublished(t []dd.Tag) []Tag {
 	tags := []Tag{}
 
 	for _, tag := range t {
@@ -202,6 +202,6 @@ func (w *Website) TagsToPublished(t []dd.Tag) []Tag {
 	return tags
 }
 
-func (w *Website) Str(key l10n.Key) string {
+func (w *WebsiteLang) Str(key l10n.Key) string {
 	return w.localizer.Str(key)
 }

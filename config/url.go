@@ -15,7 +15,7 @@ const (
 	theme  = "theme.css"
 )
 
-func (w Website) URLForBuiltin(b dd.Builtin) string {
+func (w WebsiteLang) URLForBuiltin(b dd.Builtin) string {
 	switch b {
 	case dd.BuiltinFeed:
 		return fmt.Sprintf("/%s/", w.Feed.URLPrefix)
@@ -28,23 +28,23 @@ func (w Website) URLForBuiltin(b dd.Builtin) string {
 	}
 }
 
-func (w Website) URLForTag(t Tag) string {
+func (w WebsiteLang) URLForTag(t Tag) string {
 	return fmt.Sprintf("%s%s/", w.URLForBuiltin(dd.BuiltinTags), t.Slug)
 }
 
-func (w Website) URLForPageNote(slug string) string {
+func (w WebsiteLang) URLForPageNote(slug string) string {
 	return fmt.Sprintf("/%s/", slug)
 }
 
-func (w Website) URLForFeedNote(slug string) string {
+func (w WebsiteLang) URLForFeedNote(slug string) string {
 	return fmt.Sprintf("%s%s/", w.URLForBuiltin(dd.BuiltinFeed), slug)
 }
 
-func (w Website) URLForThemeCSS() string {
+func (w WebsiteLang) URLForThemeCSS() string {
 	return "/" + theme
 }
 
-func (w Website) URLForFile(file string) string {
+func (w WebsiteLang) URLForFile(file string) string {
 	h := sha1.New()
 	h.Write([]byte(file))
 	filename := hex.EncodeToString(h.Sum(nil))

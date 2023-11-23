@@ -23,7 +23,7 @@ func htmlForPage(note *noteContent, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteListItem {
+func feedNotesListItems(t dd.Tag, w *config.WebsiteLang, s *Store) []layout.NoteListItem {
 	notes := []layout.NoteListItem{}
 	for _, n := range s.notesForTag(w, t) {
 		nli := layout.NoteListItem{
@@ -38,7 +38,7 @@ func feedNotesListItems(t dd.Tag, w *config.Website, s *Store) []layout.NoteList
 	return notes
 }
 
-func tagsListItems(w *config.Website, s *Store) []layout.TagListItem {
+func tagsListItems(w *config.WebsiteLang, s *Store) []layout.TagListItem {
 	tags := []layout.TagListItem{}
 	for _, t := range w.Tags {
 		li := layout.TagListItem{
@@ -56,7 +56,7 @@ func tagsListItems(w *config.Website, s *Store) []layout.TagListItem {
 	return tags
 }
 
-func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
+func htmlForBuiltinFeed(w *config.WebsiteLang, s *Store) (template.HTML, error) {
 	var content template.HTML
 	if len(w.Feed.ID) > 0 {
 		note := s.noteContent[w.Feed.ID]
@@ -75,7 +75,7 @@ func htmlForBuiltinFeed(w *config.Website, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func htmlForBuiltinTags(w *config.Website, s *Store) (template.HTML, error) {
+func htmlForBuiltinTags(w *config.WebsiteLang, s *Store) (template.HTML, error) {
 	p := layout.BuiltinTags{
 		Title: template.HTML(w.Str(l10n.TagsTitle)),
 		Tags:  tagsListItems(w, s),
@@ -87,7 +87,7 @@ func htmlForBuiltinTags(w *config.Website, s *Store) (template.HTML, error) {
 	return rendered, nil
 }
 
-func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, error) {
+func htmlForTag(t *config.Tag, w *config.WebsiteLang, s *Store) (template.HTML, error) {
 	var content template.HTML
 	if len(t.ID) > 0 {
 		note := s.noteContent[t.ID]
@@ -106,7 +106,7 @@ func htmlForTag(t *config.Tag, w *config.Website, s *Store) (template.HTML, erro
 	return rendered, nil
 }
 
-func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
+func htmlForNote(note *noteContent, w *config.WebsiteLang) (template.HTML, error) {
 	tags := []layout.ListItem{}
 	for _, t := range w.TagsToPublished(note.tags) {
 		tags = append(tags, layout.ListItem{
@@ -128,7 +128,7 @@ func htmlForNote(note *noteContent, w *config.Website) (template.HTML, error) {
 	return rendered, nil
 }
 
-func dateForNote(note *noteContent, w *config.Website) string {
+func dateForNote(note *noteContent, w *config.WebsiteLang) string {
 	datePub := note.date.Format(w.Str(l10n.DateFormat))
 	if note.updatedDate != note.date {
 		dateUpd := note.updatedDate.Format(w.Str(l10n.DateFormat))
