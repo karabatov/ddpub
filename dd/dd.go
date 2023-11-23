@@ -53,6 +53,22 @@ var SupportedLanguages = map[Language]LanguageCode{
 	LanguageRuRU: {"ru-RU", "ru"},
 }
 
+var reverseLanguages = map[string]Language{
+	"en-UK": LanguageEnUK,
+	"en-US": LanguageEnUS,
+	"ru-RU": LanguageRuRU,
+}
+
+// ParseLanguage tries to identify the language from a given code.
+// It returns the "default" language (en-US) and false if it cannot find the code.
+func ParseLanguage(l string) (Language, bool) {
+	if lang, ok := reverseLanguages[l]; ok {
+		return lang, true
+	}
+
+	return LanguageEnUS, false
+}
+
 func FirstSubmatch(re *regexp.Regexp, line string) (string, bool) {
 	if matches := re.FindStringSubmatch(line); len(matches) > 1 {
 		return matches[1], true

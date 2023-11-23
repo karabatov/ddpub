@@ -19,7 +19,8 @@ var themeCSS []byte
 
 // WebsiteLang represents the configuration of one language of a website.
 type WebsiteLang struct {
-	isChild       bool
+	// IsChild is true if this is not the main, default config.
+	IsChild       bool
 	Title         string
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
@@ -50,7 +51,7 @@ func newLang(configPath string, lang dd.Language, isChild bool) (*WebsiteLang, e
 		return nil, err
 	}
 
-	w.isChild = isChild
+	w.IsChild = isChild
 
 	w.Title = cfg.Title
 

@@ -16,7 +16,7 @@ const (
 )
 
 func (w WebsiteLang) baseURL() string {
-	if !w.isChild {
+	if !w.IsChild {
 		return "/"
 	}
 

@@ -47,7 +47,7 @@ type metadata struct {
 	title       template.HTML
 	slug        string
 	tags        []dd.Tag
-	language    string
+	language    dd.Language
 }
 
 type publishTarget int
@@ -100,7 +100,7 @@ func newStore(w *config.WebsiteLang, notesDir string) (*Store, error) {
 	var s Store
 	var err error
 
-	s.meta, err = readAllMetadata(notesDir, w.IDFromFile)
+	s.meta, err = readAllMetadata(w, notesDir, w.IDFromFile)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func newStore(w *config.WebsiteLang, notesDir string) (*Store, error) {
 
 	s.files = make(map[string]file)
 
-	s.pub = notesForExport(w, s.byTag)
+	s.pub = notesForExport(w, s.byTag, s.meta)
 
 	if err := s.readExportedContent(w, notesDir); err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func newStore(w *config.WebsiteLang, notesDir string) (*Store, error) {
 	return &s, nil
 }
 
-func readAllMetadata(notesDir string, idFromFile dd.IDFromFileFunc) (map[dd.NoteID]metadata, error) {
+func readAllMetadata(w *config.WebsiteLang, notesDir string, idFromFile dd.IDFromFileFunc) (map[dd.NoteID]metadata, error) {
 	// Read a list of “.md” files from the notes directory with names that match the regex.
 	allFiles, err := os.ReadDir(notesDir)
 	if err != nil {
@@ -154,7 +154,7 @@ func readAllMetadata(notesDir string, idFromFile dd.IDFromFileFunc) (map[dd.Note
 			continue
 		}
 
-		fileMetadata, err := readMetadata(id, filename, notesDir)
+		fileMetadata, err := readMetadata(w, id, filename, notesDir)
 		if err != nil {
 			fmt.Println("Could not read metadata from file:", filename)
 			continue
@@ -194,7 +194,7 @@ func makeNotesByTag(m map[dd.NoteID]metadata) map[dd.Tag][]dd.NoteID {
 //   - Language (if present, defaults to default language code, currently "en-US")
 //
 // Metadata is read until the first line that _isn't_ metadata, so it all must be at the beginning of the file.
-func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
+func readMetadata(w *config.WebsiteLang, id dd.NoteID, filename, directory string) (metadata, error) {
 	var path = filepath.Join(directory, filename)
 	data := metadata{id: id}
 
@@ -229,7 +229,12 @@ func readMetadata(id dd.NoteID, filename, directory string) (metadata, error) {
 		}
 
 		if lang, ok := dd.FirstSubmatch(matchLineLanguage, s.Text()); ok {
-			data.language = lang
+			if parsedLang, ok := dd.ParseLanguage(lang); ok {
+				data.language = parsedLang
+			} else {
+				// If the language is unknown or unspecified, set the config language.
+				data.language = w.Language.Code
+			}
 			continue
 		}
 
@@ -289,7 +294,7 @@ func tagsFromLine(line string) []dd.Tag {
 
 // Build the complete list of *known* note IDs to be published before parsing).
 // They are all valid, verified and exist in `notes`.
-func notesForExport(w *config.WebsiteLang, byTag map[dd.Tag][]dd.NoteID) []publishedNote {
+func notesForExport(w *config.WebsiteLang, byTag map[dd.Tag][]dd.NoteID, meta map[dd.NoteID]metadata) []publishedNote {
 	e := []publishedNote{}
 
 	// Add the homepage note ID if it's there.
@@ -331,6 +336,9 @@ func notesForExport(w *config.WebsiteLang, byTag map[dd.Tag][]dd.NoteID) []publi
 	// Add all notes with a publish tag from [feed] if it's there.
 	if len(w.Feed.Tag) > 0 {
 		for _, id := range byTag[w.Feed.Tag] {
+			if !shouldIncludeFeedNoteWithLang(w, meta[id]) {
+				continue
+			}
 			e = append(e, publishedNote{
 				id:     id,
 				target: publishTargetFeed,
@@ -339,6 +347,10 @@ func notesForExport(w *config.WebsiteLang, byTag map[dd.Tag][]dd.NoteID) []publi
 	}
 
 	return e
+}
+
+func shouldIncludeFeedNoteWithLang(w *config.WebsiteLang, meta metadata) bool {
+	return meta.language == w.Language.Code
 }
 
 func readContent(filename, directory string) ([]byte, error) {
