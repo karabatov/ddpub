@@ -15,14 +15,26 @@ const (
 	theme  = "theme.css"
 )
 
+func (w WebsiteLang) baseURL() string {
+	if !w.isChild {
+		return "/"
+	}
+
+	return fmt.Sprintf("/%s/", w.Language.String())
+}
+
+func (w WebsiteLang) URLForHomePage() string {
+	return w.baseURL()
+}
+
 func (w WebsiteLang) URLForBuiltin(b dd.Builtin) string {
 	switch b {
 	case dd.BuiltinFeed:
-		return fmt.Sprintf("/%s/", w.Feed.URLPrefix)
+		return fmt.Sprintf("%s%s/", w.baseURL(), w.Feed.URLPrefix)
 	case dd.BuiltinSearch:
-		return fmt.Sprintf("/%s/", search)
+		return fmt.Sprintf("%s%s/", w.baseURL(), search)
 	case dd.BuiltinTags:
-		return fmt.Sprintf("/%s/", tags)
+		return fmt.Sprintf("%s%s/", w.baseURL(), tags)
 	default:
 		return ""
 	}
@@ -33,7 +45,7 @@ func (w WebsiteLang) URLForTag(t Tag) string {
 }
 
 func (w WebsiteLang) URLForPageNote(slug string) string {
-	return fmt.Sprintf("/%s/", slug)
+	return fmt.Sprintf("%s%s/", w.baseURL(), slug)
 }
 
 func (w WebsiteLang) URLForFeedNote(slug string) string {
@@ -41,7 +53,7 @@ func (w WebsiteLang) URLForFeedNote(slug string) string {
 }
 
 func (w WebsiteLang) URLForThemeCSS() string {
-	return "/" + theme
+	return w.baseURL() + theme
 }
 
 func (w WebsiteLang) URLForFile(file string) string {
@@ -49,5 +61,5 @@ func (w WebsiteLang) URLForFile(file string) string {
 	h.Write([]byte(file))
 	filename := hex.EncodeToString(h.Sum(nil))
 	extension := filepath.Ext(file)
-	return fmt.Sprintf("/files/%s%s", filename, extension)
+	return fmt.Sprintf("%sfiles/%s%s", w.baseURL(), filename, extension)
 }

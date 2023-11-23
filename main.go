@@ -72,7 +72,7 @@ func main() {
 		log.Fatalf("Couldn't load notes: %v\n", err)
 	}
 
-	router, err := notes.NewRouter(cfg, store)
+	router, err := notes.NewMultiRouter(cfg, store)
 	if err != nil {
 		log.Fatalf("Could not create router: %s", err)
 	}

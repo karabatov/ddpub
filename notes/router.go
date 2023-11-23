@@ -55,13 +55,13 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 	case config.HomepageKindNoteID:
 		id := w.Homepage.(config.HomepageNoteID).ID
 		note := s.noteContent[id]
-		if err := r.addHandlerFor("/", htmlAsText(note.title), func() (template.HTML, error) {
+		if err := r.addHandlerFor(w.URLForHomePage(), htmlAsText(note.title), func() (template.HTML, error) {
 			return htmlForPage(&note, s)
 		}); err != nil {
 			return nil, err
 		}
 	case config.HomepageKindFeed:
-		if err := r.addHandlerFor("/", w.Feed.Title, func() (template.HTML, error) {
+		if err := r.addHandlerFor(w.URLForHomePage(), w.Feed.Title, func() (template.HTML, error) {
 			return htmlForBuiltinFeed(w, s)
 		}); err != nil {
 			return nil, err
