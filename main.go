@@ -62,7 +62,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := config.New(configDir)
+	cfg, err := config.NewLang(configDir)
 	if err != nil {
 		log.Fatalf("Couldn't load website config: %v\n", err)
 	}

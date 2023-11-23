@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/karabatov/ddpub/config/internal/data"
 	"github.com/karabatov/ddpub/dd"
@@ -15,11 +16,9 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-//go:embed theme.css
-var themeCSS []byte
-
 // WebsiteLang represents the configuration of one language of a website.
 type WebsiteLang struct {
+	isChild       bool
 	Title         string
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
@@ -33,7 +32,6 @@ type WebsiteLang struct {
 	HeadSuffix    string
 	NoteSuffix    string
 	FooterPrefix  string
-	ThemeCSS      []byte
 	localizer     *l10n.L10n
 }
 
@@ -42,7 +40,7 @@ func (w WebsiteLang) isTagPublished(tag dd.Tag) bool {
 	return ok
 }
 
-func New(configDir string, lang dd.Language) (*WebsiteLang, error) {
+func newLang(configDir string, lang dd.Language, isChild bool) (*WebsiteLang, error) {
 	var w WebsiteLang
 
 	cfg, err := readConfigFile(configDir)
@@ -50,11 +48,17 @@ func New(configDir string, lang dd.Language) (*WebsiteLang, error) {
 		return nil, err
 	}
 
+	w.isChild = isChild
+
 	w.Title = cfg.Title
 
 	w.Language, err = parseLanguage(cfg.Language)
 	if err != nil {
 		return nil, err
+	}
+
+	if isChild && w.Language.Code != lang {
+		return nil, fmt.Errorf("mismatched language in config: %s", w.Language.String())
 	}
 
 	w.localizer, err = l10n.New(w.Language.Code)
@@ -102,8 +106,6 @@ func New(configDir string, lang dd.Language) (*WebsiteLang, error) {
 
 	w.Pages.Tag = dd.Tag(cfg.Pages.Tag)
 
-	w.ThemeCSS = themeCSS
-
 	w.HeadSuffix = cfg.Segments.HeadSuffix
 	w.NoteSuffix = cfg.Segments.NoteSuffix
 	w.FooterPrefix = cfg.Segments.FooterPrefix
@@ -111,9 +113,17 @@ func New(configDir string, lang dd.Language) (*WebsiteLang, error) {
 	return &w, nil
 }
 
-func readConfigFile(configDir string) (data.ConfigFile, error) {
+func configPath(configDir string, lang dd.Language, isChild bool) string {
 	configDir = filepath.Clean(configDir)
-	configPath := filepath.Join(configDir, "config.toml")
+	configName := []string{"config"}
+	if isChild {
+		configName = append(configName, dd.SupportedLanguages[lang].Full)
+	}
+	configName = append(configName, "toml")
+	return strings.Join(configName, ".")
+}
+
+func readConfigFile(configPath string) (data.ConfigFile, error) {
 	configFile, err := os.ReadFile(configPath)
 	if err != nil {
 		return data.ConfigFile{}, fmt.Errorf("could not open config file '%s': %v", configPath, err)
