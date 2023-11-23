@@ -3,7 +3,6 @@ package notes
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 
@@ -21,7 +20,7 @@ type Router struct {
 	pageWith func(title string, content template.HTML) layout.Page
 }
 
-func NewRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
+func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 	r := Router{routes: make(map[string]http.HandlerFunc)}
 
 	menu := layoutMenu(w, s)
@@ -126,23 +125,6 @@ func NewRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 	}
 
 	return &r, nil
-}
-
-func (r Router) ServeMux() *http.ServeMux {
-	defer func() {
-		// We shouldn't panic here, but it's better than crashing.
-		if err := recover(); err != nil {
-			log.Fatalf("Could not create router: %v", err)
-		}
-	}()
-
-	mux := http.NewServeMux()
-
-	for pattern, handler := range r.routes {
-		mux.HandleFunc(pattern, handler)
-	}
-
-	return mux
 }
 
 func (r *Router) hasPattern(p string) bool {

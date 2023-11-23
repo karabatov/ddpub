@@ -1,10 +1,13 @@
 package notes
 
-import "github.com/karabatov/ddpub/config"
+import (
+	"github.com/karabatov/ddpub/config"
+	"github.com/karabatov/ddpub/dd"
+)
 
 type MultiStore struct {
 	Main      *Store
-	SubStores []*Store
+	SubStores map[dd.Language]*Store
 }
 
 func NewMultiStore(w *config.Website, notesDir string) (*MultiStore, error) {
@@ -16,13 +19,13 @@ func NewMultiStore(w *config.Website, notesDir string) (*MultiStore, error) {
 	}
 	m.Main = mainStore
 
-	m.SubStores = make([]*Store, len(w.SubConfigs))
+	m.SubStores = make(map[dd.Language]*Store)
 	for _, cfg := range w.SubConfigs {
 		s, err := newStore(cfg, notesDir)
 		if err != nil {
 			return nil, err
 		}
-		m.SubStores = append(m.SubStores, s)
+		m.SubStores[cfg.Language.Code] = s
 	}
 
 	return &m, nil
