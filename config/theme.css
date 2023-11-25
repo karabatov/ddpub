@@ -44,6 +44,12 @@
    --monospaceFontFamily: monospace;
 }
 
+@media (min-width: 48em) {
+   :root {
+     font-size: calc(0.8rem + ((1vw - .48rem) * 1.389));
+   }
+ }
+
 body {
    margin: 0;
    padding: 0;
