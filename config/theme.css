@@ -42,13 +42,9 @@
 
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
    --monospaceFontFamily: monospace;
-}
 
-@media (min-width: 48em) {
-   :root {
-     font-size: calc(0.8rem + ((1vw - .48rem) * 1.389));
-   }
- }
+   font-size: 18px;
+}
 
 body {
    margin: 0;
@@ -59,6 +55,7 @@ body {
 }
 
 .post-content img {
+   max-height: 85%;
    max-width: 75%;
    height: auto;
    display: block;
