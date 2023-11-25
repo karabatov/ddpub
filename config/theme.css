@@ -43,7 +43,7 @@
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
    --monospaceFontFamily: monospace;
 
-   font-size: 18px;
+   font-size: 20px;
 }
 
 body {
@@ -149,8 +149,8 @@ header, main, footer {
 
 footer {
    color: var(--footerColor);
-   font-size: 0.9em;
-   line-height: 1.1em;
+   font-size: 0.8em;
+   line-height: 1.2em;
 }
 
 footer a, footer a:visited {
