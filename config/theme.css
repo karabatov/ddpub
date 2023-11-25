@@ -43,7 +43,7 @@
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
    --monospaceFontFamily: monospace;
 
-   font-size: 20px;
+   font-size: 28px;
 }
 
 body {
@@ -159,6 +159,9 @@ footer a, footer a:visited {
 }
 
 @media screen and (min-width: 1024px) {
+   :root {
+      font-size: 16px;
+   }
    header, main, footer {
       margin-left: auto;
       margin-right: auto;
