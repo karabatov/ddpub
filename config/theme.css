@@ -43,10 +43,13 @@
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
    --monospaceFontFamily: monospace;
 
-   font-size: 28px;
+   font-size: 24px;
+   -ms-text-size-adjust: 100%;
+   -webkit-text-size-adjust: 100%
 }
 
 body {
+   font-size: 1em;
    margin: 0;
    padding: 0;
    background-color: var(--backgroundColor);
