@@ -42,8 +42,10 @@
 
    --mainFontFamily: 'Helvetica Neue', arial, sans-serif;
    --monospaceFontFamily: monospace;
+}
 
-   font-size: 24px;
+html {
+   font-size: 125%;
    -ms-text-size-adjust: 100%;
    -webkit-text-size-adjust: 100%
 }
@@ -162,9 +164,6 @@ footer a, footer a:visited {
 }
 
 @media screen and (min-width: 1024px) {
-   :root {
-      font-size: 16px;
-   }
    header, main, footer {
       margin-left: auto;
       margin-right: auto;
