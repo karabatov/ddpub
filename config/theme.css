@@ -45,13 +45,13 @@
 }
 
 html {
-   font-size: 125%;
+   font-size: 18px;
    -ms-text-size-adjust: 100%;
    -webkit-text-size-adjust: 100%
 }
 
 body {
-   font-size: 1em;
+   font-size: 1rem;
    margin: 0;
    padding: 0;
    background-color: var(--backgroundColor);
@@ -77,9 +77,9 @@ a, a:visited {
 
 header h1 {
    display: block;
-   font-size: 2em;
+   font-size: 2rem;
    font-weight: bold;
-   line-height: 2.4em;
+   line-height: 2.4rem;
    margin: 0;
 }
 
@@ -92,18 +92,18 @@ nav {
 
 nav a {
    text-wrap: nowrap;
-   margin-bottom: 0.5em;
-   margin-right: 1em;
+   margin-bottom: 0.5rem;
+   margin-right: 1rem;
 }
 
 main blockquote {
    display: block;
    margin-block: 0;
    margin-inline: 0;
-   padding-block-start: 0.5em;
-   padding-block-end: 0.5em;
-   padding-inline-start: 1.5em;
-   padding-inline-end: 1.5em;
+   padding-block-start: 0.5rem;
+   padding-block-end: 0.5rem;
+   padding-inline-start: 1.5rem;
+   padding-inline-end: 1.5rem;
    border-left-style: solid;
    border-left-width: 3px;
    border-left-color: var(--blockquoteColor);
@@ -111,15 +111,15 @@ main blockquote {
 
 main pre code {
    font-family: var(--monospaceFontFamily);
-   font-size: 1em;
-   line-height: 1.2em;
+   font-size: 1rem;
+   line-height: 1.2rem;
    display: block;
    box-sizing: border-box;
    width: 100%;
-   padding-block-start: 1em;
-   padding-block-end: 1em;
-   padding-inline-start: 1.5em;
-   padding-inline-end: 1.5em;
+   padding-block-start: 1rem;
+   padding-block-end: 1rem;
+   padding-inline-start: 1.5rem;
+   padding-inline-end: 1.5rem;
    border-left-style: solid;
    border-left-width: 3px;
    border-left-color: var(--codeBorderColor);
@@ -129,18 +129,18 @@ main pre code {
 }
 
 .post-meta {
-   font-size: 0.8em;
-   line-height: 1.2em;
+   font-size: 0.8rem;
+   line-height: 1.2rem;
    color: var(--metaTextColor);
 }
 
 .post-meta .tag {
    text-wrap: nowrap;
-   margin-right: 0.6em; 
+   margin-right: 0.6rem; 
    background-color: var(--tagBackgroundColor);
    color: var(--tagForegroundColor);
-   padding: 0.4em;
-   border-radius: 0.3em;
+   padding: 0.4rem;
+   border-radius: 0.3rem;
 }
 
 .post-item p {
@@ -154,8 +154,8 @@ header, main, footer {
 
 footer {
    color: var(--footerColor);
-   font-size: 0.8em;
-   line-height: 1.2em;
+   font-size: 0.8rem;
+   line-height: 1.2rem;
 }
 
 footer a, footer a:visited {
