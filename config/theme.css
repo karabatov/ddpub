@@ -149,7 +149,7 @@ main pre code {
 
 header, main, footer {
    margin: 10pt 2% 30pt 2%;
-   width: 96%;
+   max-width: 96%;
 }
 
 footer {
@@ -167,6 +167,6 @@ footer a, footer a:visited {
    header, main, footer {
       margin-left: auto;
       margin-right: auto;
-      width: 960px;
+      max-width: 960px;
    }
 }
