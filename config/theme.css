@@ -44,12 +44,6 @@
    --monospaceFontFamily: monospace;
 }
 
-@supports (font: -apple-system-body) {
-   html {
-      font: -apple-system-body;
-   }
-}
-
 body {
    font-size: 1rem;
    margin: 0;
@@ -168,5 +162,11 @@ footer a, footer a:visited {
       margin-left: auto;
       margin-right: auto;
       max-width: 960px;
+   }
+}
+
+@supports (font: -apple-system-body) {
+   html {
+      font: -apple-system-body;
    }
 }
