@@ -44,6 +44,12 @@
    --monospaceFontFamily: monospace;
 }
 
+@supports (font: -apple-system-body) {
+   html {
+      font: -apple-system-body;
+   }
+}
+
 body {
    font-size: 1rem;
    margin: 0;
