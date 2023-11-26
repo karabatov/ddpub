@@ -144,7 +144,7 @@ func (r *Router) addHandler(pattern string, handler http.HandlerFunc) error {
 }
 
 func (r *Router) addHandlerForPage(pattern string, page layout.Page) error {
-	h, err := handlerForPage(page)
+	h, err := handlerForPage(pattern, page)
 	if err != nil {
 		return err
 	}
@@ -185,13 +185,17 @@ func handlerForLocalFile(f file) http.HandlerFunc {
 	}
 }
 
-func handlerForPage(p layout.Page) (http.HandlerFunc, error) {
+func handlerForPage(pattern string, p layout.Page) (http.HandlerFunc, error) {
 	l, err := layout.FillPage(p)
 	if err != nil {
 		return nil, err
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != pattern {
+			http.NotFound(w, r)
+			return
+		}
 		w.Write(l)
 	}, nil
 }
