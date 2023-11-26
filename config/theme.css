@@ -77,6 +77,14 @@ header h1 {
    margin: 1rem 0 1rem 0;
 }
 
+main h2 {
+   display: block;
+   font-size: 1.5rem;
+   font-weight: bold;
+   line-height: 2rem;
+   margin: 0.85rem 0 0.85rem 0;
+}
+
 nav {
    display: flex;
    flex-wrap: wrap;
@@ -122,10 +130,15 @@ main pre code {
    overflow-x: scroll;
 }
 
+.post-content {
+   margin: 0.5rem 0 1.5rem 0;
+}
+
 .post-meta {
    font-size: 0.8rem;
    line-height: 1.2rem;
    color: var(--metaTextColor);
+   margin: 0 0 0.5rem 0;
 }
 
 .post-meta .tag {
