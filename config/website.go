@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,6 +28,10 @@ func New(configDir string) (*Website, error) {
 	}
 	w.Main = mainConfig
 
+	if len(w.Main.Domain) == 0 {
+		return nil, fmt.Errorf("domain field must be set in config file: %s", cfgPath)
+	}
+
 	// Read language subconfigs.
 
 	w.SubConfigs = make([]*WebsiteLang, 0)
@@ -47,6 +52,11 @@ func New(configDir string) (*Website, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		// Overwrite domain and HTTPS setting.
+		cfg.Domain = w.Main.Domain
+		cfg.HTTPS = w.Main.HTTPS
+
 		w.SubConfigs = append(w.SubConfigs, cfg)
 	}
 

@@ -1,0 +1,12 @@
+{{define "metatags"}}
+<meta property="og:title" content="{{.Title}}" />
+<meta property="og:type" content="{{.Type}}" />
+<meta property="og:image" content="{{.Image}}" />
+<meta property="og:url" content="{{.URL}}" />
+<meta property="og:locale" content="{{.Locale}}" />
+<meta property="og:site_name" content="{{.SiteName}}" />
+<meta name="twitter:card" content="summary" />
+{{if .Twitter}}
+<meta name="twitter:site" content="{{.Twitter}}" />
+{{end}}
+{{end}}

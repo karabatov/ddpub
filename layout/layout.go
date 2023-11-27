@@ -12,10 +12,21 @@ var (
 	tmpl  = template.Must(template.ParseFS(files, "templates/*.html"))
 )
 
+type MetaTags struct {
+	Title    string
+	Type     string
+	Image    template.HTML
+	URL      template.HTML
+	Locale   string
+	SiteName string
+	Twitter  string
+}
+
 type Head struct {
 	Title        string
 	WebsiteTitle string
 	ThemeCSSURL  template.HTML
+	MetaTags     MetaTags
 	Suffix       template.HTML
 }
 

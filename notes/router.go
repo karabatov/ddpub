@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/k3a/html2text"
 	"github.com/karabatov/ddpub/config"
@@ -16,34 +17,45 @@ import (
 type contentFunc func() (template.HTML, error)
 
 type Router struct {
+	website  *config.WebsiteLang
 	routes   map[string]http.HandlerFunc
-	pageWith func(title string, content template.HTML) layout.Page
+	pageWith func(pattern string, title string, content template.HTML) layout.Page
 }
 
 func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
-	r := Router{routes: make(map[string]http.HandlerFunc)}
-
-	menu := layoutMenu(w, s)
-	r.pageWith = func(title string, content template.HTML) layout.Page {
-		return layout.Page{
-			Language: w.Language.String(),
-			Head: layout.Head{
-				Title:        title,
-				WebsiteTitle: w.Title,
-				ThemeCSSURL:  template.HTML(w.URLForThemeCSS()),
-				Suffix:       template.HTML(w.HeadSuffix),
-			},
-			Header: layout.Header{
-				HomepageURL: template.HTML(w.URLForHomePage()),
-				Title:       template.HTML(w.Title),
-				Menu:        menu,
-			},
-			Content: content,
-			Footer: layout.Footer{
-				Prefix:    template.HTML(w.FooterPrefix),
-				PoweredBy: template.HTML(w.Str(l10n.FooterPoweredBy)),
-			},
-		}
+	r := Router{
+		website: w,
+		routes:  make(map[string]http.HandlerFunc),
+		pageWith: func(pattern string, title string, content template.HTML) layout.Page {
+			return layout.Page{
+				Language: w.Language.String(),
+				Head: layout.Head{
+					Title:        title,
+					WebsiteTitle: w.Title,
+					ThemeCSSURL:  template.HTML(w.URLForThemeCSS()),
+					MetaTags: layout.MetaTags{
+						Title:    title,
+						Type:     "website",
+						Image:    "",
+						URL:      template.HTML(w.AbsoluteURL(pattern)),
+						Locale:   w.Language.Full(),
+						SiteName: w.Title,
+						Twitter:  w.Twitter,
+					},
+					Suffix: template.HTML(w.HeadSuffix),
+				},
+				Header: layout.Header{
+					HomepageURL: template.HTML(w.URLForHomePage()),
+					Title:       template.HTML(w.Title),
+					Menu:        layoutMenu(w, s),
+				},
+				Content: content,
+				Footer: layout.Footer{
+					Prefix:    template.HTML(w.FooterPrefix),
+					PoweredBy: template.HTML(w.Str(l10n.FooterPoweredBy)),
+				},
+			}
+		},
 	}
 
 	// Add theme.css.
@@ -152,15 +164,15 @@ func (r *Router) addHandlerForPage(pattern string, page layout.Page) error {
 	return r.addHandler(pattern, h)
 }
 
-func (r *Router) addHandlerFor(url string, title string, content contentFunc) error {
+func (r *Router) addHandlerFor(pattern string, title string, content contentFunc) error {
 	rendered, err := content()
 	if err != nil {
 		return err
 	}
 
-	page := r.pageWith(title, rendered)
+	page := r.pageWith(pattern, title, rendered)
 
-	if err := r.addHandlerForPage(url, page); err != nil {
+	if err := r.addHandlerForPage(pattern, page); err != nil {
 		return err
 	}
 
@@ -223,5 +235,5 @@ func layoutMenu(w *config.WebsiteLang, s *Store) []layout.ListItem {
 }
 
 func htmlAsText(t template.HTML) string {
-	return html2text.HTML2Text(string(t))
+	return strings.TrimSpace(html2text.HTML2Text(string(t)))
 }

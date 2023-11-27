@@ -44,7 +44,9 @@ type Segments struct {
 
 // ConfigFile represents a TOML configuration file for a single website.
 type ConfigFile struct {
-	Address  string
+	Domain   string
+	HTTPS    bool
+	Twitter  string
 	Title    string
 	Language Language
 	Feed     Feed

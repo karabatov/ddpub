@@ -21,6 +21,9 @@ var themeCSS []byte
 type WebsiteLang struct {
 	// IsChild is true if this is not the main, default config.
 	IsChild       bool
+	Domain        string
+	HTTPS         bool
+	Twitter       string
 	Title         string
 	IsValidNoteID dd.NoteIDValidFunc
 	IDFromLink    dd.IDFromLinkFunc
@@ -50,6 +53,10 @@ func newLang(configPath string, lang dd.Language, isChild bool) (*WebsiteLang, e
 	if err != nil {
 		return nil, err
 	}
+
+	w.Domain = cfg.Domain
+	w.HTTPS = cfg.HTTPS
+	w.Twitter = cfg.Twitter
 
 	w.IsChild = isChild
 

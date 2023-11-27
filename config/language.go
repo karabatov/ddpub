@@ -14,6 +14,10 @@ type Language struct {
 	UseShort bool
 }
 
+func (l Language) Full() string {
+	return dd.SupportedLanguages[l.Code].Full
+}
+
 func (l Language) String() string {
 	s := dd.SupportedLanguages[l.Code]
 	if l.UseShort {

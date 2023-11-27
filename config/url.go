@@ -63,3 +63,15 @@ func (w WebsiteLang) URLForFile(file string) string {
 	extension := filepath.Ext(file)
 	return fmt.Sprintf("%sfiles/%s%s", w.baseURL(), filename, extension)
 }
+
+func (w WebsiteLang) AbsoluteURL(pattern string) string {
+	return fmt.Sprintf("%s://%s%s", w.protocol(), w.Domain, pattern)
+}
+
+func (w WebsiteLang) protocol() string {
+	if w.HTTPS {
+		return "https"
+	}
+
+	return "http"
+}
