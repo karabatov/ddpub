@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	search = "search"
-	tags   = "tags"
-	theme  = "theme.css"
+	favicon = "favicon.ico"
+	search  = "search"
+	tags    = "tags"
+	theme   = "theme.css"
 )
 
 func (w WebsiteLang) baseURL() string {
@@ -54,6 +55,10 @@ func (w WebsiteLang) URLForFeedNote(slug string) string {
 
 func (w WebsiteLang) URLForThemeCSS() string {
 	return w.baseURL() + theme
+}
+
+func (w WebsiteLang) URLForFavicon() string {
+	return w.baseURL() + favicon
 }
 
 func (w WebsiteLang) URLForFile(file string) string {

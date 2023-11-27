@@ -4,6 +4,7 @@
     <title>{{if .Title}}{{.Title}} - {{end}}{{.WebsiteTitle}}</title>
     {{template "metatags" .MetaTags}}
     <link rel="stylesheet" type="text/css" href="{{.ThemeCSSURL}}">
+    <link rel="icon" type="image/x-icon" href="{{.FaviconURL}}">
     {{.Suffix}}
 </head>
 {{end}}

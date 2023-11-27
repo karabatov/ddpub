@@ -26,6 +26,7 @@ type Head struct {
 	Title        string
 	WebsiteTitle string
 	ThemeCSSURL  template.HTML
+	FaviconURL   template.HTML
 	MetaTags     MetaTags
 	Suffix       template.HTML
 }

@@ -33,6 +33,7 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 					Title:        title,
 					WebsiteTitle: w.Title,
 					ThemeCSSURL:  template.HTML(w.URLForThemeCSS()),
+					FaviconURL:   template.HTML(w.URLForFavicon()),
 					MetaTags: layout.MetaTags{
 						Title:    title,
 						Type:     "website",
@@ -60,6 +61,11 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 
 	// Add theme.css.
 	if err := r.addHandler(w.URLForThemeCSS(), handlerForFile(w.ThemeCSS, "text/css")); err != nil {
+		return nil, err
+	}
+
+	// Add favicon.ico.
+	if err := r.addHandler(w.URLForFavicon(), handlerForFile(w.Favicon, w.FaviconType)); err != nil {
 		return nil, err
 	}
 

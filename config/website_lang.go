@@ -17,6 +17,9 @@ import (
 //go:embed theme.css
 var themeCSS []byte
 
+//go:embed favicon.ico
+var faviconFile []byte
+
 // WebsiteLang represents the configuration of one language of a website.
 type WebsiteLang struct {
 	// IsChild is true if this is not the main, default config.
@@ -35,6 +38,8 @@ type WebsiteLang struct {
 	Feed          Feed
 	Pages         Pages
 	ThemeCSS      []byte
+	Favicon       []byte
+	FaviconType   string
 	HeadSuffix    string
 	NoteSuffix    string
 	FooterPrefix  string
@@ -121,6 +126,8 @@ func newLang(configPath string, lang dd.Language, isChild bool) (*WebsiteLang, e
 	w.FooterPrefix = cfg.Segments.FooterPrefix
 
 	w.ThemeCSS = themeCSS
+	w.Favicon = faviconFile
+	w.FaviconType = "image/svg+xml"
 
 	return &w, nil
 }
