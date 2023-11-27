@@ -33,7 +33,6 @@
    --linkColor: var(--blue);
    --footerColor: var(--grey);
    --blockquoteColor: var(--grey);
-   --codeBorderColor: var(--contrast-blue);
    --codeColor: var(--pale-yellow);
    --codeBackgroundColor: var(--contrast-blue);
    --tagForegroundColor: var(--white);
@@ -122,9 +121,6 @@ main pre code {
    padding-block-end: 1rem;
    padding-inline-start: 1.5rem;
    padding-inline-end: 1.5rem;
-   border-left-style: solid;
-   border-left-width: 3px;
-   border-left-color: var(--codeBorderColor);
    color: var(--codeColor);
    background-color: var(--codeBackgroundColor);
    overflow-x: scroll;
