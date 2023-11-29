@@ -19,16 +19,15 @@ var faviconFile []byte
 
 // Website represents the configuration of a website.
 type Website struct {
-	sharedFiles []SharedFile
-	Main        *WebsiteLang
-	SubConfigs  []*WebsiteLang
+	Main       *WebsiteLang
+	SubConfigs []*WebsiteLang
 }
 
 func NewWebsite(configDir string) (*Website, error) {
 	var w Website
 
 	// Read shared files.
-	w.sharedFiles = []SharedFile{
+	sharedFiles := []SharedFile{
 		{
 			Filename:    "theme.css",
 			Content:     themeCSS,
@@ -41,8 +40,8 @@ func NewWebsite(configDir string) (*Website, error) {
 		},
 	}
 	// If there are any of the named files present in the config dir, overload them.
-	for i := range w.sharedFiles {
-		w.sharedFiles[i].overload(configDir)
+	for i := range sharedFiles {
+		sharedFiles[i].overload(configDir)
 	}
 
 	// Read main config.
@@ -53,7 +52,7 @@ func NewWebsite(configDir string) (*Website, error) {
 		return nil, err
 	}
 	w.Main = mainConfig
-	w.Main.SharedFiles = w.sharedFiles
+	w.Main.SharedFiles = sharedFiles
 
 	if len(w.Main.Domain) == 0 {
 		return nil, fmt.Errorf("domain field must be set in config file: %s", cfgPath)
