@@ -17,6 +17,9 @@ var themeCSS []byte
 //go:embed files/favicon.ico
 var faviconFile []byte
 
+//go:embed files/og.jpg
+var ogImage []byte
+
 // Website represents the configuration of a website.
 type Website struct {
 	Main       *WebsiteLang
@@ -37,6 +40,11 @@ func NewWebsite(configDir string) (*Website, error) {
 			Filename:    "favicon.ico",
 			Content:     faviconFile,
 			ContentType: "image/svg+xml",
+		},
+		{
+			Filename:    "og.jpg",
+			Content:     ogImage,
+			ContentType: "image/jpg",
 		},
 	}
 	// If there are any of the named files present in the config dir, overload them.

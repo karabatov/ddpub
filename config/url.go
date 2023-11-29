@@ -10,10 +10,8 @@ import (
 )
 
 const (
-	favicon = "favicon.ico"
-	search  = "search"
-	tags    = "tags"
-	theme   = "theme.css"
+	search = "search"
+	tags   = "tags"
 )
 
 func (w WebsiteLang) baseURL() string {
@@ -51,14 +49,6 @@ func (w WebsiteLang) URLForPageNote(slug string) string {
 
 func (w WebsiteLang) URLForFeedNote(slug string) string {
 	return fmt.Sprintf("%s%s/", w.URLForBuiltin(dd.BuiltinFeed), slug)
-}
-
-func (w WebsiteLang) URLForThemeCSS() string {
-	return w.baseURL() + theme
-}
-
-func (w WebsiteLang) URLForFavicon() string {
-	return w.baseURL() + favicon
 }
 
 func (w WebsiteLang) URLForFile(file string) string {

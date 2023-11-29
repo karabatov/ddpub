@@ -35,7 +35,7 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 					MetaTags: layout.MetaTags{
 						Title:    title,
 						Type:     "website",
-						Image:    "",
+						Image:    template.HTML(w.AbsoluteURL(w.URLForSharedFile("og.jpg"))),
 						URL:      template.HTML(w.AbsoluteURL(pattern)),
 						Locale:   w.Language.Full(),
 						SiteName: w.Title,
