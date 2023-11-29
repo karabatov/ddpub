@@ -14,10 +14,10 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-//go:embed theme.css
+//go:embed files/theme.css
 var themeCSS []byte
 
-//go:embed favicon.ico
+//go:embed files/favicon.ico
 var faviconFile []byte
 
 // WebsiteLang represents the configuration of one language of a website.
