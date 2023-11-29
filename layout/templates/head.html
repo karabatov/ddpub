@@ -3,8 +3,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{if .Title}}{{.Title}} - {{end}}{{.WebsiteTitle}}</title>
     {{template "metatags" .MetaTags}}
-    <link rel="stylesheet" type="text/css" href="{{.ThemeCSSURL}}">
-    <link rel="icon" type="image/x-icon" href="{{.FaviconURL}}">
+    <link rel="stylesheet" type="text/css" href="/theme.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     {{.Suffix}}
 </head>
 {{end}}

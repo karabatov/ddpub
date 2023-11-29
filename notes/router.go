@@ -32,8 +32,6 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 				Head: layout.Head{
 					Title:        title,
 					WebsiteTitle: w.Title,
-					ThemeCSSURL:  template.HTML(w.URLForThemeCSS()),
-					FaviconURL:   template.HTML(w.URLForFavicon()),
 					MetaTags: layout.MetaTags{
 						Title:    title,
 						Type:     "website",
@@ -57,16 +55,6 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 				},
 			}
 		},
-	}
-
-	// Add theme.css.
-	if err := r.addHandler(w.URLForThemeCSS(), handlerForFile(w.ThemeCSS, "text/css")); err != nil {
-		return nil, err
-	}
-
-	// Add favicon.ico.
-	if err := r.addHandler(w.URLForFavicon(), handlerForFile(w.Favicon, w.FaviconType)); err != nil {
-		return nil, err
 	}
 
 	// Add homepage.
@@ -132,6 +120,15 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 			return htmlForTag(&t, w, s)
 		}); err != nil {
 			return nil, err
+		}
+	}
+
+	// Add shared files (only need to do this for main config).
+	if !w.IsChild {
+		for _, f := range w.SharedFiles {
+			if err := r.addHandler(w.URLForSharedFile(f.Filename), handlerForFile(f.Content, f.ContentType)); err != nil {
+				return nil, err
+			}
 		}
 	}
 

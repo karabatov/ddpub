@@ -69,6 +69,10 @@ func (w WebsiteLang) URLForFile(file string) string {
 	return fmt.Sprintf("%sfiles/%s%s", w.baseURL(), filename, extension)
 }
 
+func (w WebsiteLang) URLForSharedFile(file string) string {
+	return fmt.Sprintf("/%s", file)
+}
+
 func (w WebsiteLang) AbsoluteURL(pattern string) string {
 	return fmt.Sprintf("%s://%s%s", w.protocol(), w.Domain, pattern)
 }

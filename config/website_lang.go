@@ -2,7 +2,6 @@
 package config
 
 import (
-	_ "embed"
 	"fmt"
 	"os"
 	"regexp"
@@ -13,12 +12,6 @@ import (
 	"github.com/karabatov/ddpub/l10n"
 	"github.com/pelletier/go-toml/v2"
 )
-
-//go:embed files/theme.css
-var themeCSS []byte
-
-//go:embed files/favicon.ico
-var faviconFile []byte
 
 // WebsiteLang represents the configuration of one language of a website.
 type WebsiteLang struct {
@@ -37,6 +30,7 @@ type WebsiteLang struct {
 	Menu          []Menu
 	Feed          Feed
 	Pages         Pages
+	SharedFiles   []SharedFile
 	ThemeCSS      []byte
 	Favicon       []byte
 	FaviconType   string
@@ -124,10 +118,6 @@ func newLang(configPath string, lang dd.Language, isChild bool) (*WebsiteLang, e
 	w.HeadSuffix = cfg.Segments.HeadSuffix
 	w.NoteSuffix = cfg.Segments.NoteSuffix
 	w.FooterPrefix = cfg.Segments.FooterPrefix
-
-	w.ThemeCSS = themeCSS
-	w.Favicon = faviconFile
-	w.FaviconType = "image/svg+xml"
 
 	return &w, nil
 }

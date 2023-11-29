@@ -1,6 +1,7 @@
 package config
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -10,14 +11,39 @@ import (
 	"github.com/karabatov/ddpub/dd"
 )
 
+//go:embed files/theme.css
+var themeCSS []byte
+
+//go:embed files/favicon.ico
+var faviconFile []byte
+
 // Website represents the configuration of a website.
 type Website struct {
-	Main       *WebsiteLang
-	SubConfigs []*WebsiteLang
+	sharedFiles []SharedFile
+	Main        *WebsiteLang
+	SubConfigs  []*WebsiteLang
 }
 
 func NewWebsite(configDir string) (*Website, error) {
 	var w Website
+
+	// Read shared files.
+	w.sharedFiles = []SharedFile{
+		{
+			Filename:    "theme.css",
+			Content:     themeCSS,
+			ContentType: "text/css",
+		},
+		{
+			Filename:    "favicon.ico",
+			Content:     faviconFile,
+			ContentType: "image/svg+xml",
+		},
+	}
+	// If there are any of the named files present in the config dir, overload them.
+	for i := range w.sharedFiles {
+		w.sharedFiles[i].overload(configDir)
+	}
 
 	// Read main config.
 
@@ -27,6 +53,7 @@ func NewWebsite(configDir string) (*Website, error) {
 		return nil, err
 	}
 	w.Main = mainConfig
+	w.Main.SharedFiles = w.sharedFiles
 
 	if len(w.Main.Domain) == 0 {
 		return nil, fmt.Errorf("domain field must be set in config file: %s", cfgPath)
