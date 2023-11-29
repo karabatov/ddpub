@@ -16,7 +16,7 @@ type Website struct {
 	SubConfigs []*WebsiteLang
 }
 
-func New(configDir string) (*Website, error) {
+func NewWebsite(configDir string) (*Website, error) {
 	var w Website
 
 	// Read main config.
