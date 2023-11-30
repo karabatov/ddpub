@@ -402,7 +402,8 @@ func (s *Store) readExportedContent(w *config.WebsiteLang, notesDir string) erro
 	p := map[dd.NoteID]noteContent{}
 
 	// Set up markdown parser.
-	parserExtensions := parser.Tables | parser.FencedCode | parser.Strikethrough
+	parserExtensions := parser.Tables | parser.FencedCode | parser.Strikethrough |
+		parser.NoEmptyLineBeforeBlock | parser.AutoHeadingIDs | parser.HeadingIDs | parser.OrderedListStart
 
 	// Load note content.
 	for _, pubNote := range s.pub {
