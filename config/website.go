@@ -47,9 +47,10 @@ func NewWebsite(configDir string) (*Website, error) {
 			ContentType: "image/jpg",
 		},
 	}
-	// If there are any of the named files present in the config dir, overload them.
+	// If there are any of the named files present in the config dir,
+	// overload them but keep the type "text/css" for theme.css.
 	for i := range sharedFiles {
-		sharedFiles[i].overload(configDir)
+		sharedFiles[i].overload(configDir, sharedFiles[i].Filename == "theme.css")
 	}
 
 	// Read main config.

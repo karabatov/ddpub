@@ -18,7 +18,7 @@ type SharedFile struct {
 }
 
 // overload tries to read the file from configDir and replaces Content and ContentType.
-func (sf *SharedFile) overload(configDir string) {
+func (sf *SharedFile) overload(configDir string, keepContentType bool) {
 	path := filepath.Join(configDir, sf.Filename)
 	f, err := os.ReadFile(path)
 	if err != nil {
@@ -27,5 +27,7 @@ func (sf *SharedFile) overload(configDir string) {
 	}
 
 	sf.Content = f
-	sf.ContentType = http.DetectContentType(f)
+	if !keepContentType {
+		sf.ContentType = http.DetectContentType(f)
+	}
 }
