@@ -207,6 +207,7 @@ func readMetadata(w *config.WebsiteLang, id dd.NoteID, filename, directory strin
 	data.filename = filename
 	modTime := fileModTime(file)
 
+	noLangSeen := true
 	s := bufio.NewScanner(file)
 	for s.Scan() {
 		if title, ok := dd.FirstSubmatch(matchLineTitle, s.Text()); ok {
@@ -229,6 +230,7 @@ func readMetadata(w *config.WebsiteLang, id dd.NoteID, filename, directory strin
 		}
 
 		if lang, ok := dd.FirstSubmatch(matchLineLanguage, s.Text()); ok {
+			noLangSeen = false
 			if parsedLang, ok := dd.ParseLanguage(lang); ok {
 				data.language = parsedLang
 			} else {
@@ -271,6 +273,11 @@ func readMetadata(w *config.WebsiteLang, id dd.NoteID, filename, directory strin
 	// Set slug to id if no slug has been set.
 	if len(data.slug) == 0 {
 		data.slug = string(id)
+	}
+
+	// Set language to config language if it's been missing and we're in the parent config.
+	if noLangSeen && !w.IsChild {
+		data.language = w.Language.Code
 	}
 
 	return data, nil
