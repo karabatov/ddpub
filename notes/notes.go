@@ -455,6 +455,8 @@ func (s *Store) readExportedContent(w *config.WebsiteLang, notesDir string) erro
 				} else if s.isPageNote(w, id) {
 					newLink = w.URLForPageNote(linkedMeta.slug)
 				}
+				// Append any of the trailing embellishments.
+				newLink += "#" + u.EscapedFragment()
 				// Identifying tags by note ids is guessing so we don't do it.
 				link.Destination = []byte(newLink)
 			}
