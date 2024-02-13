@@ -456,7 +456,9 @@ func (s *Store) readExportedContent(w *config.WebsiteLang, notesDir string) erro
 					newLink = w.URLForPageNote(linkedMeta.slug)
 				}
 				// Append any of the trailing embellishments.
-				newLink += "#" + u.EscapedFragment()
+				if ef := u.EscapedFragment(); len(ef) > 0 {
+					newLink += "#" + ef
+				}
 				// Identifying tags by note ids is guessing so we don't do it.
 				link.Destination = []byte(newLink)
 			}
