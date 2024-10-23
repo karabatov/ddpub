@@ -3,10 +3,13 @@ package notes
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/gorilla/feeds"
 	"github.com/k3a/html2text"
 	"github.com/karabatov/ddpub/config"
 	"github.com/karabatov/ddpub/dd"
@@ -140,6 +143,36 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 		}
 	}
 
+	// Add RSS.
+
+	rss := &feeds.Feed{
+		Title:   w.Title,
+		Link:    &feeds.Link{Href: w.AbsoluteURL(w.URLForHomePage())},
+		Author:  &feeds.Author{},
+		Updated: time.Now(),
+	}
+	for _, p := range s.pub {
+		note := s.noteContent[p.id]
+		if p.target != publishTargetFeed {
+			continue
+		}
+		link := w.AbsoluteURL(w.URLForFeedNote(note.slug))
+		rss.Add(&feeds.Item{
+			Title:   htmlAsText(note.title),
+			Id:      link,
+			Link:    &feeds.Link{Href: link},
+			Updated: note.updatedDate,
+			Created: note.date,
+		})
+	}
+	rssFeed, err := rss.ToRss()
+	if err != nil {
+		return nil, err
+	}
+	if err := r.addHandler(w.URLForRSSFeed(), handlerForRSSFeed(rssFeed)); err != nil {
+		return nil, err
+	}
+
 	return &r, nil
 }
 
@@ -197,6 +230,13 @@ func handlerForLocalFile(f file) http.HandlerFunc {
 		} else {
 			w.Write([]byte{})
 		}
+	}
+}
+
+func handlerForRSSFeed(f string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/rss+xml")
+		io.WriteString(w, f)
 	}
 }
 

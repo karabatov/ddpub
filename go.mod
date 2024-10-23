@@ -7,4 +7,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.9
 )
 
-require github.com/k3a/html2text v1.2.1 // indirect
+require (
+	github.com/gorilla/feeds v1.2.0
+	github.com/k3a/html2text v1.2.1 // indirect
+)

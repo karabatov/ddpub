@@ -63,6 +63,10 @@ func (w WebsiteLang) URLForSharedFile(file string) string {
 	return fmt.Sprintf("/%s", file)
 }
 
+func (w WebsiteLang) URLForRSSFeed() string {
+	return fmt.Sprintf("%srss.xml", w.baseURL())
+}
+
 func (w WebsiteLang) AbsoluteURL(pattern string) string {
 	return fmt.Sprintf("%s://%s%s", w.protocol(), w.Domain, pattern)
 }
