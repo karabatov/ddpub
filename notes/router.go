@@ -163,6 +163,7 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 			Link:    &feeds.Link{Href: link},
 			Updated: note.updatedDate,
 			Created: note.date,
+			Content: string(note.content),
 		})
 	}
 	rssFeed, err := rss.ToRss()
