@@ -161,8 +161,7 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 			Title:   htmlAsText(note.title),
 			Id:      link,
 			Link:    &feeds.Link{Href: link},
-			Updated: note.updatedDate,
-			Created: note.date,
+			Created: note.updatedDate,
 			Content: string(note.content),
 		})
 	}
