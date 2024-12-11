@@ -26,6 +26,7 @@ type Head struct {
 	Title        string
 	WebsiteTitle string
 	MetaTags     MetaTags
+	RSSURL       template.HTML
 	Suffix       template.HTML
 }
 
@@ -38,6 +39,7 @@ type Header struct {
 type Footer struct {
 	Prefix    template.HTML
 	PoweredBy template.HTML
+	RSSURL    template.HTML
 }
 
 // ListItem represents an item in the list with a link and title.

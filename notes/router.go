@@ -44,6 +44,7 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 						SiteName: w.Title,
 						Twitter:  w.Twitter,
 					},
+					RSSURL: template.HTML(w.URLForRSSFeed()),
 					Suffix: template.HTML(w.HeadSuffix),
 				},
 				Header: layout.Header{
@@ -55,6 +56,7 @@ func newRouter(w *config.WebsiteLang, s *Store) (*Router, error) {
 				Footer: layout.Footer{
 					Prefix:    template.HTML(w.FooterPrefix),
 					PoweredBy: template.HTML(w.Str(l10n.FooterPoweredBy)),
+					RSSURL:    template.HTML(w.URLForRSSFeed()),
 				},
 			}
 		},
