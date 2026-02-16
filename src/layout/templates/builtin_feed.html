@@ -1,0 +1,14 @@
+<article>
+<h2>{{ p.title }}</h2>
+{% if p.content %}<div class="post-content">
+{{ p.content }}
+</div>
+{% endif %}
+{% if p.notes %}<div class="post-list">
+{% for n in p.notes %}<div class="post-item">
+<a href="{{ n.list_item.url }}">{{ n.list_item.title }}</a>
+<div class="post-meta">{{ n.date }}</div>
+</div>
+{% endfor %}
+{% endif %}
+</article>

@@ -1,4 +1,4 @@
-DateFormat = "January 2, 2006"
+DateFormat = "%B %-d, %Y"
 DatePublished = "Published %s"
 DateUpdatedPublished = "Updated %s ・ Published %s"
 FooterPoweredBy = 'Powered by <a href="https://ddpub.org" target="_blank">DDPub</a>'

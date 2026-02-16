@@ -1,0 +1,10 @@
+<meta property="og:title" content="{{ page.head.meta_tags.title }}" />
+    <meta property="og:type" content="{{ page.head.meta_tags.type }}" />
+    <meta property="og:image" content="{{ page.head.meta_tags.image }}" />
+    <meta property="og:url" content="{{ page.head.meta_tags.url }}" />
+    <meta property="og:locale" content="{{ page.head.meta_tags.locale }}" />
+    <meta property="og:site_name" content="{{ page.head.meta_tags.site_name }}" />
+    <meta name="twitter:card" content="summary" />
+    {% if page.head.meta_tags.twitter %}
+    <meta name="twitter:site" content="{{ page.head.meta_tags.twitter }}" />
+    {% endif %}

@@ -1,0 +1,75 @@
+//! Menu types and parsing.
+
+use crate::config::data;
+use crate::dd::{Builtin, NoteId, Tag};
+
+#[derive(Debug, Clone)]
+pub enum Menu {
+    Builtin { title: String, builtin: Builtin },
+    NoteId { title: String, id: NoteId },
+    Tag { title: String, tag: Tag },
+    Url { title: String, url: String },
+}
+
+impl Menu {
+    pub fn title(&self) -> &str {
+        match self {
+            Menu::Builtin { title, .. } => title,
+            Menu::NoteId { title, .. } => title,
+            Menu::Tag { title, .. } => title,
+            Menu::Url { title, .. } => title,
+        }
+    }
+}
+
+fn validate(m: &data::Menu) -> Result<(), Box<dyn std::error::Error>> {
+    let mut filled = 0;
+    if !m.builtin.is_empty() { filled += 1; }
+    if !m.id.is_empty() { filled += 1; }
+    if !m.tag.is_empty() { filled += 1; }
+    if !m.url.is_empty() { filled += 1; }
+
+    if filled != 1 {
+        return Err("menu entry can only have one type".into());
+    }
+
+    Ok(())
+}
+
+pub fn parse_menu(
+    m: &data::Menu,
+    is_valid_id: &dyn Fn(&str) -> bool,
+    is_tag_published: &dyn Fn(&str) -> bool,
+) -> Result<Menu, Box<dyn std::error::Error>> {
+    validate(m)?;
+
+    if !m.builtin.is_empty() {
+        let builtin = match m.builtin.as_str() {
+            "feed" => Builtin::Feed,
+            "search" => Builtin::Search,
+            "tags" => Builtin::Tags,
+            _ => return Err(format!("unknown builtin '{}'", m.builtin).into()),
+        };
+        return Ok(Menu::Builtin { title: m.title.clone(), builtin });
+    }
+
+    if !m.id.is_empty() {
+        if !is_valid_id(&m.id) {
+            return Err(format!("invalid note id '{}'", m.id).into());
+        }
+        return Ok(Menu::NoteId { title: m.title.clone(), id: m.id.clone() });
+    }
+
+    if !m.tag.is_empty() {
+        if !is_tag_published(&m.tag) {
+            return Err(format!("non-published tag '{}' in menu", m.tag).into());
+        }
+        return Ok(Menu::Tag { title: m.title.clone(), tag: m.tag.clone() });
+    }
+
+    if !m.url.is_empty() {
+        return Ok(Menu::Url { title: m.title.clone(), url: m.url.clone() });
+    }
+
+    unreachable!()
+}

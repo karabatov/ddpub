@@ -1,0 +1,10 @@
+<article>
+<h2>{{ n.title }}</h2>
+<div class="post-meta">{{ n.date }}</div>
+<div class="post-content">{{ n.content }}</div>
+<div class="post-meta">{% if n.tags %}
+{% for t in n.tags %}<a class="tag" href="{{ t.url }}">{{ t.title }}</a>{% endfor %}
+{% endif %}</div>
+{% if n.suffix %}{{ n.suffix }}
+{% endif %}
+</article>
