@@ -1,7 +1,9 @@
 //! Feed config.
 
 use crate::config::data;
+use crate::config::note_id::NoteIdMatcher;
 use crate::dd::{NoteId, Tag};
+use crate::error::{Error, Result};
 
 #[derive(Debug, Clone)]
 pub struct Feed {
@@ -14,8 +16,8 @@ pub struct Feed {
 pub fn parse_feed(
     f: &data::Feed,
     default_title: &str,
-    is_valid: &dyn Fn(&str) -> bool,
-) -> Result<Feed, Box<dyn std::error::Error>> {
+    matcher: &NoteIdMatcher,
+) -> Result<Feed> {
     let mut feed = Feed {
         tag: f.tag.clone(),
         url_prefix: if f.url_prefix.is_empty() {
@@ -31,8 +33,11 @@ pub fn parse_feed(
         },
     };
 
-    if !f.id.is_empty() && !is_valid(&f.id) {
-        return Err(format!("invalid note ID '{}' in feed", f.id).into());
+    if !f.id.is_empty() && !matcher.is_valid(&f.id) {
+        return Err(Error::Config(format!(
+            "invalid note ID '{}' in feed",
+            f.id
+        )));
     }
     feed.id = f.id.clone();
 

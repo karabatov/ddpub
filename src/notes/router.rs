@@ -2,6 +2,7 @@
 
 use crate::config::{self, WebsiteLang};
 use crate::dd::Builtin;
+use crate::error::{Error, Result};
 use crate::l10n::Key;
 use crate::layout;
 use crate::notes::html::*;
@@ -20,7 +21,7 @@ pub struct Router {
     pub routes: HashMap<String, Route>,
 }
 
-fn make_page(w: &WebsiteLang, s: &Store, pattern: &str, title: &str, content: String) -> Vec<u8> {
+fn make_page(w: &WebsiteLang, s: &Store, pattern: &str, title: &str, content: String) -> Result<Vec<u8>> {
     let page = layout::Page {
         language: w.language.to_string(),
         head: layout::Head {
@@ -41,7 +42,7 @@ fn make_page(w: &WebsiteLang, s: &Store, pattern: &str, title: &str, content: St
         header: layout::Header {
             homepage_url: w.url_for_home_page(),
             title: w.title.clone(),
-            menu: layout_menu(w, s),
+            menu: layout_menu(w, s)?,
         },
         content,
         footer: layout::Footer {
@@ -50,7 +51,7 @@ fn make_page(w: &WebsiteLang, s: &Store, pattern: &str, title: &str, content: St
             rss_url: w.url_for_rss_feed(),
         },
     };
-    layout::fill_page(&page)
+    Ok(layout::fill_page(&page))
 }
 
 fn add_page(
@@ -60,11 +61,13 @@ fn add_page(
     pattern: &str,
     title: &str,
     content: String,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     if routes.contains_key(pattern) {
-        return Err(format!("pattern '{pattern}' already registered with router").into());
+        return Err(Error::Route(format!(
+            "pattern '{pattern}' already registered with router"
+        )));
     }
-    let bytes = make_page(w, s, pattern, title, content);
+    let bytes = make_page(w, s, pattern, title, content)?;
     routes.insert(
         pattern.to_string(),
         Route {
@@ -76,13 +79,15 @@ fn add_page(
 }
 
 impl Router {
-    pub fn new(w: &WebsiteLang, s: &Store) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(w: &WebsiteLang, s: &Store) -> Result<Self> {
         let mut routes: HashMap<String, Route> = HashMap::new();
 
         // Add homepage.
         match &w.homepage {
             config::homepage::Homepage::NoteId(id) => {
-                let note = &s.note_content[id];
+                let note = s.note_content.get(id).ok_or_else(|| {
+                    Error::Route(format!("homepage note content not found: {id}"))
+                })?;
                 let content = html_for_page(note);
                 add_page(&mut routes, w, s, &w.url_for_home_page(), &html_as_text(&note.meta.title), content)?;
             }
@@ -150,7 +155,9 @@ impl Router {
             for f in &w.shared_files {
                 let pattern = w.url_for_shared_file(&f.filename);
                 if routes.contains_key(&pattern) {
-                    return Err(format!("pattern '{pattern}' already registered with router").into());
+                    return Err(Error::Route(format!(
+                        "pattern '{pattern}' already registered with router"
+                    )));
                 }
                 routes.insert(
                     pattern,
@@ -178,7 +185,7 @@ impl Router {
         }
 
         // Add RSS.
-        let rss_content = build_rss_feed(w, s)?;
+        let rss_content = build_rss_feed(w, s);
         let rss_pattern = w.url_for_rss_feed();
         routes.insert(
             rss_pattern,
@@ -192,33 +199,35 @@ impl Router {
     }
 }
 
-fn layout_menu(w: &WebsiteLang, s: &Store) -> Vec<layout::ListItem> {
+fn layout_menu(w: &WebsiteLang, s: &Store) -> Result<Vec<layout::ListItem>> {
     w.menu
         .iter()
         .map(|m| {
             let url = match m {
                 config::menu::Menu::Builtin { builtin, .. } => w.url_for_builtin(*builtin),
                 config::menu::Menu::NoteId { id, .. } => {
-                    let slug = &s.note_content[id].meta.slug;
-                    w.url_for_page_note(slug)
+                    let note = s.note_content.get(id).ok_or_else(|| {
+                        Error::Route(format!("menu note content not found: {id}"))
+                    })?;
+                    w.url_for_page_note(&note.meta.slug)
                 }
                 config::menu::Menu::Tag { tag, .. } => {
-                    w.url_for_tag(&w.tags[tag])
+                    let tag_config = w.tags.get(tag).ok_or_else(|| {
+                        Error::Route(format!("menu tag not found: {tag}"))
+                    })?;
+                    w.url_for_tag(tag_config)
                 }
                 config::menu::Menu::Url { url, .. } => url.clone(),
             };
-            layout::ListItem {
+            Ok(layout::ListItem {
                 title: m.title().to_string(),
                 url,
-            }
+            })
         })
         .collect()
 }
 
-fn build_rss_feed(
-    w: &WebsiteLang,
-    s: &Store,
-) -> Result<String, Box<dyn std::error::Error>> {
+fn build_rss_feed(w: &WebsiteLang, s: &Store) -> String {
     let mut items = Vec::new();
 
     for p in &s.pub_notes {
@@ -256,5 +265,5 @@ fn build_rss_feed(
         .items(items)
         .build();
 
-    Ok(channel.to_string())
+    channel.to_string()
 }

@@ -1,7 +1,9 @@
 //! Tag config.
 
 use crate::config::data;
+use crate::config::note_id::NoteIdMatcher;
 use crate::dd::{NoteId, Tag as DdTag};
+use crate::error::{Error, Result};
 
 #[derive(Debug, Clone)]
 pub struct TagConfig {
@@ -13,10 +15,10 @@ pub struct TagConfig {
 
 pub fn parse_tag(
     t: &data::TagData,
-    is_valid: &dyn Fn(&str) -> bool,
-) -> Result<TagConfig, Box<dyn std::error::Error>> {
+    matcher: &NoteIdMatcher,
+) -> Result<TagConfig> {
     if t.tag.is_empty() {
-        return Err("tag in [[tags]] cannot be empty".into());
+        return Err(Error::Config("tag in [[tags]] cannot be empty".into()));
     }
 
     let slug = if t.slug.is_empty() {
@@ -31,8 +33,11 @@ pub fn parse_tag(
         t.title.clone()
     };
 
-    if !t.id.is_empty() && !is_valid(&t.id) {
-        return Err(format!("invalid note ID '{}' in tag '{}'", t.id, t.tag).into());
+    if !t.id.is_empty() && !matcher.is_valid(&t.id) {
+        return Err(Error::Config(format!(
+            "invalid note ID '{}' in tag '{}'",
+            t.id, t.tag
+        )));
     }
 
     Ok(TagConfig {

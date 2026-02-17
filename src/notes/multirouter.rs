@@ -1,6 +1,7 @@
 //! MultiRouter → axum Router.
 
 use crate::config::Website;
+use crate::error::Result;
 use crate::notes::multistore::MultiStore;
 use crate::notes::router::Router;
 use axum::http::{StatusCode, header};
@@ -14,7 +15,7 @@ pub struct MultiRouter {
 }
 
 impl MultiRouter {
-    pub fn new(w: &Website, m: &MultiStore) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(w: &Website, m: &MultiStore) -> Result<Self> {
         let main = Router::new(&w.main, &m.main)?;
 
         let mut sub_routers = Vec::new();

@@ -10,7 +10,7 @@ impl WebsiteLang {
         if !self.is_child {
             "/".to_string()
         } else {
-            format!("/{}/", self.language.to_string())
+            format!("/{}/", self.language)
         }
     }
 
@@ -64,5 +64,113 @@ impl WebsiteLang {
 
     fn protocol(&self) -> &str {
         if self.https { "https" } else { "http" }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::config::{self, data};
+    use crate::dd::{Builtin, Language};
+
+    fn make_main() -> config::WebsiteLang {
+        config::from_config(
+            data::ConfigFile {
+                domain: "example.com".to_string(),
+                https: true,
+                title: "Test".to_string(),
+                notes: data::Notes {
+                    id_format: "[a-z0-9-]+".to_string(),
+                    id_link_format: "/note/([a-z0-9-]+)".to_string(),
+                },
+                feed: data::Feed {
+                    tag: "blog".to_string(),
+                    url_prefix: "feed".to_string(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            Language::EnUS,
+            false,
+        )
+        .unwrap()
+    }
+
+    fn make_child() -> config::WebsiteLang {
+        config::from_config(
+            data::ConfigFile {
+                domain: "example.com".to_string(),
+                https: false,
+                title: "Test RU".to_string(),
+                language: data::LanguageData {
+                    code: "ru-RU".to_string(),
+                    short: false,
+                },
+                notes: data::Notes {
+                    id_format: "[a-z0-9-]+".to_string(),
+                    id_link_format: "/note/([a-z0-9-]+)".to_string(),
+                },
+                feed: data::Feed {
+                    tag: "blog".to_string(),
+                    url_prefix: "feed".to_string(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            Language::RuRU,
+            true,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn test_home_page_main() {
+        let w = make_main();
+        assert_eq!(w.url_for_home_page(), "/");
+    }
+
+    #[test]
+    fn test_home_page_child() {
+        let w = make_child();
+        assert_eq!(w.url_for_home_page(), "/ru-RU/");
+    }
+
+    #[test]
+    fn test_builtin_feed() {
+        let w = make_main();
+        assert_eq!(w.url_for_builtin(Builtin::Feed), "/feed/");
+    }
+
+    #[test]
+    fn test_feed_note() {
+        let w = make_main();
+        assert_eq!(w.url_for_feed_note("my-post"), "/feed/my-post/");
+    }
+
+    #[test]
+    fn test_file_url_deterministic() {
+        let w = make_main();
+        let url1 = w.url_for_file("image.png");
+        let url2 = w.url_for_file("image.png");
+        assert_eq!(url1, url2);
+        assert!(url1.starts_with("/files/"));
+        assert!(url1.ends_with(".png"));
+    }
+
+    #[test]
+    fn test_absolute_url_https() {
+        let w = make_main();
+        assert_eq!(w.absolute_url("/feed/"), "https://example.com/feed/");
+    }
+
+    #[test]
+    fn test_absolute_url_http() {
+        let w = make_child();
+        assert_eq!(w.absolute_url("/ru-RU/"), "http://example.com/ru-RU/");
+    }
+
+    #[test]
+    fn test_rss_url() {
+        let w = make_main();
+        assert_eq!(w.url_for_rss_feed(), "/rss.xml");
     }
 }

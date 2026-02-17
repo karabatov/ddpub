@@ -5,13 +5,15 @@ pub mod feed;
 pub mod homepage;
 pub mod language;
 pub mod menu;
+pub mod note_id;
 pub mod shared_file;
 pub mod tag;
 mod url;
 
-use crate::dd::{self, Language, NoteId, Tag, SUPPORTED_LANGUAGES};
+use crate::dd::{self, Language, Tag};
+use crate::error::{Error, Result};
 use crate::l10n::{self, L10n};
-use regex::Regex;
+use note_id::NoteIdMatcher;
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -23,16 +25,14 @@ pub struct Website {
 }
 
 /// WebsiteLang represents the configuration of one language of a website.
-#[allow(dead_code)]
+#[derive(Debug)]
 pub struct WebsiteLang {
     pub is_child: bool,
     pub domain: String,
     pub https: bool,
     pub twitter: String,
     pub title: String,
-    pub is_valid_note_id: Box<dyn Fn(&str) -> bool + Send + Sync>,
-    pub id_from_link: Box<dyn Fn(&str) -> Option<NoteId> + Send + Sync>,
-    pub id_from_file: Box<dyn Fn(&str) -> Option<NoteId> + Send + Sync>,
+    pub note_ids: NoteIdMatcher,
     pub homepage: homepage::Homepage,
     pub language: language::Language,
     pub tags: HashMap<Tag, tag::TagConfig>,
@@ -47,11 +47,6 @@ pub struct WebsiteLang {
 }
 
 impl WebsiteLang {
-    #[allow(dead_code)]
-    pub fn is_tag_published(&self, tag: &str) -> bool {
-        self.tags.contains_key(tag)
-    }
-
     pub fn tags_to_published(&self, tags: &[Tag]) -> Vec<tag::TagConfig> {
         let mut result: Vec<tag::TagConfig> = tags
             .iter()
@@ -71,7 +66,7 @@ static FAVICON: &[u8] = include_bytes!("../../config/files/favicon.ico");
 static OG_IMAGE: &[u8] = include_bytes!("../../config/files/og.jpg");
 
 impl Website {
-    pub fn new(config_dir: &str) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(config_dir: &str) -> Result<Self> {
         let mut shared_files = vec![
             shared_file::SharedFile {
                 filename: "theme.css".to_string(),
@@ -100,7 +95,10 @@ impl Website {
         main.shared_files = shared_files;
 
         if main.domain.is_empty() {
-            return Err(format!("domain field must be set in config file: {}", cfg_path.display()).into());
+            return Err(Error::Config(format!(
+                "domain field must be set in config file: {}",
+                cfg_path.display()
+            )));
         }
 
         let mut sub_configs = Vec::new();
@@ -127,124 +125,69 @@ impl Website {
 fn config_path(config_dir: &str, lang: Language, is_child: bool) -> PathBuf {
     let dir = Path::new(config_dir);
     let name = if is_child {
-        format!("config.{}.toml", SUPPORTED_LANGUAGES[&lang].full)
+        format!("config.{}.toml", lang.full_code())
     } else {
         "config.toml".to_string()
     };
     dir.join(name)
 }
 
-fn read_config_file(path: &Path) -> Result<data::ConfigFile, Box<dyn std::error::Error>> {
+fn read_config_file(path: &Path) -> Result<data::ConfigFile> {
     let content = fs::read_to_string(path)
-        .map_err(|e| format!("could not open config file '{}': {e}", path.display()))?;
+        .map_err(|e| Error::Config(format!("could not open config file '{}': {e}", path.display())))?;
     let cfg: data::ConfigFile = toml::from_str(&content)
-        .map_err(|e| format!("could not load config file '{}': {e}", path.display()))?;
+        .map_err(|e| Error::Config(format!("could not load config file '{}': {e}", path.display())))?;
     Ok(cfg)
 }
 
-fn make_note_id_validator(r: &str) -> Result<Box<dyn Fn(&str) -> bool + Send + Sync>, Box<dyn std::error::Error>> {
-    let re = Regex::new(r)
-        .map_err(|e| format!("could not compile regular expression '{r}': {e}"))?;
-    Ok(Box::new(move |test: &str| {
-        if let Some(m) = re.find(test) {
-            !m.as_str().is_empty() && m.as_str() == test
-        } else {
-            false
-        }
-    }))
-}
-
-fn make_id_from_link_func(
-    r: &str,
-    id_format: &str,
-) -> Result<Box<dyn Fn(&str) -> Option<NoteId> + Send + Sync>, Box<dyn std::error::Error>> {
-    let re = Regex::new(r)
-        .map_err(|e| format!("could not compile regular expression '{r}': {e}"))?;
-
-    // Validate extracted IDs against id_format (not id_link_format)
-    let valid_re = Regex::new(id_format)
-        .map_err(|e| format!("could not compile regular expression '{id_format}': {e}"))?;
-
-    Ok(Box::new(move |link: &str| {
-        let caps = re.captures(link)?;
-        let id = caps.get(1)?.as_str();
-        // Validate with id_format
-        if let Some(m) = valid_re.find(id) {
-            if !m.as_str().is_empty() && m.as_str() == id {
-                return Some(id.to_string());
-            }
-        }
-        None
-    }))
-}
-
-fn make_id_from_file_func(
-    r: &str,
-    _is_valid: &(dyn Fn(&str) -> bool + Send + Sync),
-) -> Result<Box<dyn Fn(&str) -> Option<NoteId> + Send + Sync>, Box<dyn std::error::Error>> {
-    let re = Regex::new(r)
-        .map_err(|e| format!("could not compile regular expression '{r}': {e}"))?;
-
-    let valid_re_str = r.to_string();
-    let valid_re = Regex::new(&valid_re_str).unwrap();
-
-    Ok(Box::new(move |test: &str| {
-        let m = valid_re.find(test)?;
-        let id = m.as_str();
-        if !id.is_empty() && id == test.trim_end_matches(".md").split('.').next().unwrap_or("") {
-            // Actually replicate Go behavior: FindString on test, then check isValid
-            let found = valid_re.find(test)?.as_str().to_string();
-            if !found.is_empty() {
-                // Check is_valid equivalent
-                if let Some(vm) = valid_re.find(&found) {
-                    if !vm.as_str().is_empty() && vm.as_str() == found {
-                        return Some(found);
-                    }
-                }
-            }
-        }
-        // Simpler: just do what Go does
-        let found = re.find(test)?.as_str().to_string();
-        if found.is_empty() {
-            return None;
-        }
-        // Check valid
-        if let Some(vm) = valid_re.find(&found) {
-            if !vm.as_str().is_empty() && vm.as_str() == found {
-                return Some(found);
-            }
-        }
-        None
-    }))
+/// Build a WebsiteLang from a parsed config file, without filesystem access.
+/// Used for testing and when config is already in memory.
+#[cfg(test)]
+pub fn from_config(
+    cfg: data::ConfigFile,
+    lang: Language,
+    is_child: bool,
+) -> Result<WebsiteLang> {
+    from_config_inner(cfg, lang, is_child)
 }
 
 fn new_lang(
     config_path: &Path,
     lang: Language,
     is_child: bool,
-) -> Result<WebsiteLang, Box<dyn std::error::Error>> {
+) -> Result<WebsiteLang> {
     let cfg = read_config_file(config_path)?;
+    from_config_inner(cfg, lang, is_child)
+}
 
+fn from_config_inner(
+    cfg: data::ConfigFile,
+    lang: Language,
+    is_child: bool,
+) -> Result<WebsiteLang> {
     let language = language::parse_language(&cfg.language)?;
 
     if is_child && language.code != lang {
-        return Err(format!("mismatched language in config: {}", language.to_string()).into());
+        return Err(Error::Config(format!(
+            "mismatched language in config: {}",
+            language
+        )));
     }
 
     let localizer = L10n::new(language.code)?;
 
-    let is_valid_note_id = make_note_id_validator(&cfg.notes.id_format)?;
+    let note_ids = NoteIdMatcher::new(&cfg.notes.id_format, &cfg.notes.id_link_format)?;
 
-    let id_from_file = make_id_from_file_func(&cfg.notes.id_format, &*is_valid_note_id)?;
-    let id_from_link = make_id_from_link_func(&cfg.notes.id_link_format, &cfg.notes.id_format)?;
-
-    let homepage = homepage::parse_homepage(&cfg.homepage, &*is_valid_note_id)?;
+    let homepage = homepage::parse_homepage(&cfg.homepage, &note_ids)?;
 
     let mut tags = HashMap::new();
     for t in &cfg.tags {
-        let parsed = tag::parse_tag(t, &*is_valid_note_id)?;
+        let parsed = tag::parse_tag(t, &note_ids)?;
         if tags.contains_key(&parsed.tag) {
-            return Err(format!("tag '{}' already published", parsed.tag).into());
+            return Err(Error::Config(format!(
+                "tag '{}' already published",
+                parsed.tag
+            )));
         }
         tags.insert(parsed.tag.clone(), parsed);
     }
@@ -253,11 +196,11 @@ fn new_lang(
 
     let mut menu_items = Vec::new();
     for m in &cfg.menu {
-        let parsed = menu::parse_menu(m, &*is_valid_note_id, &is_tag_published)?;
+        let parsed = menu::parse_menu(m, &note_ids, &is_tag_published)?;
         menu_items.push(parsed);
     }
 
-    let feed = feed::parse_feed(&cfg.feed, "Feed", &*is_valid_note_id)?;
+    let feed = feed::parse_feed(&cfg.feed, "Feed", &note_ids)?;
 
     Ok(WebsiteLang {
         is_child,
@@ -265,9 +208,7 @@ fn new_lang(
         https: cfg.https,
         twitter: cfg.twitter,
         title: cfg.title,
-        is_valid_note_id,
-        id_from_link,
-        id_from_file,
+        note_ids,
         homepage,
         language,
         tags,
@@ -280,4 +221,81 @@ fn new_lang(
         footer_prefix: cfg.segments.footer_prefix,
         localizer,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn minimal_config() -> data::ConfigFile {
+        data::ConfigFile {
+            domain: "example.com".to_string(),
+            https: true,
+            title: "Test".to_string(),
+            notes: data::Notes {
+                id_format: "[a-z0-9-]+".to_string(),
+                id_link_format: "/note/([a-z0-9-]+)".to_string(),
+            },
+            feed: data::Feed {
+                tag: "blog".to_string(),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_minimal_valid_config() {
+        let w = from_config(minimal_config(), Language::EnUS, false).unwrap();
+        assert_eq!(w.domain, "example.com");
+        assert!(w.https);
+        assert_eq!(w.title, "Test");
+        assert!(matches!(w.homepage, homepage::Homepage::Feed));
+    }
+
+    #[test]
+    fn test_empty_code_defaults_to_en_us() {
+        let cfg = minimal_config();
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert_eq!(w.language.code, Language::EnUS);
+    }
+
+    #[test]
+    fn test_duplicate_tag_error() {
+        let mut cfg = minimal_config();
+        cfg.tags = vec![
+            data::TagData { tag: "rust".to_string(), slug: "rust".to_string(), title: "Rust".to_string(), ..Default::default() },
+            data::TagData { tag: "rust".to_string(), slug: "rust2".to_string(), title: "Rust2".to_string(), ..Default::default() },
+        ];
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("already published"));
+    }
+
+    #[test]
+    fn test_invalid_note_id_in_homepage() {
+        let mut cfg = minimal_config();
+        cfg.homepage = data::Homepage { id: "INVALID!!!".to_string() };
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("invalid note id"));
+    }
+
+    #[test]
+    fn test_unsupported_language_error() {
+        let mut cfg = minimal_config();
+        cfg.language = data::LanguageData { code: "fr-FR".to_string(), short: false };
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("not supported"));
+    }
+
+    #[test]
+    fn test_menu_validation_error() {
+        let mut cfg = minimal_config();
+        cfg.menu = vec![data::Menu {
+            tag: "nonexistent".to_string(),
+            title: "Bad".to_string(),
+            ..Default::default()
+        }];
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("non-published tag"));
+    }
 }

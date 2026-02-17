@@ -1,7 +1,9 @@
 //! Menu types and parsing.
 
 use crate::config::data;
+use crate::config::note_id::NoteIdMatcher;
 use crate::dd::{Builtin, NoteId, Tag};
+use crate::error::{Error, Result};
 
 #[derive(Debug, Clone)]
 pub enum Menu {
@@ -22,7 +24,7 @@ impl Menu {
     }
 }
 
-fn validate(m: &data::Menu) -> Result<(), Box<dyn std::error::Error>> {
+fn validate(m: &data::Menu) -> Result<()> {
     let mut filled = 0;
     if !m.builtin.is_empty() { filled += 1; }
     if !m.id.is_empty() { filled += 1; }
@@ -30,7 +32,7 @@ fn validate(m: &data::Menu) -> Result<(), Box<dyn std::error::Error>> {
     if !m.url.is_empty() { filled += 1; }
 
     if filled != 1 {
-        return Err("menu entry can only have one type".into());
+        return Err(Error::Config("menu entry can only have one type".into()));
     }
 
     Ok(())
@@ -38,9 +40,9 @@ fn validate(m: &data::Menu) -> Result<(), Box<dyn std::error::Error>> {
 
 pub fn parse_menu(
     m: &data::Menu,
-    is_valid_id: &dyn Fn(&str) -> bool,
+    matcher: &NoteIdMatcher,
     is_tag_published: &dyn Fn(&str) -> bool,
-) -> Result<Menu, Box<dyn std::error::Error>> {
+) -> Result<Menu> {
     validate(m)?;
 
     if !m.builtin.is_empty() {
@@ -48,21 +50,24 @@ pub fn parse_menu(
             "feed" => Builtin::Feed,
             "search" => Builtin::Search,
             "tags" => Builtin::Tags,
-            _ => return Err(format!("unknown builtin '{}'", m.builtin).into()),
+            _ => return Err(Error::Config(format!("unknown builtin '{}'", m.builtin))),
         };
         return Ok(Menu::Builtin { title: m.title.clone(), builtin });
     }
 
     if !m.id.is_empty() {
-        if !is_valid_id(&m.id) {
-            return Err(format!("invalid note id '{}'", m.id).into());
+        if !matcher.is_valid(&m.id) {
+            return Err(Error::Config(format!("invalid note id '{}'", m.id)));
         }
         return Ok(Menu::NoteId { title: m.title.clone(), id: m.id.clone() });
     }
 
     if !m.tag.is_empty() {
         if !is_tag_published(&m.tag) {
-            return Err(format!("non-published tag '{}' in menu", m.tag).into());
+            return Err(Error::Config(format!(
+                "non-published tag '{}' in menu",
+                m.tag
+            )));
         }
         return Ok(Menu::Tag { title: m.title.clone(), tag: m.tag.clone() });
     }

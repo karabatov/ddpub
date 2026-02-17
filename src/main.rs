@@ -1,5 +1,6 @@
 mod config;
 mod dd;
+mod error;
 mod l10n;
 mod layout;
 mod notes;

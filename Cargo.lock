@@ -463,6 +463,7 @@ dependencies = [
  "serde",
  "sha1",
  "tempfile",
+ "thiserror",
  "tokio",
  "toml",
  "url",

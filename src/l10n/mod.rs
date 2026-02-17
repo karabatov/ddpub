@@ -1,8 +1,8 @@
 //! L10n loader, Key enum, Str lookup.
 
 use crate::dd::Language;
+use crate::error::{Error, Result};
 use serde::Deserialize;
-use std::fmt;
 
 /// L10n keys.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,19 +28,20 @@ struct Strings {
     tags_title: String,
 }
 
+#[derive(Debug)]
 pub struct L10n {
     loc: Strings,
 }
 
 impl L10n {
-    pub fn new(lang: Language) -> Result<Self, L10nError> {
+    pub fn new(lang: Language) -> Result<Self> {
         let content = match lang {
             Language::EnUS => include_str!("../../l10n/strings/strings.en-US.toml"),
             Language::EnUK => include_str!("../../l10n/strings/strings.en-UK.toml"),
             Language::RuRU => include_str!("../../l10n/strings/strings.ru-RU.toml"),
         };
         let loc: Strings = toml::from_str(content)
-            .map_err(|e| L10nError(format!("could not load language strings: {e}")))?;
+            .map_err(|e| Error::L10n(format!("could not load language strings: {e}")))?;
         Ok(L10n { loc })
     }
 
@@ -54,17 +55,6 @@ impl L10n {
         }
     }
 }
-
-#[derive(Debug)]
-pub struct L10nError(String);
-
-impl fmt::Display for L10nError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl std::error::Error for L10nError {}
 
 #[cfg(test)]
 mod tests {

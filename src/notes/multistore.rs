@@ -2,6 +2,7 @@
 
 use crate::config::Website;
 use crate::dd::Language;
+use crate::error::Result;
 use crate::notes::Store;
 use std::collections::HashMap;
 
@@ -11,7 +12,7 @@ pub struct MultiStore {
 }
 
 impl MultiStore {
-    pub fn new(w: &Website, notes_dir: &str) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(w: &Website, notes_dir: &str) -> Result<Self> {
         let main = Store::new(&w.main, notes_dir)?;
 
         let mut sub_stores = HashMap::new();
