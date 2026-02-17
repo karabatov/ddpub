@@ -3,33 +3,13 @@
 use crate::config::WebsiteLang;
 use crate::dd::{self, NoteId, Tag};
 use crate::error::Result;
-use chrono::NaiveDate;
-use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
-use std::io::{self, BufRead};
+use std::io;
 use std::path::Path;
-use std::sync::LazyLock;
-
-static MATCH_LINE_TITLE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^#\s(.*)$").unwrap());
-static MATCH_LINE_DATE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Date:\s(.*)\s*$").unwrap());
-static MATCH_LINE_UPDATED_DATE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^Updated:\s(.*)\s*$").unwrap());
-static MATCH_LINE_LANGUAGE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^Language:\s(.*)\s*$").unwrap());
-static MATCH_LINE_SLUG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Slug:\s(.*)\s*$").unwrap());
-static MATCH_LINE_TAGS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Tags:\s(.*)\s*$").unwrap());
-static MATCH_ONE_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"#(\S+)\s*").unwrap());
 
 use super::Metadata;
 use super::markdown::md_to_html;
-
-pub fn tags_from_line(line: &str) -> Vec<Tag> {
-    MATCH_ONE_TAG
-        .captures_iter(line)
-        .filter_map(|cap| cap.get(1).map(|m| m.as_str().to_string()))
-        .collect()
-}
 
 pub fn read_metadata(
     w: &WebsiteLang,
@@ -51,108 +31,40 @@ pub fn read_metadata(
         })
         .unwrap_or_else(|| chrono::Local::now().date_naive());
 
-    let mut data = Metadata {
-        id: id.to_string(),
-        filename: filename.to_string(),
-        date: NaiveDate::from_ymd_opt(1, 1, 1).unwrap(),
-        updated_date: NaiveDate::from_ymd_opt(1, 1, 1).unwrap(),
-        title: String::new(),
-        slug: String::new(),
-        tags: Vec::new(),
-        language: dd::Language::EnUS,
+    let nome_meta = nome::read_header(io::BufReader::new(file), id)?;
+
+    let title = nome_meta.title.map(|t| md_to_html(&t)).unwrap_or_default();
+    let tags: Vec<Tag> = nome_meta.tags;
+    let slug = nome_meta.slug.filter(|s| !s.is_empty()).unwrap_or_else(|| id.to_string());
+
+    let date = nome_meta.date.unwrap_or(mod_time);
+    let updated_date = nome_meta.updated.unwrap_or(date);
+
+    let language = if let Some(lang_str) = nome_meta.language {
+        let (parsed, ok) = dd::parse_language(&lang_str);
+        if ok { parsed } else { w.language.code }
+    } else if !w.is_child {
+        w.language.code
+    } else {
+        dd::Language::EnUS
     };
 
-    let mut no_lang_seen = true;
-    let mut date_set = false;
-    let mut updated_set = false;
-
-    let reader = io::BufReader::new(file);
-    for line in reader.lines() {
-        let line = line?;
-
-        if let Some(title) = dd::first_submatch(&MATCH_LINE_TITLE, &line) {
-            data.title = md_to_html(&title);
-            continue;
-        }
-
-        if let Some(tags_str) = dd::first_submatch(&MATCH_LINE_TAGS, &line) {
-            data.tags = tags_from_line(&tags_str);
-            continue;
-        }
-
-        if let Some(slug) = dd::first_submatch(&MATCH_LINE_SLUG, &line) {
-            data.slug = if slug.is_empty() {
-                id.to_string()
-            } else {
-                slug
-            };
-            continue;
-        }
-
-        if let Some(lang_str) = dd::first_submatch(&MATCH_LINE_LANGUAGE, &line) {
-            no_lang_seen = false;
-            let (parsed, ok) = dd::parse_language(&lang_str);
-            data.language = if ok { parsed } else { w.language.code };
-            continue;
-        }
-
-        if let Some(date_str) = dd::first_submatch(&MATCH_LINE_DATE, &line) {
-            match NaiveDate::parse_from_str(date_str.trim(), "%Y-%m-%d") {
-                Ok(d) => {
-                    data.date = d;
-                    date_set = true;
-                }
-                Err(_) => {
-                    data.date = mod_time;
-                    date_set = true;
-                }
-            }
-            continue;
-        }
-
-        if let Some(date_str) = dd::first_submatch(&MATCH_LINE_UPDATED_DATE, &line) {
-            match NaiveDate::parse_from_str(date_str.trim(), "%Y-%m-%d") {
-                Ok(d) => {
-                    data.updated_date = d;
-                    updated_set = true;
-                }
-                Err(_) => {
-                    // Default to date if parsing fails
-                    updated_set = false;
-                }
-            }
-            continue;
-        }
-
-        // If no matchers match, we are done.
-        break;
-    }
-
-    if !date_set {
-        data.date = mod_time;
-    }
-
-    if !updated_set {
-        data.updated_date = data.date;
-    }
-
-    if data.slug.is_empty() {
-        data.slug = id.to_string();
-    }
-
-    if no_lang_seen && !w.is_child {
-        data.language = w.language.code;
-    }
-
-    Ok(data)
+    Ok(Metadata {
+        id: id.to_string(),
+        filename: filename.to_string(),
+        date,
+        updated_date,
+        title,
+        slug,
+        tags,
+        language,
+    })
 }
 
 pub fn read_all_metadata(
     w: &WebsiteLang,
     notes_dir: &str,
 ) -> Result<HashMap<NoteId, Metadata>> {
-    static MATCH_MARKDOWN_FILE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\.md$").unwrap());
-
     let entries = fs::read_dir(notes_dir)
         .map_err(|e| crate::error::Error::Note(format!("could not read the notes directory '{notes_dir}': {e}")))?;
 
@@ -170,7 +82,7 @@ pub fn read_all_metadata(
             None => continue,
         };
 
-        if !MATCH_MARKDOWN_FILE.is_match(&filename) {
+        if !filename.ends_with(".md") {
             continue;
         }
 
@@ -190,17 +102,17 @@ pub fn read_all_metadata(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
-    fn test_tags_from_line() {
-        let tags = tags_from_line("#tag1 #tag2 #tag3");
-        assert_eq!(tags, vec!["tag1", "tag2", "tag3"]);
+    fn test_tags_parsed_from_metadata() {
+        let content = "# Note\nTags: #tag1 #tag2 #tag3\n\nBody";
+        let meta = nome::parse_metadata(content, "id1");
+        assert_eq!(meta.tags, vec!["tag1", "tag2", "tag3"]);
     }
 
     #[test]
-    fn test_tags_from_line_empty() {
-        let tags = tags_from_line("");
-        assert!(tags.is_empty());
+    fn test_tags_empty() {
+        let content = "# Note\nTags: \n\nBody";
+        let meta = nome::parse_metadata(content, "id1");
+        assert!(meta.tags.is_empty());
     }
 }
