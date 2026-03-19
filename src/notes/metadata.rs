@@ -31,7 +31,7 @@ pub fn read_metadata(
         })
         .unwrap_or_else(|| chrono::Local::now().date_naive());
 
-    let nome_meta = nome::read_header(io::BufReader::new(file), id)?;
+    let nome_meta = nome::NoteMetadata::from_reader(io::BufReader::new(file), id)?;
 
     let title = nome_meta.title.map(|t| md_to_html(&t)).unwrap_or_default();
     let tags: Vec<Tag> = nome_meta.tags;
@@ -105,14 +105,14 @@ mod tests {
     #[test]
     fn test_tags_parsed_from_metadata() {
         let content = "# Note\nTags: #tag1 #tag2 #tag3\n\nBody";
-        let meta = nome::parse_metadata(content, "id1");
+        let meta = nome::NoteMetadata::parse(content, "id1");
         assert_eq!(meta.tags, vec!["tag1", "tag2", "tag3"]);
     }
 
     #[test]
     fn test_tags_empty() {
         let content = "# Note\nTags: \n\nBody";
-        let meta = nome::parse_metadata(content, "id1");
+        let meta = nome::NoteMetadata::parse(content, "id1");
         assert!(meta.tags.is_empty());
     }
 }
