@@ -33,6 +33,13 @@ pub fn parse_tag(
         t.title.clone()
     };
 
+    if !t.id.is_empty() && !t.file.is_empty() {
+        return Err(Error::Config(format!(
+            "tag '{}' cannot have both 'id' and 'file'",
+            t.tag
+        )));
+    }
+
     if !t.id.is_empty() && !matcher.is_valid(&t.id) {
         return Err(Error::Config(format!(
             "invalid note ID '{}' in tag '{}'",
@@ -40,9 +47,15 @@ pub fn parse_tag(
         )));
     }
 
+    let note_id = if !t.file.is_empty() {
+        t.file.clone()
+    } else {
+        t.id.clone()
+    };
+
     Ok(TagConfig {
         tag: t.tag.clone(),
-        id: t.id.clone(),
+        id: note_id,
         slug,
         title,
     })

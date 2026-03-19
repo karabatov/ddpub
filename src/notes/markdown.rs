@@ -60,9 +60,12 @@ pub fn render_markdown_with_modifications(
                     (link_str.as_str(), None)
                 };
 
-                if let Some(id) = w.note_ids.extract_link(path_part)
-                    && let Some(linked_meta) = meta.get(&id)
-                {
+                // Try to resolve note link by ID or filename, then fall back to file reference.
+                let note_meta = w.note_ids.extract_link(path_part)
+                    .and_then(|id| meta.get(&id).map(|m| (id, m)))
+                    .or_else(|| meta.get(path_part).map(|m| (m.id.clone(), m)));
+
+                if let Some((id, linked_meta)) = note_meta {
                     let mut new_link = link_str.clone();
                     if is_feed_note(&id) {
                         new_link = w.url_for_feed_note(&linked_meta.slug);
@@ -76,14 +79,14 @@ pub fn render_markdown_with_modifications(
                         new_link.push_str(f);
                     }
                     link.url = new_link;
-                }
-
-                let is_abs = link_str.starts_with("http://") || link_str.starts_with("https://");
-                if !is_abs
-                    && let Some(file_info) = try_file_from_link(&link.url, notes_dir, w)
-                {
-                    link.url = file_info.link.clone();
-                    files.insert(file_info.link.clone(), file_info);
+                } else {
+                    let is_abs = link_str.starts_with("http://") || link_str.starts_with("https://");
+                    if !is_abs {
+                        if let Some(file_info) = try_file_from_link(&link.url, notes_dir, w) {
+                            link.url = file_info.link.clone();
+                            files.insert(file_info.link.clone(), file_info);
+                        }
+                    }
                 }
             }
             NodeValue::Image(link) => {

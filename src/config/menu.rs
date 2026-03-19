@@ -28,6 +28,7 @@ fn validate(m: &data::Menu) -> Result<()> {
     let mut filled = 0;
     if !m.builtin.is_empty() { filled += 1; }
     if !m.id.is_empty() { filled += 1; }
+    if !m.file.is_empty() { filled += 1; }
     if !m.tag.is_empty() { filled += 1; }
     if !m.url.is_empty() { filled += 1; }
 
@@ -60,6 +61,10 @@ pub fn parse_menu(
             return Err(Error::Config(format!("invalid note id '{}'", m.id)));
         }
         return Ok(Menu::NoteId { title: m.title.clone(), id: m.id.clone() });
+    }
+
+    if !m.file.is_empty() {
+        return Ok(Menu::NoteId { title: m.title.clone(), id: m.file.clone() });
     }
 
     if !m.tag.is_empty() {

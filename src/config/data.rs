@@ -6,6 +6,8 @@ use serde::Deserialize;
 pub struct Homepage {
     #[serde(default)]
     pub id: String,
+    #[serde(default)]
+    pub file: String,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -25,6 +27,8 @@ pub struct Feed {
     #[serde(default)]
     pub id: String,
     #[serde(default)]
+    pub file: String,
+    #[serde(default)]
     pub title: String,
 }
 
@@ -43,6 +47,8 @@ pub struct Menu {
     #[serde(default)]
     pub id: String,
     #[serde(default)]
+    pub file: String,
+    #[serde(default)]
     pub tag: String,
     #[serde(default)]
     pub url: String,
@@ -54,6 +60,8 @@ pub struct TagData {
     pub tag: String,
     #[serde(default)]
     pub id: String,
+    #[serde(default)]
+    pub file: String,
     #[serde(default)]
     pub slug: String,
     #[serde(default)]

@@ -274,7 +274,7 @@ mod tests {
     #[test]
     fn test_invalid_note_id_in_homepage() {
         let mut cfg = minimal_config();
-        cfg.homepage = data::Homepage { id: "INVALID!!!".to_string() };
+        cfg.homepage = data::Homepage { id: "INVALID!!!".to_string(), ..Default::default() };
         let err = from_config(cfg, Language::EnUS, false).unwrap_err();
         assert!(err.to_string().contains("invalid note id"));
     }
@@ -297,5 +297,68 @@ mod tests {
         }];
         let err = from_config(cfg, Language::EnUS, false).unwrap_err();
         assert!(err.to_string().contains("non-published tag"));
+    }
+
+    #[test]
+    fn test_homepage_file() {
+        let mut cfg = minimal_config();
+        cfg.homepage = data::Homepage { file: "about.md".to_string(), ..Default::default() };
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert!(matches!(w.homepage, homepage::Homepage::NoteId(ref id) if id == "about.md"));
+    }
+
+    #[test]
+    fn test_homepage_both_id_and_file_error() {
+        let mut cfg = minimal_config();
+        cfg.homepage = data::Homepage {
+            id: "some-id".to_string(),
+            file: "about.md".to_string(),
+        };
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("both"));
+    }
+
+    #[test]
+    fn test_feed_file() {
+        let mut cfg = minimal_config();
+        cfg.feed.file = "feed-page.md".to_string();
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert_eq!(w.feed.id, "feed-page.md");
+    }
+
+    #[test]
+    fn test_feed_both_id_and_file_error() {
+        let mut cfg = minimal_config();
+        cfg.feed.id = "some-id".to_string();
+        cfg.feed.file = "feed-page.md".to_string();
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("both"));
+    }
+
+    #[test]
+    fn test_tag_file() {
+        let mut cfg = minimal_config();
+        cfg.tags = vec![data::TagData {
+            tag: "rust".to_string(),
+            file: "rust-notes.md".to_string(),
+            slug: "rust".to_string(),
+            title: "Rust".to_string(),
+            ..Default::default()
+        }];
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert_eq!(w.tags.get("rust").unwrap().id, "rust-notes.md");
+    }
+
+    #[test]
+    fn test_menu_file() {
+        let mut cfg = minimal_config();
+        cfg.pages = data::Pages { tag: "pages".to_string() };
+        cfg.menu = vec![data::Menu {
+            file: "about.md".to_string(),
+            title: "About".to_string(),
+            ..Default::default()
+        }];
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert!(matches!(&w.menu[0], menu::Menu::NoteId { id, .. } if id == "about.md"));
     }
 }

@@ -11,6 +11,31 @@ use std::path::Path;
 use super::Metadata;
 use super::markdown::md_to_html;
 
+/// Convert an ID or filename into a URL-safe slug.
+fn slugify(s: &str) -> String {
+    let s = s.strip_suffix(".md").unwrap_or(s);
+    let slug: String = s
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '-' })
+        .collect();
+    let slug = slug.trim_matches('-');
+    let mut result = String::with_capacity(slug.len());
+    let mut prev_dash = false;
+    for c in slug.chars() {
+        if c == '-' {
+            if !prev_dash {
+                result.push(c);
+            }
+            prev_dash = true;
+        } else {
+            result.push(c);
+            prev_dash = false;
+        }
+    }
+    result
+}
+
 pub fn read_metadata(
     w: &WebsiteLang,
     id: &str,
@@ -35,7 +60,7 @@ pub fn read_metadata(
 
     let title = nome_meta.title.map(|t| md_to_html(&t)).unwrap_or_default();
     let tags: Vec<Tag> = nome_meta.tags;
-    let slug = nome_meta.slug.filter(|s| !s.is_empty()).unwrap_or_else(|| id.to_string());
+    let slug = slugify(&nome_meta.slug.filter(|s| !s.is_empty()).unwrap_or_else(|| id.to_string()));
 
     let date = nome_meta.date.unwrap_or(mod_time);
     let updated_date = nome_meta.updated.unwrap_or(date);
@@ -77,14 +102,12 @@ pub fn read_all_metadata(
 
         let filename = entry.file_name().to_string_lossy().to_string();
 
-        let id = match w.note_ids.extract_file(&filename) {
-            Some(id) => id,
-            None => continue,
-        };
-
         if !filename.ends_with(".md") {
             continue;
         }
+
+        let id = w.note_ids.extract_file(&filename)
+            .unwrap_or_else(|| filename.clone());
 
         match read_metadata(w, &id, &filename, notes_dir) {
             Ok(m) => {
@@ -102,6 +125,8 @@ pub fn read_all_metadata(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn test_tags_parsed_from_metadata() {
         let content = "# Note\nTags: #tag1 #tag2 #tag3\n\nBody";
@@ -114,5 +139,35 @@ mod tests {
         let content = "# Note\nTags: \n\nBody";
         let meta = nome::NoteMetadata::parse(content, "id1");
         assert!(meta.tags.is_empty());
+    }
+
+    #[test]
+    fn test_slugify_simple() {
+        assert_eq!(slugify("about.md"), "about");
+    }
+
+    #[test]
+    fn test_slugify_spaces() {
+        assert_eq!(slugify("My Cool Article.md"), "my-cool-article");
+    }
+
+    #[test]
+    fn test_slugify_special_chars() {
+        assert_eq!(slugify("hello_world (copy).md"), "hello-world-copy");
+    }
+
+    #[test]
+    fn test_slugify_already_clean() {
+        assert_eq!(slugify("hello-world"), "hello-world");
+    }
+
+    #[test]
+    fn test_slugify_numeric_id() {
+        assert_eq!(slugify("20241201120000"), "20241201120000");
+    }
+
+    #[test]
+    fn test_slugify_consecutive_dashes() {
+        assert_eq!(slugify("a--b---c.md"), "a-b-c");
     }
 }

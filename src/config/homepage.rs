@@ -15,11 +15,19 @@ pub fn parse_homepage(
     h: &data::Homepage,
     matcher: &NoteIdMatcher,
 ) -> Result<Homepage> {
+    if !h.id.is_empty() && !h.file.is_empty() {
+        return Err(Error::Config("homepage cannot have both 'id' and 'file'".into()));
+    }
+
     if !h.id.is_empty() {
         if matcher.is_valid(&h.id) {
             return Ok(Homepage::NoteId(h.id.clone()));
         }
         return Err(Error::Config(format!("invalid note id '{}'", h.id)));
+    }
+
+    if !h.file.is_empty() {
+        return Ok(Homepage::NoteId(h.file.clone()));
     }
 
     Ok(Homepage::Feed)
