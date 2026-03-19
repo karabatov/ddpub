@@ -8,7 +8,7 @@ use comrak::nodes::{Ast, NodeValue};
 use comrak::{Arena, ComrakOptions, format_html, parse_document};
 use regex::Regex;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -26,6 +26,8 @@ pub fn render_markdown_with_modifications(
     meta: &HashMap<NoteId, Metadata>,
     notes_dir: &str,
     files: &mut HashMap<String, FileInfo>,
+    broken_links: &mut HashSet<String>,
+    resolved_links: &mut HashSet<String>,
     is_feed_note: impl Fn(&str) -> bool,
     is_page_note: impl Fn(&str) -> bool,
 ) -> String {
@@ -47,6 +49,8 @@ pub fn render_markdown_with_modifications(
         meta: &HashMap<NoteId, Metadata>,
         notes_dir: &str,
         files: &mut HashMap<String, FileInfo>,
+        broken_links: &mut HashSet<String>,
+        resolved_links: &mut HashSet<String>,
         is_feed_note: &dyn Fn(&str) -> bool,
         is_page_note: &dyn Fn(&str) -> bool,
     ) {
@@ -72,6 +76,7 @@ pub fn render_markdown_with_modifications(
                     } else if is_page_note(&id) {
                         new_link = w.url_for_page_note(&linked_meta.slug);
                     }
+                    resolved_links.insert(new_link.clone());
                     if let Some(f) = fragment
                         && !f.is_empty()
                     {
@@ -79,14 +84,26 @@ pub fn render_markdown_with_modifications(
                         new_link.push_str(f);
                     }
                     link.url = new_link;
+                } else if link_str.starts_with("http://")
+                    || link_str.starts_with("https://")
+                    || link_str.starts_with("mailto:")
+                    || link_str.starts_with("tel:")
+                {
+                    // External or non-http scheme — leave as-is.
+                } else if path_part.starts_with('/') {
+                    // Absolute path on the same site — collect for route validation.
+                    let normalized = if path_part.ends_with('/') {
+                        path_part.to_string()
+                    } else {
+                        format!("{}/", path_part)
+                    };
+                    resolved_links.insert(normalized);
+                } else if let Some(file_info) = try_file_from_link(&link.url, notes_dir, w) {
+                    link.url = file_info.link.clone();
+                    files.insert(file_info.link.clone(), file_info);
                 } else {
-                    let is_abs = link_str.starts_with("http://") || link_str.starts_with("https://");
-                    if !is_abs {
-                        if let Some(file_info) = try_file_from_link(&link.url, notes_dir, w) {
-                            link.url = file_info.link.clone();
-                            files.insert(file_info.link.clone(), file_info);
-                        }
-                    }
+                    // Relative link that's not a file — flag as broken.
+                    broken_links.insert(path_part.to_string());
                 }
             }
             NodeValue::Image(link) => {
@@ -100,11 +117,11 @@ pub fn render_markdown_with_modifications(
         }
 
         for child in node.children() {
-            walk_nodes(child, w, meta, notes_dir, files, is_feed_note, is_page_note);
+            walk_nodes(child, w, meta, notes_dir, files, broken_links, resolved_links, is_feed_note, is_page_note);
         }
     }
 
-    walk_nodes(root, w, meta, notes_dir, files, &is_feed_note, &is_page_note);
+    walk_nodes(root, w, meta, notes_dir, files, broken_links, resolved_links, &is_feed_note, &is_page_note);
 
     let mut html_output = Vec::new();
     format_html(root, &options, &mut html_output).unwrap();

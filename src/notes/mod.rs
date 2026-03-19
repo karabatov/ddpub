@@ -11,7 +11,7 @@ use crate::config::{self, WebsiteLang};
 use crate::dd::{self, NoteId, Tag};
 use crate::error::{Error, Result};
 use chrono::NaiveDate;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub use markdown::html_as_text;
 
@@ -62,6 +62,10 @@ pub struct Store {
     pub pub_notes: Vec<PublishedNote>,
     pub note_content: HashMap<NoteId, NoteContent>,
     pub files: HashMap<String, FileInfo>,
+    /// Unresolved links found in note content (not a known note, not a file on disk).
+    pub broken_links: HashSet<String>,
+    /// Resolved internal note links (base URLs without anchors) to validate against routes.
+    pub resolved_links: HashSet<String>,
 }
 
 impl Store {
@@ -77,6 +81,8 @@ impl Store {
             pub_notes,
             note_content: HashMap::new(),
             files: HashMap::new(),
+            broken_links: HashSet::new(),
+            resolved_links: HashSet::new(),
         };
 
         store.read_exported_content(w, notes_dir)?;
@@ -143,6 +149,8 @@ impl Store {
     ) -> Result<()> {
         let mut contents: HashMap<NoteId, NoteContent> = HashMap::new();
         let mut new_files: HashMap<String, FileInfo> = HashMap::new();
+        let mut broken_links: HashSet<String> = HashSet::new();
+        let mut resolved_links: HashSet<String> = HashSet::new();
 
         let feed_tag = w.feed.tag.clone();
         let pages_tag = w.pages_tag.clone();
@@ -173,6 +181,8 @@ impl Store {
                 &self.meta,
                 notes_dir,
                 &mut new_files,
+                &mut broken_links,
+                &mut resolved_links,
                 is_feed,
                 is_page,
             );
@@ -188,6 +198,8 @@ impl Store {
 
         self.note_content = contents;
         self.files = new_files;
+        self.broken_links = broken_links;
+        self.resolved_links = resolved_links;
         Ok(())
     }
 }

@@ -1,6 +1,5 @@
 //! Core types and functions that are integral to DDPub as a whole.
 
-use regex::Regex;
 use std::path::Path;
 
 /// A valid note ID.
@@ -62,11 +61,6 @@ pub fn parse_language(l: &str) -> (Language, bool) {
     }
 }
 
-pub fn first_submatch(re: &Regex, line: &str) -> Option<String> {
-    re.captures(line)
-        .and_then(|caps| caps.get(1).map(|m| m.as_str().to_string()))
-}
-
 /// Returns all Language variants for iteration.
 pub fn all_languages() -> &'static [Language] {
     Language::ALL
@@ -119,18 +113,6 @@ mod tests {
         let (lang, ok) = parse_language("fr-FR");
         assert_eq!(lang, Language::EnUS);
         assert!(!ok);
-    }
-
-    #[test]
-    fn test_first_submatch_match() {
-        let re = Regex::new(r"^#\s(.*)$").unwrap();
-        assert_eq!(first_submatch(&re, "# Hello"), Some("Hello".to_string()));
-    }
-
-    #[test]
-    fn test_first_submatch_no_match() {
-        let re = Regex::new(r"^#\s(.*)$").unwrap();
-        assert_eq!(first_submatch(&re, "No match"), None);
     }
 
     #[test]

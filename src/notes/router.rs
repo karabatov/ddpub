@@ -195,6 +195,21 @@ impl Router {
             },
         );
 
+        // Collect all broken links: unresolved references + links to unpublished notes.
+        let mut broken: Vec<&str> = s.broken_links.iter().map(|s| s.as_str()).collect();
+        for link in &s.resolved_links {
+            if !routes.contains_key(link.as_str()) {
+                broken.push(link.as_str());
+            }
+        }
+        if !broken.is_empty() {
+            broken.sort();
+            return Err(Error::Route(format!(
+                "broken links: {}",
+                broken.join(", ")
+            )));
+        }
+
         Ok(Router { routes })
     }
 }
