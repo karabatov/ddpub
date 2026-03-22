@@ -1,5 +1,6 @@
 //! Page/Head/Header/Footer/Content types, template rendering via minijinja.
 
+use crate::error::{Error, Result};
 use minijinja::{Environment, context};
 use serde::Serialize;
 use std::sync::LazyLock;
@@ -101,6 +102,9 @@ pub struct ContentNote {
     pub suffix: String,
 }
 
+// Template loading uses unwrap() intentionally: templates are compile-time
+// embedded via include_str!(), so a parse failure here is a build-time bug
+// that must be fixed in the source templates before shipping.
 static ENV: LazyLock<Environment<'static>> = LazyLock::new(|| {
     let mut env = Environment::new();
     env.set_auto_escape_callback(|_| minijinja::AutoEscape::None);
@@ -120,32 +124,36 @@ static ENV: LazyLock<Environment<'static>> = LazyLock::new(|| {
     env
 });
 
-pub fn fill_page(p: &Page) -> Vec<u8> {
-    let tmpl = ENV.get_template("base").unwrap();
-    tmpl.render(context!(page => p)).unwrap().into_bytes()
+fn render_error(e: minijinja::Error) -> Error {
+    Error::TemplateRender { cause: e.to_string() }
 }
 
-pub fn fill_content_page(p: &ContentPage) -> String {
-    let tmpl = ENV.get_template("content_page").unwrap();
-    tmpl.render(context!(p => p)).unwrap()
+pub fn fill_page(p: &Page) -> Result<Vec<u8>> {
+    let tmpl = ENV.get_template("base").map_err(render_error)?;
+    Ok(tmpl.render(context!(page => p)).map_err(render_error)?.into_bytes())
 }
 
-pub fn fill_content_note(n: &ContentNote) -> String {
-    let tmpl = ENV.get_template("content_note").unwrap();
-    tmpl.render(context!(n => n)).unwrap()
+pub fn fill_content_page(p: &ContentPage) -> Result<String> {
+    let tmpl = ENV.get_template("content_page").map_err(render_error)?;
+    tmpl.render(context!(p => p)).map_err(render_error)
 }
 
-pub fn fill_builtin_feed(p: &BuiltinFeed) -> String {
-    let tmpl = ENV.get_template("builtin_feed").unwrap();
-    tmpl.render(context!(p => p)).unwrap()
+pub fn fill_content_note(n: &ContentNote) -> Result<String> {
+    let tmpl = ENV.get_template("content_note").map_err(render_error)?;
+    tmpl.render(context!(n => n)).map_err(render_error)
 }
 
-pub fn fill_builtin_tags(p: &BuiltinTags) -> String {
-    let tmpl = ENV.get_template("builtin_tags").unwrap();
-    tmpl.render(context!(p => p)).unwrap()
+pub fn fill_builtin_feed(p: &BuiltinFeed) -> Result<String> {
+    let tmpl = ENV.get_template("builtin_feed").map_err(render_error)?;
+    tmpl.render(context!(p => p)).map_err(render_error)
 }
 
-pub fn fill_content_tag(p: &ContentTagPage) -> String {
-    let tmpl = ENV.get_template("content_tag").unwrap();
-    tmpl.render(context!(p => p)).unwrap()
+pub fn fill_builtin_tags(p: &BuiltinTags) -> Result<String> {
+    let tmpl = ENV.get_template("builtin_tags").map_err(render_error)?;
+    tmpl.render(context!(p => p)).map_err(render_error)
+}
+
+pub fn fill_content_tag(p: &ContentTagPage) -> Result<String> {
+    let tmpl = ENV.get_template("content_tag").map_err(render_error)?;
+    tmpl.render(context!(p => p)).map_err(render_error)
 }

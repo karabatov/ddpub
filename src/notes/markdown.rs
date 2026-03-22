@@ -8,7 +8,7 @@ use comrak::nodes::{Ast, NodeValue};
 use comrak::{Arena, ComrakOptions, format_html, parse_document};
 use regex::Regex;
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::io::{self, BufRead};
 use std::path::Path;
@@ -26,8 +26,8 @@ pub fn render_markdown_with_modifications(
     meta: &HashMap<NoteId, Metadata>,
     notes_dir: &str,
     files: &mut HashMap<String, FileInfo>,
-    broken_links: &mut HashSet<String>,
-    resolved_links: &mut HashSet<String>,
+    broken_links: &mut HashMap<String, String>,
+    resolved_links: &mut HashMap<String, String>,
     is_feed_note: impl Fn(&str) -> bool,
     is_page_note: impl Fn(&str) -> bool,
 ) -> String {
@@ -43,20 +43,33 @@ pub fn render_markdown_with_modifications(
 
     let root = parse_document(&arena, content, &options);
 
+    fn link_text<'a>(node: &'a Node<'a, RefCell<Ast>>) -> String {
+        let mut text = String::new();
+        for child in node.children() {
+            match &child.data.borrow().value {
+                NodeValue::Text(t) => text.push_str(t),
+                NodeValue::Code(c) => text.push_str(&c.literal),
+                _ => {}
+            }
+        }
+        text
+    }
+
     fn walk_nodes<'a>(
         node: &'a Node<'a, RefCell<Ast>>,
         w: &WebsiteLang,
         meta: &HashMap<NoteId, Metadata>,
         notes_dir: &str,
         files: &mut HashMap<String, FileInfo>,
-        broken_links: &mut HashSet<String>,
-        resolved_links: &mut HashSet<String>,
+        broken_links: &mut HashMap<String, String>,
+        resolved_links: &mut HashMap<String, String>,
         is_feed_note: &dyn Fn(&str) -> bool,
         is_page_note: &dyn Fn(&str) -> bool,
     ) {
         match &mut node.data.borrow_mut().value {
             NodeValue::Link(link) => {
                 let link_str = link.url.clone();
+                let text = link_text(node);
 
                 let (path_part, fragment) = if let Some(idx) = link_str.find('#') {
                     (&link_str[..idx], Some(&link_str[idx + 1..]))
@@ -69,14 +82,16 @@ pub fn render_markdown_with_modifications(
                     .and_then(|id| meta.get(&id).map(|m| (id, m)))
                     .or_else(|| meta.get(path_part).map(|m| (m.id.clone(), m)));
 
-                if let Some((id, linked_meta)) = note_meta {
+                if path_part.is_empty() {
+                    // Fragment-only link (#anchor) — same-page navigation, leave as-is.
+                } else if let Some((id, linked_meta)) = note_meta {
                     let mut new_link = link_str.clone();
                     if is_feed_note(&id) {
                         new_link = w.url_for_feed_note(&linked_meta.slug);
                     } else if is_page_note(&id) {
                         new_link = w.url_for_page_note(&linked_meta.slug);
                     }
-                    resolved_links.insert(new_link.clone());
+                    resolved_links.entry(new_link.clone()).or_insert_with(|| text.clone());
                     if let Some(f) = fragment
                         && !f.is_empty()
                     {
@@ -97,13 +112,13 @@ pub fn render_markdown_with_modifications(
                     } else {
                         format!("{}/", path_part)
                     };
-                    resolved_links.insert(normalized);
+                    resolved_links.entry(normalized).or_insert(text);
                 } else if let Some(file_info) = try_file_from_link(&link.url, notes_dir, w) {
                     link.url = file_info.link.clone();
                     files.insert(file_info.link.clone(), file_info);
                 } else {
                     // Relative link that's not a file — flag as broken.
-                    broken_links.insert(path_part.to_string());
+                    broken_links.entry(path_part.to_string()).or_insert(text);
                 }
             }
             NodeValue::Image(link) => {
@@ -148,12 +163,23 @@ fn try_file_from_link(link: &str, notes_dir: &str, w: &WebsiteLang) -> Option<Fi
     };
 
     let path = Path::new(notes_dir).join(path_part);
-    if !path.exists() {
-        return None;
+    let canonical_path = match path.canonicalize() {
+        Ok(p) => p,
+        Err(_) => return None, // File doesn't exist or is inaccessible.
+    };
+    let canonical_notes_dir = match Path::new(notes_dir).canonicalize() {
+        Ok(p) => p,
+        Err(_) => return None,
+    };
+    if !canonical_path.starts_with(&canonical_notes_dir) {
+        return None; // Path traversal attempt — treat as broken link.
+    }
+    if !canonical_path.is_file() {
+        return None; // Directories and other non-files are not servable.
     }
 
-    let content_type = dd::guess_content_type(&path).to_string();
-    let new_link = w.url_for_file(&path.to_string_lossy());
+    let content_type = dd::guess_content_type(&canonical_path).to_string();
+    let new_link = w.url_for_file(&canonical_path.to_string_lossy());
 
     Some(FileInfo {
         link: new_link,

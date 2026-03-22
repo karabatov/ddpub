@@ -107,6 +107,23 @@ pub enum Error {
     BrokenLinks {
         links: Vec<String>,
     },
+    FileReadFailed {
+        path: String,
+        cause: String,
+    },
+    NoteContentNotFound {
+        id: String,
+    },
+    TemplateRender {
+        cause: String,
+    },
+    RouteCollision {
+        pattern: String,
+        ids: Vec<String>,
+    },
+    FileOutsideNotesDir {
+        path: String,
+    },
 
     // ── Localization stage ─────────────────────────────────────────
     LanguageStringsLoadFailed {
@@ -152,7 +169,12 @@ impl Error {
             | Error::RouteConflict { .. }
             | Error::MenuNoteContentNotFound { .. }
             | Error::MenuTagNotFound { .. }
-            | Error::BrokenLinks { .. } => ErrorStage::Routing,
+            | Error::BrokenLinks { .. }
+            | Error::FileReadFailed { .. }
+            | Error::NoteContentNotFound { .. }
+            | Error::TemplateRender { .. }
+            | Error::RouteCollision { .. }
+            | Error::FileOutsideNotesDir { .. } => ErrorStage::Routing,
 
             // Localization
             Error::LanguageStringsLoadFailed { .. } => ErrorStage::Localization,
@@ -226,7 +248,17 @@ impl Error {
             Error::MenuTagNotFound { tag } =>
                 s.menu_tag_not_found.replace("{tag}", tag),
             Error::BrokenLinks { links } =>
-                s.broken_links.replace("{links}", &links.join(", ")),
+                s.broken_links.replace("{links}", &links.join("\n  - ")),
+            Error::FileReadFailed { path, cause } =>
+                s.file_read_failed.replace("{path}", path).replace("{cause}", cause),
+            Error::NoteContentNotFound { id } =>
+                s.note_content_not_found.replace("{id}", id),
+            Error::TemplateRender { cause } =>
+                s.template_render.replace("{cause}", cause),
+            Error::RouteCollision { pattern, ids } =>
+                s.route_collision.replace("{pattern}", pattern).replace("{ids}", &ids.join(", ")),
+            Error::FileOutsideNotesDir { path } =>
+                s.file_outside_notes_dir.replace("{path}", path),
             Error::LanguageStringsLoadFailed { cause } =>
                 s.language_strings_load_failed.replace("{cause}", cause),
         }

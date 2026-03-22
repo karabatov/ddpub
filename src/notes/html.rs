@@ -1,11 +1,12 @@
 //! HTML content generation functions.
 
 use crate::config::WebsiteLang;
+use crate::error::{Error, Result};
 use crate::l10n::Key;
 use crate::layout;
 use crate::notes::{NoteContent, Store};
 
-pub fn html_for_page(note: &NoteContent) -> String {
+pub fn html_for_page(note: &NoteContent) -> Result<String> {
     layout::fill_content_page(&layout::ContentPage {
         title: note.meta.title.clone(),
         content: note.content.clone(),
@@ -49,12 +50,12 @@ pub fn tags_list_items(w: &WebsiteLang, s: &Store) -> Vec<layout::TagListItem> {
     tags
 }
 
-pub fn html_for_builtin_feed(w: &WebsiteLang, s: &Store) -> String {
+pub fn html_for_builtin_feed(w: &WebsiteLang, s: &Store) -> Result<String> {
     let content = if !w.feed.id.is_empty() {
         s.note_content
             .get(&w.feed.id)
             .map(|n| n.content.clone())
-            .unwrap_or_default()
+            .ok_or_else(|| Error::NoteContentNotFound { id: w.feed.id.clone() })?
     } else {
         String::new()
     };
@@ -66,7 +67,7 @@ pub fn html_for_builtin_feed(w: &WebsiteLang, s: &Store) -> String {
     })
 }
 
-pub fn html_for_builtin_tags(w: &WebsiteLang, s: &Store) -> String {
+pub fn html_for_builtin_tags(w: &WebsiteLang, s: &Store) -> Result<String> {
     layout::fill_builtin_tags(&layout::BuiltinTags {
         title: w.str(Key::TagsTitle).to_string(),
         tags: tags_list_items(w, s),
@@ -77,12 +78,12 @@ pub fn html_for_tag(
     t: &crate::config::tag::TagConfig,
     w: &WebsiteLang,
     s: &Store,
-) -> String {
+) -> Result<String> {
     let content = if !t.id.is_empty() {
         s.note_content
             .get(&t.id)
             .map(|n| n.content.clone())
-            .unwrap_or_default()
+            .ok_or_else(|| Error::NoteContentNotFound { id: t.id.clone() })?
     } else {
         String::new()
     };
@@ -94,7 +95,7 @@ pub fn html_for_tag(
     })
 }
 
-pub fn html_for_note(note: &NoteContent, w: &WebsiteLang) -> String {
+pub fn html_for_note(note: &NoteContent, w: &WebsiteLang) -> Result<String> {
     let tags: Vec<layout::ListItem> = w
         .tags_to_published(&note.meta.tags)
         .iter()

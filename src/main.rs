@@ -104,8 +104,20 @@ async fn main() {
     );
 
     if let Some((dir, force)) = export {
-        let config_path = std::fs::canonicalize(&config_dir).unwrap_or_default();
-        let notes_path = std::fs::canonicalize(&notes_dir).unwrap_or_default();
+        let config_path = match std::fs::canonicalize(&config_dir) {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("Could not resolve config directory '{config_dir}': {e}");
+                std::process::exit(1);
+            }
+        };
+        let notes_path = match std::fs::canonicalize(&notes_dir) {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("Could not resolve notes directory '{notes_dir}': {e}");
+                std::process::exit(1);
+            }
+        };
         match router.export(std::path::Path::new(&dir), force, &config_path, &notes_path) {
             Ok(()) => {
                 eprintln!("Exported to {dir}");

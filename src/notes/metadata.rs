@@ -87,10 +87,17 @@ pub fn read_metadata(
     })
 }
 
+/// Result of reading all metadata: successfully parsed notes + warnings
+/// for notes that failed to parse (filename and reason).
+pub struct MetadataResult {
+    pub meta: HashMap<NoteId, Metadata>,
+    pub warnings: Vec<String>,
+}
+
 pub fn read_all_metadata(
     w: &WebsiteLang,
     notes_dir: &str,
-) -> Result<HashMap<NoteId, Metadata>> {
+) -> Result<MetadataResult> {
     let entries = fs::read_dir(notes_dir)
         .map_err(|e| crate::error::Error::NotesDirectoryUnreadable {
             dir: notes_dir.to_string(),
@@ -98,6 +105,7 @@ pub fn read_all_metadata(
         })?;
 
     let mut meta = HashMap::new();
+    let mut warnings = Vec::new();
     for entry in entries {
         let entry = entry.map_err(crate::error::Error::NoteIo)?;
         if entry.file_type().map_err(crate::error::Error::NoteIo)?.is_dir() {
@@ -117,14 +125,13 @@ pub fn read_all_metadata(
             Ok(m) => {
                 meta.insert(id, m);
             }
-            Err(_e) => {
-                eprintln!("Could not read metadata from file: {filename}");
-                continue;
+            Err(e) => {
+                warnings.push(format!("{filename}: {e}"));
             }
         }
     }
 
-    Ok(meta)
+    Ok(MetadataResult { meta, warnings })
 }
 
 #[cfg(test)]

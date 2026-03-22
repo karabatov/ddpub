@@ -11,7 +11,7 @@ use crate::config::{self, WebsiteLang};
 use crate::dd::{self, NoteId, Tag};
 use crate::error::{Error, Result};
 use chrono::NaiveDate;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 pub use markdown::html_as_text;
 
@@ -55,6 +55,14 @@ pub struct FileInfo {
     pub content_type: String,
 }
 
+/// A link that could not be resolved, with context for error reporting.
+#[derive(Debug, Clone)]
+pub struct LinkInfo {
+    pub url: String,
+    pub text: String,
+    pub notes: Vec<String>,
+}
+
 /// Store captures the data necessary to publish the notes.
 pub struct Store {
     pub meta: HashMap<NoteId, Metadata>,
@@ -62,27 +70,31 @@ pub struct Store {
     pub pub_notes: Vec<PublishedNote>,
     pub note_content: HashMap<NoteId, NoteContent>,
     pub files: HashMap<String, FileInfo>,
-    /// Unresolved links found in note content (not a known note, not a file on disk).
-    pub broken_links: HashSet<String>,
+    /// Unresolved links found in note content.
+    pub broken_links: Vec<LinkInfo>,
     /// Resolved internal note links (base URLs without anchors) to validate against routes.
-    pub resolved_links: HashSet<String>,
+    pub resolved_links: Vec<LinkInfo>,
+    /// Notes that failed to parse metadata (filename: reason). These were
+    /// skipped during loading — the consumer should decide how to handle them.
+    pub warnings: Vec<String>,
 }
 
 impl Store {
     pub fn new(w: &WebsiteLang, notes_dir: &str) -> Result<Self> {
-        let meta = metadata::read_all_metadata(w, notes_dir)?;
-        let by_tag = make_notes_by_tag(&meta);
+        let result = metadata::read_all_metadata(w, notes_dir)?;
+        let by_tag = make_notes_by_tag(&result.meta);
 
-        let pub_notes = notes_for_export(w, &by_tag, &meta);
+        let pub_notes = notes_for_export(w, &by_tag, &result.meta);
 
         let mut store = Store {
-            meta,
+            meta: result.meta,
             by_tag,
             pub_notes,
             note_content: HashMap::new(),
             files: HashMap::new(),
-            broken_links: HashSet::new(),
-            resolved_links: HashSet::new(),
+            broken_links: Vec::new(),
+            resolved_links: Vec::new(),
+            warnings: result.warnings,
         };
 
         store.read_exported_content(w, notes_dir)?;
@@ -149,8 +161,8 @@ impl Store {
     ) -> Result<()> {
         let mut contents: HashMap<NoteId, NoteContent> = HashMap::new();
         let mut new_files: HashMap<String, FileInfo> = HashMap::new();
-        let mut broken_links: HashSet<String> = HashSet::new();
-        let mut resolved_links: HashSet<String> = HashSet::new();
+        let mut broken_links: Vec<LinkInfo> = Vec::new();
+        let mut resolved_links: Vec<LinkInfo> = Vec::new();
 
         let feed_tag = w.feed.tag.clone();
         let pages_tag = w.pages_tag.clone();
@@ -175,17 +187,39 @@ impl Store {
                 is_note_in_tag(id, &pages_tag, &self.meta)
             };
 
+            let mut note_broken: HashMap<String, String> = HashMap::new();
+            let mut note_resolved: HashMap<String, String> = HashMap::new();
+
             let rendered = markdown::render_markdown_with_modifications(
                 &raw_content,
                 w,
                 &self.meta,
                 notes_dir,
                 &mut new_files,
-                &mut broken_links,
-                &mut resolved_links,
+                &mut note_broken,
+                &mut note_resolved,
                 is_feed,
                 is_page,
             );
+
+            fn merge_links(target: &mut Vec<LinkInfo>, source: HashMap<String, String>, filename: &str) {
+                for (url, text) in source {
+                    if let Some(existing) = target.iter_mut().find(|l| l.url == url) {
+                        if !existing.notes.contains(&filename.to_string()) {
+                            existing.notes.push(filename.to_string());
+                        }
+                    } else {
+                        target.push(LinkInfo {
+                            url,
+                            text,
+                            notes: vec![filename.to_string()],
+                        });
+                    }
+                }
+            }
+
+            merge_links(&mut broken_links, note_broken, &meta.filename);
+            merge_links(&mut resolved_links, note_resolved, &meta.filename);
 
             contents.insert(
                 pub_id.clone(),

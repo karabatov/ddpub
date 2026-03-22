@@ -78,5 +78,5 @@ pub fn parse_menu(
         return Ok(Menu::Url { title: m.title.clone(), url: m.url.clone() });
     }
 
-    unreachable!()
+    Err(Error::MenuMultipleTypes)
 }

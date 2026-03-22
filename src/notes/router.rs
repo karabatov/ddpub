@@ -6,7 +6,7 @@ use crate::error::{Error, Result};
 use crate::l10n::Key;
 use crate::layout;
 use crate::notes::html::*;
-use crate::notes::{PublishTarget, Store, html_as_text};
+use crate::notes::{LinkInfo, PublishTarget, Store, html_as_text};
 use chrono::Utc;
 use std::collections::HashMap;
 
@@ -51,7 +51,7 @@ fn make_page(w: &WebsiteLang, s: &Store, pattern: &str, title: &str, content: St
             rss_url: w.url_for_rss_feed(),
         },
     };
-    Ok(layout::fill_page(&page))
+    layout::fill_page(&page)
 }
 
 fn add_page(
@@ -86,11 +86,11 @@ impl Router {
                 let note = s.note_content.get(id).ok_or_else(|| {
                     Error::HomepageContentNotFound { id: id.clone() }
                 })?;
-                let content = html_for_page(note);
+                let content = html_for_page(note)?;
                 add_page(&mut routes, w, s, &w.url_for_home_page(), &html_as_text(&note.meta.title), content)?;
             }
             config::homepage::Homepage::Feed => {
-                let content = html_for_builtin_feed(w, s);
+                let content = html_for_builtin_feed(w, s)?;
                 add_page(&mut routes, w, s, &w.url_for_home_page(), &w.feed.title, content)?;
             }
         }
@@ -99,7 +99,7 @@ impl Router {
         {
             let pattern = w.url_for_builtin(Builtin::Feed);
             if !routes.contains_key(&pattern) {
-                let content = html_for_builtin_feed(w, s);
+                let content = html_for_builtin_feed(w, s)?;
                 add_page(&mut routes, w, s, &pattern, &w.feed.title, content)?;
             }
         }
@@ -107,7 +107,7 @@ impl Router {
         // Builtin - tags.
         {
             let pattern = w.url_for_builtin(Builtin::Tags);
-            let content = html_for_builtin_tags(w, s);
+            let content = html_for_builtin_tags(w, s)?;
             add_page(&mut routes, w, s, &pattern, w.str(Key::TagsTitle), content)?;
         }
 
@@ -121,18 +121,12 @@ impl Router {
                 PublishTarget::Builtin | PublishTarget::Tag => continue,
                 PublishTarget::Feed => {
                     let pattern = w.url_for_feed_note(&note.meta.slug);
-                    if routes.contains_key(&pattern) {
-                        continue;
-                    }
-                    let content = html_for_note(note, w);
+                    let content = html_for_note(note, w)?;
                     add_page(&mut routes, w, s, &pattern, &html_as_text(&note.meta.title), content)?;
                 }
                 PublishTarget::Page => {
                     let pattern = w.url_for_page_note(&note.meta.slug);
-                    if routes.contains_key(&pattern) {
-                        continue;
-                    }
-                    let content = html_for_page(note);
+                    let content = html_for_page(note)?;
                     add_page(&mut routes, w, s, &pattern, &html_as_text(&note.meta.title), content)?;
                 }
             }
@@ -141,10 +135,7 @@ impl Router {
         // Add published tags.
         for t in w.tags.values() {
             let pattern = w.url_for_tag(t);
-            if routes.contains_key(&pattern) {
-                continue;
-            }
-            let content = html_for_tag(t, w, s);
+            let content = html_for_tag(t, w, s)?;
             add_page(&mut routes, w, s, &pattern, &t.title, content)?;
         }
 
@@ -170,7 +161,12 @@ impl Router {
             if routes.contains_key(&f.link) {
                 continue;
             }
-            let content = std::fs::read(&f.path).unwrap_or_default();
+            let content = std::fs::read(&f.path).map_err(|e| {
+                Error::FileReadFailed {
+                    path: f.path.clone(),
+                    cause: e.to_string(),
+                }
+            })?;
             routes.insert(
                 f.link.clone(),
                 Route {
@@ -192,17 +188,18 @@ impl Router {
         );
 
         // Collect all broken links: unresolved references + links to unpublished notes.
-        let mut broken: Vec<&str> = s.broken_links.iter().map(|s| s.as_str()).collect();
+        let mut broken: Vec<String> = Vec::new();
+        for link in &s.broken_links {
+            broken.push(format_broken_link(link));
+        }
         for link in &s.resolved_links {
-            if !routes.contains_key(link.as_str()) {
-                broken.push(link.as_str());
+            if !routes.contains_key(link.url.as_str()) {
+                broken.push(format_broken_link(link));
             }
         }
         if !broken.is_empty() {
             broken.sort();
-            return Err(Error::BrokenLinks {
-                links: broken.into_iter().map(|s| s.to_string()).collect(),
-            });
+            return Err(Error::BrokenLinks { links: broken });
         }
 
         Ok(Router { routes })
@@ -276,4 +273,13 @@ fn build_rss_feed(w: &WebsiteLang, s: &Store) -> String {
         .build();
 
     channel.to_string()
+}
+
+fn format_broken_link(link: &LinkInfo) -> String {
+    let notes = link.notes.iter().map(|n| format!("'{n}'")).collect::<Vec<_>>().join(", ");
+    if link.text.is_empty() {
+        format!("{} in {}", link.url, notes)
+    } else {
+        format!("'{}' → {} in {}", link.text, link.url, notes)
+    }
 }
