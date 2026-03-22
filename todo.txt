@@ -1,4 +1,4 @@
-Support URL redirects in config, works from URL to URL. The source URL cannot be an existing valid URL. The target URL has to be either a valid internal URL or an external URL. This works over URLs, not notes - to publish a note, create a page or add it to feed +feature
+Support URL redirects in config, works from URL to URL. The source URL cannot be an existing valid URL. The target URL has to be either a valid internal URL or an external URL. This works over URLs, not notes - to publish a note, create a page or add it to feed. Including homepage - no notes at all (e.g. for domain parking) +feature
 Export files linked from notes, not only images +feature
 If there is a logo.png in the config directory, displays a logo to the left of the website title +feature
 Add language switcher UI if website is configured with multiple languages +feature
