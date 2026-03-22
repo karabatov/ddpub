@@ -78,6 +78,7 @@ pub struct BuiltinTags {
 pub struct ContentPage {
     pub title: String,
     pub content: String,
+    pub has_leading_h1: bool,
 }
 
 #[derive(Clone, Serialize)]
@@ -91,6 +92,7 @@ pub struct ContentTagPage {
     pub title: String,
     pub content: String,
     pub notes: Vec<NoteListItem>,
+    pub has_leading_h1: bool,
 }
 
 #[derive(Serialize)]
@@ -100,6 +102,7 @@ pub struct ContentNote {
     pub tags: Vec<ListItem>,
     pub content: String,
     pub suffix: String,
+    pub has_leading_h1: bool,
 }
 
 // Template loading uses unwrap() intentionally: templates are compile-time

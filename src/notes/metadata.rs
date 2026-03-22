@@ -84,6 +84,7 @@ pub fn read_metadata(
         slug,
         tags,
         language,
+        has_leading_h1: nome_meta.has_leading_h1,
     })
 }
 

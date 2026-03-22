@@ -76,6 +76,14 @@ header h1 {
    margin: 1rem 0 1rem 0;
 }
 
+main h1 {
+   display: block;
+   font-size: 2rem;
+   font-weight: bold;
+   line-height: 2.4rem;
+   margin: 1rem 0 1rem 0;
+}
+
 main h2 {
    display: block;
    font-size: 1.5rem;

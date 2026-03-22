@@ -26,6 +26,7 @@ pub struct Metadata {
     pub slug: String,
     pub tags: Vec<Tag>,
     pub language: dd::Language,
+    pub has_leading_h1: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

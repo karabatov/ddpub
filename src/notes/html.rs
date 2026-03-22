@@ -10,6 +10,7 @@ pub fn html_for_page(note: &NoteContent) -> Result<String> {
     layout::fill_content_page(&layout::ContentPage {
         title: note.meta.title.clone(),
         content: note.content.clone(),
+        has_leading_h1: note.meta.has_leading_h1,
     })
 }
 
@@ -79,19 +80,20 @@ pub fn html_for_tag(
     w: &WebsiteLang,
     s: &Store,
 ) -> Result<String> {
-    let content = if !t.id.is_empty() {
-        s.note_content
+    let (content, has_leading_h1) = if !t.id.is_empty() {
+        let note = s.note_content
             .get(&t.id)
-            .map(|n| n.content.clone())
-            .ok_or_else(|| Error::NoteContentNotFound { id: t.id.clone() })?
+            .ok_or_else(|| Error::NoteContentNotFound { id: t.id.clone() })?;
+        (note.content.clone(), note.meta.has_leading_h1)
     } else {
-        String::new()
+        (String::new(), false)
     };
 
     layout::fill_content_tag(&layout::ContentTagPage {
         title: t.title.clone(),
         content,
         notes: feed_notes_list_items(&t.tag, w, s),
+        has_leading_h1,
     })
 }
 
@@ -111,6 +113,7 @@ pub fn html_for_note(note: &NoteContent, w: &WebsiteLang) -> Result<String> {
         content: note.content.clone(),
         tags,
         suffix: w.note_suffix.clone(),
+        has_leading_h1: note.meta.has_leading_h1,
     })
 }
 

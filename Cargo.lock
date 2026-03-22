@@ -1078,8 +1078,8 @@ checksum = "c96aba5aa877601bb3f6dd6a63a969e1f82e60646e81e71b14496995e9853c91"
 
 [[package]]
 name = "nome"
-version = "1.0.0"
-source = "git+https://github.com/karabatov/nome.git?tag=v1.0.0#8d62459dfe78eb059f2e02e7b38427c5cda7934f"
+version = "1.1.0"
+source = "git+https://github.com/karabatov/nome.git?tag=v1.1.0#8c4cf51199a1e8f467ef231b505b8c0a6ccc3b9e"
 dependencies = [
  "chrono",
  "serde_yml",

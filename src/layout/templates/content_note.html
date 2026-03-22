@@ -1,5 +1,6 @@
 <article>
-<h2>{{ n.title }}</h2>
+{% if not n.has_leading_h1 %}<h1>{{ n.title }}</h1>
+{% endif %}
 <div class="post-meta">{{ n.date }}</div>
 <div class="post-content">{{ n.content }}</div>
 <div class="post-meta">{% if n.tags %}
