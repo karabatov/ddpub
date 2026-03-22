@@ -1,2 +1,2 @@
-Remove Go implementation leftovers from the branch and move templates and other static files where they belong +housekeeping
 Add --export parameter and generate a full HTML website in the given directory. Cancel if directory is not empty. Create directory if doesn't exist +feature
+x Remove Go implementation leftovers from the branch and move templates and other static files where they belong +housekeeping

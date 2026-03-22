@@ -61,9 +61,9 @@ impl WebsiteLang {
     }
 }
 
-static THEME_CSS: &[u8] = include_bytes!("../../config/files/theme.css");
-static FAVICON: &[u8] = include_bytes!("../../config/files/favicon.ico");
-static OG_IMAGE: &[u8] = include_bytes!("../../config/files/og.jpg");
+static THEME_CSS: &[u8] = include_bytes!("files/theme.css");
+static FAVICON: &[u8] = include_bytes!("files/favicon.ico");
+static OG_IMAGE: &[u8] = include_bytes!("files/og.jpg");
 
 impl Website {
     pub fn new(config_dir: &str) -> Result<Self> {

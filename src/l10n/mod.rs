@@ -36,9 +36,9 @@ pub struct L10n {
 impl L10n {
     pub fn new(lang: Language) -> Result<Self> {
         let content = match lang {
-            Language::EnUS => include_str!("../../l10n/strings/strings.en-US.toml"),
-            Language::EnUK => include_str!("../../l10n/strings/strings.en-UK.toml"),
-            Language::RuRU => include_str!("../../l10n/strings/strings.ru-RU.toml"),
+            Language::EnUS => include_str!("strings/strings.en-US.toml"),
+            Language::EnUK => include_str!("strings/strings.en-UK.toml"),
+            Language::RuRU => include_str!("strings/strings.ru-RU.toml"),
         };
         let loc: Strings = toml::from_str(content)
             .map_err(|e| Error::L10n(format!("could not load language strings: {e}")))?;

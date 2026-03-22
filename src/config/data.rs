@@ -1,4 +1,4 @@
-//! TOML serde structs (mirrors config/internal/data/data.go).
+//! TOML serde structs.
 
 use serde::Deserialize;
 

@@ -65,7 +65,7 @@ fn register_routes(mut axum_router: axum::Router, router: Router) -> axum::Route
         );
 
         // For patterns ending with "/" (except "/" itself), add a redirect
-        // from the non-slash version, matching Go's http.ServeMux behavior.
+        // from the non-slash version.
         if pattern.ends_with('/') && pattern.len() > 1 {
             let without_slash = pattern[..pattern.len() - 1].to_string();
             let with_slash = pattern.clone();
