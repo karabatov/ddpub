@@ -1,12 +1,13 @@
-//! MultiRouter → axum Router.
+//! MultiRouter → axum Router or static export.
 
 use crate::config::Website;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::notes::multistore::MultiStore;
 use crate::notes::router::Router;
 use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Redirect};
 use axum::routing::get;
+use std::path::Path;
 use std::sync::Arc;
 
 pub struct MultiRouter {
@@ -27,6 +28,68 @@ impl MultiRouter {
         }
 
         Ok(MultiRouter { main, sub_routers })
+    }
+
+    pub fn export(&self, dir: &Path, force: bool, config_dir: &Path, notes_dir: &Path) -> Result<()> {
+        // Safety: never export into config or notes directories.
+        if dir.exists() {
+            let export_path = std::fs::canonicalize(dir).map_err(Error::Io)?;
+            if export_path == config_dir || export_path == notes_dir {
+                return Err(Error::Route(format!(
+                    "export directory must not be the config or notes directory: {}",
+                    dir.display()
+                )));
+            }
+        }
+
+        if dir.exists() {
+            let has_entries = dir
+                .read_dir()
+                .map_err(Error::Io)?
+                .next()
+                .is_some();
+            if has_entries {
+                if !force {
+                    return Err(Error::Route(format!(
+                        "export directory is not empty (use --force to clear): {}",
+                        dir.display()
+                    )));
+                }
+                // Clear contents but keep the directory itself.
+                for entry in dir.read_dir().map_err(Error::Io)? {
+                    let entry = entry.map_err(Error::Io)?;
+                    let path = entry.path();
+                    if path.is_dir() {
+                        std::fs::remove_dir_all(&path).map_err(Error::Io)?;
+                    } else {
+                        std::fs::remove_file(&path).map_err(Error::Io)?;
+                    }
+                }
+            }
+        } else {
+            std::fs::create_dir_all(dir).map_err(Error::Io)?;
+        }
+
+        let all_routes = std::iter::once(&self.main)
+            .chain(self.sub_routers.iter());
+
+        for router in all_routes {
+            for (pattern, route) in &router.routes {
+                let file_path = if pattern.ends_with('/') {
+                    dir.join(pattern.trim_start_matches('/')).join("index.html")
+                } else {
+                    dir.join(pattern.trim_start_matches('/'))
+                };
+
+                if let Some(parent) = file_path.parent() {
+                    std::fs::create_dir_all(parent).map_err(Error::Io)?;
+                }
+
+                std::fs::write(&file_path, &route.content).map_err(Error::Io)?;
+            }
+        }
+
+        Ok(())
     }
 
     pub fn into_axum_router(self) -> axum::Router {

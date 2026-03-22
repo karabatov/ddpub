@@ -40,6 +40,20 @@ enum Command {
         #[arg(long, default_value_t = DEFAULT_PORT)]
         port: u16,
     },
+    /// Export a full static website to a directory
+    Export {
+        /// Directory that has `config.toml`
+        #[arg(long, default_value = ".")]
+        config: String,
+        /// Directory that stores notes
+        #[arg(long, default_value = ".")]
+        notes: String,
+        /// Clear the export directory before exporting
+        #[arg(long)]
+        force: bool,
+        /// Directory to export the website to
+        export_dir: String,
+    },
 }
 
 #[tokio::main]
@@ -47,9 +61,23 @@ async fn main() {
     let start_time = Instant::now();
     let cli = Cli::parse();
 
-    let (config_dir, notes_dir, port, serve) = match &cli.command {
-        Command::Check { config, notes } => (config.clone(), notes.clone(), 0, false),
-        Command::Serve { config, notes, port } => (config.clone(), notes.clone(), *port, true),
+    let (config_dir, notes_dir, port, serve, export) = match &cli.command {
+        Command::Check { config, notes } => (config.clone(), notes.clone(), 0, false, None),
+        Command::Serve { config, notes, port } => {
+            (config.clone(), notes.clone(), *port, true, None)
+        }
+        Command::Export {
+            config,
+            notes,
+            force,
+            export_dir,
+        } => (
+            config.clone(),
+            notes.clone(),
+            0,
+            false,
+            Some((export_dir.clone(), *force)),
+        ),
     };
 
     let cfg = match crate::config::Website::new(&config_dir) {
@@ -80,6 +108,21 @@ async fn main() {
         "Config OK. Startup took {:?}.",
         start_time.elapsed()
     );
+
+    if let Some((dir, force)) = export {
+        let config_path = std::fs::canonicalize(&config_dir).unwrap_or_default();
+        let notes_path = std::fs::canonicalize(&notes_dir).unwrap_or_default();
+        match router.export(std::path::Path::new(&dir), force, &config_path, &notes_path) {
+            Ok(()) => {
+                eprintln!("Exported to {dir}");
+                std::process::exit(0);
+            }
+            Err(e) => {
+                eprintln!("Export failed: {e}");
+                std::process::exit(1);
+            }
+        }
+    }
 
     if !serve {
         std::process::exit(0);
