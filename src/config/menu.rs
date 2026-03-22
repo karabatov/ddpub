@@ -33,7 +33,7 @@ fn validate(m: &data::Menu) -> Result<()> {
     if !m.url.is_empty() { filled += 1; }
 
     if filled != 1 {
-        return Err(Error::Config("menu entry can only have one type".into()));
+        return Err(Error::MenuMultipleTypes);
     }
 
     Ok(())
@@ -51,14 +51,14 @@ pub fn parse_menu(
             "feed" => Builtin::Feed,
             "search" => Builtin::Search,
             "tags" => Builtin::Tags,
-            _ => return Err(Error::Config(format!("unknown builtin '{}'", m.builtin))),
+            _ => return Err(Error::MenuUnknownBuiltin { name: m.builtin.clone() }),
         };
         return Ok(Menu::Builtin { title: m.title.clone(), builtin });
     }
 
     if !m.id.is_empty() {
         if !matcher.is_valid(&m.id) {
-            return Err(Error::Config(format!("invalid note id '{}'", m.id)));
+            return Err(Error::MenuInvalidNoteId { id: m.id.clone() });
         }
         return Ok(Menu::NoteId { title: m.title.clone(), id: m.id.clone() });
     }
@@ -69,10 +69,7 @@ pub fn parse_menu(
 
     if !m.tag.is_empty() {
         if !is_tag_published(&m.tag) {
-            return Err(Error::Config(format!(
-                "non-published tag '{}' in menu",
-                m.tag
-            )));
+            return Err(Error::MenuTagNotPublished { tag: m.tag.clone() });
         }
         return Ok(Menu::Tag { title: m.title.clone(), tag: m.tag.clone() });
     }

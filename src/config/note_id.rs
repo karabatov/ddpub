@@ -14,9 +14,9 @@ pub struct NoteIdMatcher {
 impl NoteIdMatcher {
     pub fn new(id_format: &str, id_link_format: &str) -> Result<Self> {
         let id_re = Regex::new(id_format)
-            .map_err(|e| Error::Config(format!("could not compile regular expression '{id_format}': {e}")))?;
+            .map_err(|e| Error::InvalidRegex { pattern: id_format.to_string(), cause: e.to_string() })?;
         let link_re = Regex::new(id_link_format)
-            .map_err(|e| Error::Config(format!("could not compile regular expression '{id_link_format}': {e}")))?;
+            .map_err(|e| Error::InvalidRegex { pattern: id_link_format.to_string(), cause: e.to_string() })?;
         Ok(Self { id_re, link_re })
     }
 

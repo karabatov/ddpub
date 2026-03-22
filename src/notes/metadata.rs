@@ -43,7 +43,7 @@ pub fn read_metadata(
     directory: &str,
 ) -> Result<Metadata> {
     let path = Path::new(directory).join(filename);
-    let file = fs::File::open(&path)?;
+    let file = fs::File::open(&path).map_err(crate::error::Error::NoteIo)?;
 
     let mod_time = file
         .metadata()
@@ -56,7 +56,8 @@ pub fn read_metadata(
         })
         .unwrap_or_else(|| chrono::Local::now().date_naive());
 
-    let nome_meta = nome::NoteMetadata::from_reader(io::BufReader::new(file), id)?;
+    let nome_meta = nome::NoteMetadata::from_reader(io::BufReader::new(file), id)
+        .map_err(crate::error::Error::NoteIo)?;
 
     let title = nome_meta.title.map(|t| md_to_html(&t)).unwrap_or_default();
     let tags: Vec<Tag> = nome_meta.tags;
@@ -91,12 +92,15 @@ pub fn read_all_metadata(
     notes_dir: &str,
 ) -> Result<HashMap<NoteId, Metadata>> {
     let entries = fs::read_dir(notes_dir)
-        .map_err(|e| crate::error::Error::Note(format!("could not read the notes directory '{notes_dir}': {e}")))?;
+        .map_err(|e| crate::error::Error::NotesDirectoryUnreadable {
+            dir: notes_dir.to_string(),
+            cause: e.to_string(),
+        })?;
 
     let mut meta = HashMap::new();
     for entry in entries {
-        let entry = entry?;
-        if entry.file_type()?.is_dir() {
+        let entry = entry.map_err(crate::error::Error::NoteIo)?;
+        if entry.file_type().map_err(crate::error::Error::NoteIo)?.is_dir() {
             continue;
         }
 

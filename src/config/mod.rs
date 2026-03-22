@@ -95,10 +95,9 @@ impl Website {
         main.shared_files = shared_files;
 
         if main.domain.is_empty() {
-            return Err(Error::Config(format!(
-                "domain field must be set in config file: {}",
-                cfg_path.display()
-            )));
+            return Err(Error::DomainNotSet {
+                path: cfg_path.display().to_string(),
+            });
         }
 
         let mut sub_configs = Vec::new();
@@ -134,9 +133,15 @@ fn config_path(config_dir: &str, lang: Language, is_child: bool) -> PathBuf {
 
 fn read_config_file(path: &Path) -> Result<data::ConfigFile> {
     let content = fs::read_to_string(path)
-        .map_err(|e| Error::Config(format!("could not open config file '{}': {e}", path.display())))?;
+        .map_err(|e| Error::ConfigFileOpen {
+            path: path.display().to_string(),
+            cause: e.to_string(),
+        })?;
     let cfg: data::ConfigFile = toml::from_str(&content)
-        .map_err(|e| Error::Config(format!("could not load config file '{}': {e}", path.display())))?;
+        .map_err(|e| Error::ConfigFileParse {
+            path: path.display().to_string(),
+            cause: e.to_string(),
+        })?;
     Ok(cfg)
 }
 
@@ -168,10 +173,9 @@ fn from_config_inner(
     let language = language::parse_language(&cfg.language)?;
 
     if is_child && language.code != lang {
-        return Err(Error::Config(format!(
-            "mismatched language in config: {}",
-            language
-        )));
+        return Err(Error::LanguageMismatch {
+            language: language.to_string(),
+        });
     }
 
     let localizer = L10n::new(language.code)?;
@@ -184,10 +188,7 @@ fn from_config_inner(
     for t in &cfg.tags {
         let parsed = tag::parse_tag(t, &note_ids)?;
         if tags.contains_key(&parsed.tag) {
-            return Err(Error::Config(format!(
-                "tag '{}' already published",
-                parsed.tag
-            )));
+            return Err(Error::DuplicateTag { tag: parsed.tag.clone() });
         }
         tags.insert(parsed.tag.clone(), parsed);
     }

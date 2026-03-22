@@ -1,4 +1,5 @@
 If there is a logo.png in the config directory, displays a logo to the left of the website title +feature
 Add language switcher UI if website is configured with multiple languages +feature
+x I want to add ddpub as a library to another Rust app to check, serve and export websites. The API needs to support it +feature
 x Add --export parameter and generate a full HTML website in the given directory. Cancel if directory is not empty. Create directory if doesn't exist +feature
 x Remove Go implementation leftovers from the branch and move templates and other static files where they belong +housekeeping

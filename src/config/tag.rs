@@ -18,7 +18,7 @@ pub fn parse_tag(
     matcher: &NoteIdMatcher,
 ) -> Result<TagConfig> {
     if t.tag.is_empty() {
-        return Err(Error::Config("tag in [[tags]] cannot be empty".into()));
+        return Err(Error::EmptyTag);
     }
 
     let slug = if t.slug.is_empty() {
@@ -34,17 +34,14 @@ pub fn parse_tag(
     };
 
     if !t.id.is_empty() && !t.file.is_empty() {
-        return Err(Error::Config(format!(
-            "tag '{}' cannot have both 'id' and 'file'",
-            t.tag
-        )));
+        return Err(Error::TagConflict { tag: t.tag.clone() });
     }
 
     if !t.id.is_empty() && !matcher.is_valid(&t.id) {
-        return Err(Error::Config(format!(
-            "invalid note ID '{}' in tag '{}'",
-            t.id, t.tag
-        )));
+        return Err(Error::TagInvalidNoteId {
+            tag: t.tag.clone(),
+            id: t.id.clone(),
+        });
     }
 
     let note_id = if !t.file.is_empty() {

@@ -1,7 +1,7 @@
 //! MultiRouter → axum Router or static export.
 
 use crate::config::Website;
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::notes::multistore::MultiStore;
 use crate::notes::router::Router;
 use axum::http::{StatusCode, header};
@@ -31,43 +31,43 @@ impl MultiRouter {
     }
 
     pub fn export(&self, dir: &Path, force: bool, config_dir: &Path, notes_dir: &Path) -> Result<()> {
+        use crate::error::Error;
+
         // Safety: never export into config or notes directories.
         if dir.exists() {
-            let export_path = std::fs::canonicalize(dir).map_err(Error::Io)?;
+            let export_path = std::fs::canonicalize(dir).map_err(Error::ExportIo)?;
             if export_path == config_dir || export_path == notes_dir {
-                return Err(Error::Route(format!(
-                    "export directory must not be the config or notes directory: {}",
-                    dir.display()
-                )));
+                return Err(Error::ExportDirConflict {
+                    dir: dir.display().to_string(),
+                });
             }
         }
 
         if dir.exists() {
             let has_entries = dir
                 .read_dir()
-                .map_err(Error::Io)?
+                .map_err(Error::ExportIo)?
                 .next()
                 .is_some();
             if has_entries {
                 if !force {
-                    return Err(Error::Route(format!(
-                        "export directory is not empty (use --force to clear): {}",
-                        dir.display()
-                    )));
+                    return Err(Error::ExportDirNotEmpty {
+                        dir: dir.display().to_string(),
+                    });
                 }
                 // Clear contents but keep the directory itself.
-                for entry in dir.read_dir().map_err(Error::Io)? {
-                    let entry = entry.map_err(Error::Io)?;
+                for entry in dir.read_dir().map_err(Error::ExportIo)? {
+                    let entry = entry.map_err(Error::ExportIo)?;
                     let path = entry.path();
                     if path.is_dir() {
-                        std::fs::remove_dir_all(&path).map_err(Error::Io)?;
+                        std::fs::remove_dir_all(&path).map_err(Error::ExportIo)?;
                     } else {
-                        std::fs::remove_file(&path).map_err(Error::Io)?;
+                        std::fs::remove_file(&path).map_err(Error::ExportIo)?;
                     }
                 }
             }
         } else {
-            std::fs::create_dir_all(dir).map_err(Error::Io)?;
+            std::fs::create_dir_all(dir).map_err(Error::ExportIo)?;
         }
 
         let all_routes = std::iter::once(&self.main)
@@ -82,10 +82,10 @@ impl MultiRouter {
                 };
 
                 if let Some(parent) = file_path.parent() {
-                    std::fs::create_dir_all(parent).map_err(Error::Io)?;
+                    std::fs::create_dir_all(parent).map_err(Error::ExportIo)?;
                 }
 
-                std::fs::write(&file_path, &route.content).map_err(Error::Io)?;
+                std::fs::write(&file_path, &route.content).map_err(Error::ExportIo)?;
             }
         }
 

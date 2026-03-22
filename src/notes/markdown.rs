@@ -163,15 +163,16 @@ fn try_file_from_link(link: &str, notes_dir: &str, w: &WebsiteLang) -> Option<Fi
 }
 
 pub fn read_content(filename: &str, directory: &str) -> Result<String> {
+    use crate::error::Error;
     let path = Path::new(directory).join(filename);
-    let file = fs::File::open(&path)?;
+    let file = fs::File::open(&path).map_err(Error::NoteIo)?;
     let reader = io::BufReader::new(file);
 
     let mut content = String::new();
     let mut append_line = false;
 
     for line in reader.lines() {
-        let line = line?;
+        let line = line.map_err(Error::NoteIo)?;
         if !append_line {
             append_line = line.is_empty();
             continue;

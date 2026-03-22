@@ -34,14 +34,11 @@ pub fn parse_feed(
     };
 
     if !f.id.is_empty() && !f.file.is_empty() {
-        return Err(Error::Config("feed cannot have both 'id' and 'file'".into()));
+        return Err(Error::FeedConflict);
     }
 
     if !f.id.is_empty() && !matcher.is_valid(&f.id) {
-        return Err(Error::Config(format!(
-            "invalid note ID '{}' in feed",
-            f.id
-        )));
+        return Err(Error::FeedInvalidNoteId { id: f.id.clone() });
     }
 
     if !f.file.is_empty() {

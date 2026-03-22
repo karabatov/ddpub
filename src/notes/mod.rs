@@ -92,7 +92,7 @@ impl Store {
             if let config::menu::Menu::NoteId { id, .. } = m
                 && !store.is_page_note(w, id)
             {
-                return Err(Error::Note(format!("menu note not published: {id}")));
+                return Err(Error::NoteNotPublished { id: id.clone() });
             }
         }
 
@@ -163,7 +163,7 @@ impl Store {
             }
 
             let meta = self.meta.get(pub_id).ok_or_else(|| {
-                Error::Note(format!("metadata not found for note '{pub_id}'"))
+                Error::MetadataNotFound { id: pub_id.clone() }
             })?.clone();
 
             let raw_content = markdown::read_content(&meta.filename, notes_dir)?;

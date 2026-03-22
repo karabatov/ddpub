@@ -44,10 +44,7 @@ pub fn parse_language(d: &data::LanguageData) -> Result<Language> {
         return Ok(l);
     }
 
-    Err(Error::Config(format!(
-        "language '{}' not supported",
-        d.code
-    )))
+    Err(Error::UnsupportedLanguage { code: d.code.clone() })
 }
 
 #[cfg(test)]

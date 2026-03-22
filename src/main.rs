@@ -1,11 +1,5 @@
-mod config;
-mod dd;
-mod error;
-mod l10n;
-mod layout;
-mod notes;
-
 use clap::{Parser, Subcommand};
+use ddpub::{MultiRouter, MultiStore, Website};
 use std::time::Instant;
 
 const DEFAULT_PORT: u16 = 44234;
@@ -80,7 +74,7 @@ async fn main() {
         ),
     };
 
-    let cfg = match crate::config::Website::new(&config_dir) {
+    let cfg = match Website::new(&config_dir) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Couldn't load website config: {e}");
@@ -88,7 +82,7 @@ async fn main() {
         }
     };
 
-    let store = match notes::multistore::MultiStore::new(&cfg, &notes_dir) {
+    let store = match MultiStore::new(&cfg, &notes_dir) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("Couldn't load notes: {e}");
@@ -96,7 +90,7 @@ async fn main() {
         }
     };
 
-    let router = match notes::multirouter::MultiRouter::new(&cfg, &store) {
+    let router = match MultiRouter::new(&cfg, &store) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("Could not create router: {e}");

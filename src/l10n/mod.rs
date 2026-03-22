@@ -26,6 +26,101 @@ struct Strings {
     footer_powered_by: String,
     #[serde(rename = "TagsTitle")]
     tags_title: String,
+    #[serde(rename = "errors")]
+    errors: ErrorStrings,
+}
+
+/// Localized error message templates. Each field is a template string
+/// with `{name}` placeholders that get substituted at runtime.
+#[derive(Debug, Deserialize)]
+pub struct ErrorStrings {
+    #[serde(rename = "ConfigFileOpen")]
+    pub config_file_open: String,
+    #[serde(rename = "ConfigFileParse")]
+    pub config_file_parse: String,
+    #[serde(rename = "InvalidRegex")]
+    pub invalid_regex: String,
+    #[serde(rename = "HomepageConflict")]
+    pub homepage_conflict: String,
+    #[serde(rename = "HomepageInvalidNoteId")]
+    pub homepage_invalid_note_id: String,
+    #[serde(rename = "FeedConflict")]
+    pub feed_conflict: String,
+    #[serde(rename = "FeedInvalidNoteId")]
+    pub feed_invalid_note_id: String,
+    #[serde(rename = "EmptyTag")]
+    pub empty_tag: String,
+    #[serde(rename = "TagConflict")]
+    pub tag_conflict: String,
+    #[serde(rename = "TagInvalidNoteId")]
+    pub tag_invalid_note_id: String,
+    #[serde(rename = "DuplicateTag")]
+    pub duplicate_tag: String,
+    #[serde(rename = "MenuMultipleTypes")]
+    pub menu_multiple_types: String,
+    #[serde(rename = "MenuUnknownBuiltin")]
+    pub menu_unknown_builtin: String,
+    #[serde(rename = "MenuInvalidNoteId")]
+    pub menu_invalid_note_id: String,
+    #[serde(rename = "MenuTagNotPublished")]
+    pub menu_tag_not_published: String,
+    #[serde(rename = "UnsupportedLanguage")]
+    pub unsupported_language: String,
+    #[serde(rename = "DomainNotSet")]
+    pub domain_not_set: String,
+    #[serde(rename = "LanguageMismatch")]
+    pub language_mismatch: String,
+    #[serde(rename = "NotesDirectoryUnreadable")]
+    pub notes_directory_unreadable: String,
+    #[serde(rename = "NoteNotPublished")]
+    pub note_not_published: String,
+    #[serde(rename = "MetadataNotFound")]
+    pub metadata_not_found: String,
+    #[serde(rename = "NoteIo")]
+    pub note_io: String,
+    #[serde(rename = "ExportDirConflict")]
+    pub export_dir_conflict: String,
+    #[serde(rename = "ExportDirNotEmpty")]
+    pub export_dir_not_empty: String,
+    #[serde(rename = "ExportIo")]
+    pub export_io: String,
+    #[serde(rename = "HomepageContentNotFound")]
+    pub homepage_content_not_found: String,
+    #[serde(rename = "RouteConflict")]
+    pub route_conflict: String,
+    #[serde(rename = "MenuNoteContentNotFound")]
+    pub menu_note_content_not_found: String,
+    #[serde(rename = "MenuTagNotFound")]
+    pub menu_tag_not_found: String,
+    #[serde(rename = "BrokenLinks")]
+    pub broken_links: String,
+    #[serde(rename = "LanguageStringsLoadFailed")]
+    pub language_strings_load_failed: String,
+}
+
+fn strings_content(lang: Language) -> &'static str {
+    match lang {
+        Language::EnUS => include_str!("strings/strings.en-US.toml"),
+        Language::EnUK => include_str!("strings/strings.en-UK.toml"),
+        Language::RuRU => include_str!("strings/strings.ru-RU.toml"),
+    }
+}
+
+/// Load error strings for a language. Falls back to en-US on parse failure.
+pub fn error_strings(lang: Language) -> ErrorStrings {
+    let content = strings_content(lang);
+    if let Ok(s) = toml::from_str::<Strings>(content) {
+        return s.errors;
+    }
+    // Fallback: try en-US if the requested language failed.
+    if lang != Language::EnUS {
+        let fallback = strings_content(Language::EnUS);
+        if let Ok(s) = toml::from_str::<Strings>(fallback) {
+            return s.errors;
+        }
+    }
+    // Should never happen with bundled strings.
+    panic!("could not parse bundled language strings");
 }
 
 #[derive(Debug)]
@@ -35,13 +130,11 @@ pub struct L10n {
 
 impl L10n {
     pub fn new(lang: Language) -> Result<Self> {
-        let content = match lang {
-            Language::EnUS => include_str!("strings/strings.en-US.toml"),
-            Language::EnUK => include_str!("strings/strings.en-UK.toml"),
-            Language::RuRU => include_str!("strings/strings.ru-RU.toml"),
-        };
+        let content = strings_content(lang);
         let loc: Strings = toml::from_str(content)
-            .map_err(|e| Error::L10n(format!("could not load language strings: {e}")))?;
+            .map_err(|e| Error::LanguageStringsLoadFailed {
+                cause: e.to_string(),
+            })?;
         Ok(L10n { loc })
     }
 
@@ -77,5 +170,17 @@ mod tests {
     fn test_load_ru_ru() {
         let l = L10n::new(Language::RuRU).unwrap();
         assert_eq!(l.str(Key::TagsTitle), "Теги");
+    }
+
+    #[test]
+    fn test_error_strings_en_us() {
+        let es = error_strings(Language::EnUS);
+        assert!(es.empty_tag.contains("[[tags]]"));
+    }
+
+    #[test]
+    fn test_error_strings_ru_ru() {
+        let es = error_strings(Language::RuRU);
+        assert!(es.empty_tag.contains("[[tags]]"));
     }
 }

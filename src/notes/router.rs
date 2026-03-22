@@ -63,9 +63,7 @@ fn add_page(
     content: String,
 ) -> Result<()> {
     if routes.contains_key(pattern) {
-        return Err(Error::Route(format!(
-            "pattern '{pattern}' already registered with router"
-        )));
+        return Err(Error::RouteConflict { pattern: pattern.to_string() });
     }
     let bytes = make_page(w, s, pattern, title, content)?;
     routes.insert(
@@ -86,7 +84,7 @@ impl Router {
         match &w.homepage {
             config::homepage::Homepage::NoteId(id) => {
                 let note = s.note_content.get(id).ok_or_else(|| {
-                    Error::Route(format!("homepage note content not found: {id}"))
+                    Error::HomepageContentNotFound { id: id.clone() }
                 })?;
                 let content = html_for_page(note);
                 add_page(&mut routes, w, s, &w.url_for_home_page(), &html_as_text(&note.meta.title), content)?;
@@ -155,9 +153,7 @@ impl Router {
             for f in &w.shared_files {
                 let pattern = w.url_for_shared_file(&f.filename);
                 if routes.contains_key(&pattern) {
-                    return Err(Error::Route(format!(
-                        "pattern '{pattern}' already registered with router"
-                    )));
+                    return Err(Error::RouteConflict { pattern });
                 }
                 routes.insert(
                     pattern,
@@ -204,10 +200,9 @@ impl Router {
         }
         if !broken.is_empty() {
             broken.sort();
-            return Err(Error::Route(format!(
-                "broken links: {}",
-                broken.join(", ")
-            )));
+            return Err(Error::BrokenLinks {
+                links: broken.into_iter().map(|s| s.to_string()).collect(),
+            });
         }
 
         Ok(Router { routes })
@@ -222,13 +217,13 @@ fn layout_menu(w: &WebsiteLang, s: &Store) -> Result<Vec<layout::ListItem>> {
                 config::menu::Menu::Builtin { builtin, .. } => w.url_for_builtin(*builtin),
                 config::menu::Menu::NoteId { id, .. } => {
                     let note = s.note_content.get(id).ok_or_else(|| {
-                        Error::Route(format!("menu note content not found: {id}"))
+                        Error::MenuNoteContentNotFound { id: id.clone() }
                     })?;
                     w.url_for_page_note(&note.meta.slug)
                 }
                 config::menu::Menu::Tag { tag, .. } => {
                     let tag_config = w.tags.get(tag).ok_or_else(|| {
-                        Error::Route(format!("menu tag not found: {tag}"))
+                        Error::MenuTagNotFound { tag: tag.clone() }
                     })?;
                     w.url_for_tag(tag_config)
                 }

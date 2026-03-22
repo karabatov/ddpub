@@ -16,14 +16,14 @@ pub fn parse_homepage(
     matcher: &NoteIdMatcher,
 ) -> Result<Homepage> {
     if !h.id.is_empty() && !h.file.is_empty() {
-        return Err(Error::Config("homepage cannot have both 'id' and 'file'".into()));
+        return Err(Error::HomepageConflict);
     }
 
     if !h.id.is_empty() {
         if matcher.is_valid(&h.id) {
             return Ok(Homepage::NoteId(h.id.clone()));
         }
-        return Err(Error::Config(format!("invalid note id '{}'", h.id)));
+        return Err(Error::HomepageInvalidNoteId { id: h.id.clone() });
     }
 
     if !h.file.is_empty() {
