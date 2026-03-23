@@ -111,13 +111,8 @@ async fn main() {
                 std::process::exit(1);
             }
         };
-        let notes_path = match std::fs::canonicalize(&notes_dir) {
-            Ok(p) => p,
-            Err(e) => {
-                eprintln!("Could not resolve notes directory '{notes_dir}': {e}");
-                std::process::exit(1);
-            }
-        };
+        let notes_path = std::fs::canonicalize(&notes_dir)
+            .unwrap_or_else(|_| std::path::PathBuf::from(&notes_dir));
         match router.export(std::path::Path::new(&dir), force, &config_path, &notes_path) {
             Ok(()) => {
                 eprintln!("Exported to {dir}");

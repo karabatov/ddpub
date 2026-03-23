@@ -70,6 +70,17 @@ pub enum Error {
     LanguageMismatch {
         language: String,
     },
+    RedirectEmptyUrl,
+    RedirectEmptyDestination {
+        url: String,
+    },
+    RedirectInvalidUrl {
+        url: String,
+    },
+    RedirectInvalidDestination {
+        url: String,
+        destination: String,
+    },
 
     // ── Notes stage ────────────────────────────────────────────────
     NotesDirectoryUnreadable {
@@ -124,6 +135,9 @@ pub enum Error {
     FileOutsideNotesDir {
         path: String,
     },
+    RedirectRouteConflict {
+        url: String,
+    },
 
     // ── Localization stage ─────────────────────────────────────────
     LanguageStringsLoadFailed {
@@ -153,7 +167,11 @@ impl Error {
             | Error::MenuTagNotPublished { .. }
             | Error::UnsupportedLanguage { .. }
             | Error::DomainNotSet { .. }
-            | Error::LanguageMismatch { .. } => ErrorStage::Config,
+            | Error::LanguageMismatch { .. }
+            | Error::RedirectEmptyUrl
+            | Error::RedirectEmptyDestination { .. }
+            | Error::RedirectInvalidUrl { .. }
+            | Error::RedirectInvalidDestination { .. } => ErrorStage::Config,
 
             // Notes
             Error::NotesDirectoryUnreadable { .. }
@@ -174,7 +192,8 @@ impl Error {
             | Error::NoteContentNotFound { .. }
             | Error::TemplateRender { .. }
             | Error::RouteCollision { .. }
-            | Error::FileOutsideNotesDir { .. } => ErrorStage::Routing,
+            | Error::FileOutsideNotesDir { .. }
+            | Error::RedirectRouteConflict { .. } => ErrorStage::Routing,
 
             // Localization
             Error::LanguageStringsLoadFailed { .. } => ErrorStage::Localization,
@@ -225,6 +244,14 @@ impl Error {
                 s.domain_not_set.replace("{path}", path),
             Error::LanguageMismatch { language } =>
                 s.language_mismatch.replace("{language}", language),
+            Error::RedirectEmptyUrl =>
+                s.redirect_empty_url.clone(),
+            Error::RedirectEmptyDestination { url } =>
+                s.redirect_empty_destination.replace("{url}", url),
+            Error::RedirectInvalidUrl { url } =>
+                s.redirect_invalid_url.replace("{url}", url),
+            Error::RedirectInvalidDestination { url, destination } =>
+                s.redirect_invalid_destination.replace("{url}", url).replace("{destination}", destination),
             Error::NotesDirectoryUnreadable { dir, cause } =>
                 s.notes_directory_unreadable.replace("{dir}", dir).replace("{cause}", cause),
             Error::NoteNotPublished { id } =>
@@ -259,6 +286,8 @@ impl Error {
                 s.route_collision.replace("{pattern}", pattern).replace("{ids}", &ids.join(", ")),
             Error::FileOutsideNotesDir { path } =>
                 s.file_outside_notes_dir.replace("{path}", path),
+            Error::RedirectRouteConflict { url } =>
+                s.redirect_route_conflict.replace("{url}", url),
             Error::LanguageStringsLoadFailed { cause } =>
                 s.language_strings_load_failed.replace("{cause}", cause),
         }

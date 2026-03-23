@@ -99,11 +99,21 @@ pub fn read_all_metadata(
     w: &WebsiteLang,
     notes_dir: &str,
 ) -> Result<MetadataResult> {
-    let entries = fs::read_dir(notes_dir)
-        .map_err(|e| crate::error::Error::NotesDirectoryUnreadable {
-            dir: notes_dir.to_string(),
-            cause: e.to_string(),
-        })?;
+    let entries = match fs::read_dir(notes_dir) {
+        Ok(entries) => entries,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => {
+            return Ok(MetadataResult {
+                meta: HashMap::new(),
+                warnings: Vec::new(),
+            });
+        }
+        Err(e) => {
+            return Err(crate::error::Error::NotesDirectoryUnreadable {
+                dir: notes_dir.to_string(),
+                cause: e.to_string(),
+            });
+        }
+    };
 
     let mut meta = HashMap::new();
     let mut warnings = Vec::new();

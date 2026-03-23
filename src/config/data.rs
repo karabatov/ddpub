@@ -8,6 +8,8 @@ pub struct Homepage {
     pub id: String,
     #[serde(default)]
     pub file: String,
+    #[serde(default)]
+    pub redirect: String,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -86,6 +88,14 @@ pub struct Notes {
     pub id_link_format: String,
 }
 
+#[derive(Debug, Deserialize, Default)]
+pub struct Redirect {
+    #[serde(default)]
+    pub url: String,
+    #[serde(default)]
+    pub destination: String,
+}
+
 /// ConfigFile represents a TOML configuration file for a single website.
 #[derive(Debug, Deserialize, Default)]
 pub struct ConfigFile {
@@ -113,4 +123,6 @@ pub struct ConfigFile {
     pub tags: Vec<TagData>,
     #[serde(default)]
     pub segments: Segments,
+    #[serde(default)]
+    pub redirects: Vec<Redirect>,
 }

@@ -19,6 +19,7 @@ pub struct Route {
 
 pub struct Router {
     pub routes: HashMap<String, Route>,
+    pub redirects: Vec<(String, String)>,
     pub not_found_page: Vec<u8>,
 }
 
@@ -80,6 +81,18 @@ fn add_page(
 impl Router {
     pub fn new(w: &WebsiteLang, s: &Store) -> Result<Self> {
         let mut routes: HashMap<String, Route> = HashMap::new();
+        let mut redirect_list: Vec<(String, String)> = Vec::new();
+
+        // Homepage redirect: the site is just this one redirect + 404 page.
+        if let config::homepage::Homepage::Redirect(ref dest) = w.homepage {
+            redirect_list.push((w.url_for_home_page(), dest.clone()));
+
+            // Generate 404 page.
+            let not_found_content = format!("<p>{}</p>", w.str(Key::NotFoundMessage));
+            let not_found_page = make_page(w, s, "/404.html", w.str(Key::NotFoundTitle), not_found_content)?;
+
+            return Ok(Router { routes, redirects: redirect_list, not_found_page });
+        }
 
         // Add homepage.
         match &w.homepage {
@@ -94,6 +107,7 @@ impl Router {
                 let content = html_for_builtin_feed(w, s)?;
                 add_page(&mut routes, w, s, &w.url_for_home_page(), &w.feed.title, content)?;
             }
+            config::homepage::Homepage::Redirect(_) => unreachable!(),
         }
 
         // Builtin - feed.
@@ -188,6 +202,14 @@ impl Router {
             },
         );
 
+        // Add redirects — source must not conflict with any existing route.
+        for r in &w.redirects {
+            if routes.contains_key(&r.url) {
+                return Err(Error::RedirectRouteConflict { url: r.url.clone() });
+            }
+            redirect_list.push((r.url.clone(), r.destination.clone()));
+        }
+
         // Generate 404 page.
         let not_found_content = format!("<p>{}</p>", w.str(Key::NotFoundMessage));
         let not_found_page = make_page(w, s, "/404.html", w.str(Key::NotFoundTitle), not_found_content)?;
@@ -202,12 +224,18 @@ impl Router {
                 broken.push(format_broken_link(link));
             }
         }
+        // Validate internal redirect destinations exist.
+        for (url, dest) in &redirect_list {
+            if dest.starts_with('/') && !routes.contains_key(dest.as_str()) {
+                broken.push(format!("redirect '{url}' → '{dest}' (target route not found)"));
+            }
+        }
         if !broken.is_empty() {
             broken.sort();
             return Err(Error::BrokenLinks { links: broken });
         }
 
-        Ok(Router { routes, not_found_page })
+        Ok(Router { routes, redirects: redirect_list, not_found_page })
     }
 }
 

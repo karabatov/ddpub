@@ -87,6 +87,22 @@ impl MultiRouter {
 
                 std::fs::write(&file_path, &route.content).map_err(Error::ExportIo)?;
             }
+
+            // Export redirects as HTML files with meta refresh.
+            for (url, destination) in &router.redirects {
+                let redirect_html = format!(
+                    "<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"0; url={destination}\"><link rel=\"canonical\" href=\"{destination}\"></head><body></body></html>"
+                );
+                let file_path = if url.ends_with('/') {
+                    dir.join(url.trim_start_matches('/')).join("index.html")
+                } else {
+                    dir.join(url.trim_start_matches('/'))
+                };
+                if let Some(parent) = file_path.parent() {
+                    std::fs::create_dir_all(parent).map_err(Error::ExportIo)?;
+                }
+                std::fs::write(&file_path, redirect_html.as_bytes()).map_err(Error::ExportIo)?;
+            }
         }
 
         // Export 404 page from the main router.
@@ -154,5 +170,14 @@ fn register_routes(mut axum_router: axum::Router, router: Router) -> axum::Route
             );
         }
     }
+
+    // Register redirects.
+    for (url, destination) in router.redirects {
+        axum_router = axum_router.route(
+            &url,
+            get(move || async move { Redirect::permanent(&destination) }),
+        );
+    }
+
     axum_router
 }

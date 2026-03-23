@@ -110,6 +110,16 @@ pub struct ErrorStrings {
     pub route_collision: String,
     #[serde(rename = "FileOutsideNotesDir")]
     pub file_outside_notes_dir: String,
+    #[serde(rename = "RedirectEmptyUrl")]
+    pub redirect_empty_url: String,
+    #[serde(rename = "RedirectEmptyDestination")]
+    pub redirect_empty_destination: String,
+    #[serde(rename = "RedirectInvalidUrl")]
+    pub redirect_invalid_url: String,
+    #[serde(rename = "RedirectInvalidDestination")]
+    pub redirect_invalid_destination: String,
+    #[serde(rename = "RedirectRouteConflict")]
+    pub redirect_route_conflict: String,
     #[serde(rename = "LanguageStringsLoadFailed")]
     pub language_strings_load_failed: String,
 }
@@ -154,6 +164,11 @@ impl Default for ErrorStrings {
             template_render: "template rendering failed: {cause}".into(),
             route_collision: "route collision at '{pattern}' between notes: {ids}".into(),
             file_outside_notes_dir: "file link resolves outside notes directory: {path}".into(),
+            redirect_empty_url: "redirect url cannot be empty".into(),
+            redirect_empty_destination: "redirect destination cannot be empty for url '{url}'".into(),
+            redirect_invalid_url: "redirect url '{url}' must start with '/'".into(),
+            redirect_invalid_destination: "redirect destination '{destination}' for url '{url}' must be an absolute URL or start with '/'".into(),
+            redirect_route_conflict: "redirect url '{url}' conflicts with an existing route".into(),
             language_strings_load_failed: "could not load language strings: {cause}".into(),
         }
     }

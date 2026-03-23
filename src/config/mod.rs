@@ -6,6 +6,7 @@ pub mod homepage;
 pub mod language;
 pub mod menu;
 pub mod note_id;
+pub mod redirect;
 pub mod shared_file;
 pub mod tag;
 mod url;
@@ -40,6 +41,7 @@ pub struct WebsiteLang {
     pub feed: feed::Feed,
     pub pages_tag: Tag,
     pub shared_files: Vec<shared_file::SharedFile>,
+    pub redirects: Vec<redirect::Redirect>,
     pub head_suffix: String,
     pub note_suffix: String,
     pub footer_prefix: String,
@@ -203,6 +205,11 @@ fn from_config_inner(
 
     let feed = feed::parse_feed(&cfg.feed, "Feed", &note_ids)?;
 
+    let mut redirects = Vec::new();
+    for r in &cfg.redirects {
+        redirects.push(redirect::parse_redirect(r)?);
+    }
+
     Ok(WebsiteLang {
         is_child,
         domain: cfg.domain,
@@ -216,6 +223,7 @@ fn from_config_inner(
         menu: menu_items,
         feed,
         pages_tag: cfg.pages.tag,
+        redirects,
         shared_files: Vec::new(),
         head_suffix: cfg.segments.head_suffix,
         note_suffix: cfg.segments.note_suffix,
@@ -314,6 +322,7 @@ mod tests {
         cfg.homepage = data::Homepage {
             id: "some-id".to_string(),
             file: "about.md".to_string(),
+            ..Default::default()
         };
         let err = from_config(cfg, Language::EnUS, false).unwrap_err();
         assert!(err.to_string().contains("both"));
@@ -348,6 +357,83 @@ mod tests {
         }];
         let w = from_config(cfg, Language::EnUS, false).unwrap();
         assert_eq!(w.tags.get("rust").unwrap().id, "rust-notes.md");
+    }
+
+    #[test]
+    fn test_homepage_redirect() {
+        let mut cfg = minimal_config();
+        cfg.homepage = data::Homepage { redirect: "https://example.com".to_string(), ..Default::default() };
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert!(matches!(w.homepage, homepage::Homepage::Redirect(ref url) if url == "https://example.com"));
+    }
+
+    #[test]
+    fn test_homepage_redirect_conflict_with_id() {
+        let mut cfg = minimal_config();
+        cfg.homepage = data::Homepage {
+            id: "some-id".to_string(),
+            redirect: "https://example.com".to_string(),
+            ..Default::default()
+        };
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("both"));
+    }
+
+    #[test]
+    fn test_redirect_parsed() {
+        let mut cfg = minimal_config();
+        cfg.redirects = vec![data::Redirect {
+            url: "/old/".to_string(),
+            destination: "/new/".to_string(),
+        }];
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert_eq!(w.redirects.len(), 1);
+        assert_eq!(w.redirects[0].url, "/old/");
+        assert_eq!(w.redirects[0].destination, "/new/");
+    }
+
+    #[test]
+    fn test_redirect_empty_url_error() {
+        let mut cfg = minimal_config();
+        cfg.redirects = vec![data::Redirect {
+            url: "".to_string(),
+            destination: "/target/".to_string(),
+        }];
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("empty"));
+    }
+
+    #[test]
+    fn test_redirect_invalid_url_error() {
+        let mut cfg = minimal_config();
+        cfg.redirects = vec![data::Redirect {
+            url: "no-slash".to_string(),
+            destination: "/target/".to_string(),
+        }];
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("must start with"));
+    }
+
+    #[test]
+    fn test_redirect_external_destination() {
+        let mut cfg = minimal_config();
+        cfg.redirects = vec![data::Redirect {
+            url: "/go/".to_string(),
+            destination: "https://example.com".to_string(),
+        }];
+        let w = from_config(cfg, Language::EnUS, false).unwrap();
+        assert_eq!(w.redirects[0].destination, "https://example.com");
+    }
+
+    #[test]
+    fn test_redirect_invalid_destination_error() {
+        let mut cfg = minimal_config();
+        cfg.redirects = vec![data::Redirect {
+            url: "/go/".to_string(),
+            destination: "relative-path".to_string(),
+        }];
+        let err = from_config(cfg, Language::EnUS, false).unwrap_err();
+        assert!(err.to_string().contains("absolute URL"));
     }
 
     #[test]
