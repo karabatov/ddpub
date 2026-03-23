@@ -1,3 +1,4 @@
+Consistently define and use ID format +housekeeping
 If there is a logo.png in the config directory, displays a logo to the left of the website title +feature
 Add language switcher UI if website is configured with multiple languages +feature
 Add more segment positions +TBD +feature
