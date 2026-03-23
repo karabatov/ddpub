@@ -19,6 +19,7 @@ pub struct Route {
 
 pub struct Router {
     pub routes: HashMap<String, Route>,
+    pub not_found_page: Vec<u8>,
 }
 
 fn make_page(w: &WebsiteLang, s: &Store, pattern: &str, title: &str, content: String) -> Result<Vec<u8>> {
@@ -187,6 +188,10 @@ impl Router {
             },
         );
 
+        // Generate 404 page.
+        let not_found_content = format!("<p>{}</p>", w.str(Key::NotFoundMessage));
+        let not_found_page = make_page(w, s, "/404.html", w.str(Key::NotFoundTitle), not_found_content)?;
+
         // Collect all broken links: unresolved references + links to unpublished notes.
         let mut broken: Vec<String> = Vec::new();
         for link in &s.broken_links {
@@ -202,7 +207,7 @@ impl Router {
             return Err(Error::BrokenLinks { links: broken });
         }
 
-        Ok(Router { routes })
+        Ok(Router { routes, not_found_page })
     }
 }
 

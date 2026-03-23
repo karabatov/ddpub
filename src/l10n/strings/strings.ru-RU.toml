@@ -3,6 +3,8 @@ DatePublished = "Опубликовано %s"
 DateUpdatedPublished = "Обновлено %s ・ Опубликовано %s"
 FooterPoweredBy = 'Питается силой <a href="https://ddpub.org">DDPub</a>'
 TagsTitle = "Теги"
+NotFoundTitle = "Страница не найдена"
+NotFoundMessage = "Запрашиваемая страница не существует."
 
 [errors]
 ConfigFileOpen = "не удалось открыть файл конфигурации '{path}': {cause}"

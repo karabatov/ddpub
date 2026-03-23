@@ -3,6 +3,8 @@ DatePublished = "Published %s"
 DateUpdatedPublished = "Updated %s ・ Published %s"
 FooterPoweredBy = 'Powered by <a href="https://ddpub.org" target="_blank">DDPub</a>'
 TagsTitle = "Tags"
+NotFoundTitle = "Page Not Found"
+NotFoundMessage = "The page you are looking for does not exist."
 
 [errors]
 ConfigFileOpen = "could not open config file '{path}': {cause}"

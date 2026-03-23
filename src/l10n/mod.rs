@@ -12,6 +12,8 @@ pub enum Key {
     DateUpdatedPublished,
     FooterPoweredBy,
     TagsTitle,
+    NotFoundTitle,
+    NotFoundMessage,
 }
 
 #[derive(Debug, Deserialize)]
@@ -26,6 +28,10 @@ struct Strings {
     footer_powered_by: String,
     #[serde(rename = "TagsTitle")]
     tags_title: String,
+    #[serde(rename = "NotFoundTitle")]
+    not_found_title: String,
+    #[serde(rename = "NotFoundMessage")]
+    not_found_message: String,
     #[serde(rename = "errors")]
     errors: ErrorStrings,
 }
@@ -201,6 +207,8 @@ impl L10n {
             Key::DateUpdatedPublished => &self.loc.date_updated_published,
             Key::FooterPoweredBy => &self.loc.footer_powered_by,
             Key::TagsTitle => &self.loc.tags_title,
+            Key::NotFoundTitle => &self.loc.not_found_title,
+            Key::NotFoundMessage => &self.loc.not_found_message,
         }
     }
 }

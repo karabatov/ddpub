@@ -89,11 +89,17 @@ impl MultiRouter {
             }
         }
 
+        // Export 404 page from the main router.
+        std::fs::write(dir.join("404.html"), &self.main.not_found_page).map_err(Error::ExportIo)?;
+
         Ok(())
     }
 
     pub fn into_axum_router(self) -> axum::Router {
         let mut router = axum::Router::new();
+
+        // Extract 404 page before moving self.main.
+        let not_found_page = Arc::new(self.main.not_found_page.clone());
 
         // Register all routes from main router
         router = register_routes(router, self.main);
@@ -104,7 +110,17 @@ impl MultiRouter {
         }
 
         // Add fallback for 404
-        router = router.fallback(|| async { StatusCode::NOT_FOUND });
+        router = router.fallback(move || {
+            let page = Arc::clone(&not_found_page);
+            async move {
+                (
+                    StatusCode::NOT_FOUND,
+                    [(header::CONTENT_TYPE, "text/html; charset=utf-8".to_string())],
+                    page.as_ref().clone(),
+                )
+                    .into_response()
+            }
+        });
 
         router
     }
