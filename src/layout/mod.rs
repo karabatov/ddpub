@@ -75,6 +75,13 @@ pub struct BuiltinTags {
 }
 
 #[derive(Serialize)]
+pub struct BuiltinSearch {
+    pub title: String,
+    pub pagefind_css_url: String,
+    pub pagefind_js_url: String,
+}
+
+#[derive(Serialize)]
 pub struct ContentPage {
     pub title: String,
     pub content: String,
@@ -123,6 +130,7 @@ static ENV: LazyLock<Environment<'static>> = LazyLock::new(|| {
     env.add_template("content_note", include_str!("templates/content_note.html")).unwrap();
     env.add_template("builtin_feed", include_str!("templates/builtin_feed.html")).unwrap();
     env.add_template("builtin_tags", include_str!("templates/builtin_tags.html")).unwrap();
+    env.add_template("builtin_search", include_str!("templates/builtin_search.html")).unwrap();
     env.add_template("content_tag", include_str!("templates/content_tag.html")).unwrap();
     env
 });
@@ -153,6 +161,11 @@ pub fn fill_builtin_feed(p: &BuiltinFeed) -> Result<String> {
 
 pub fn fill_builtin_tags(p: &BuiltinTags) -> Result<String> {
     let tmpl = ENV.get_template("builtin_tags").map_err(render_error)?;
+    tmpl.render(context!(p => p)).map_err(render_error)
+}
+
+pub fn fill_builtin_search(p: &BuiltinSearch) -> Result<String> {
+    let tmpl = ENV.get_template("builtin_search").map_err(render_error)?;
     tmpl.render(context!(p => p)).map_err(render_error)
 }
 

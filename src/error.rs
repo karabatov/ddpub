@@ -138,6 +138,13 @@ pub enum Error {
     RedirectRouteConflict {
         url: String,
     },
+    ReservedRouteConflict {
+        pattern: String,
+        reserved: String,
+    },
+    SearchIndexError {
+        cause: String,
+    },
 
     // ── Localization stage ─────────────────────────────────────────
     LanguageStringsLoadFailed {
@@ -193,7 +200,9 @@ impl Error {
             | Error::TemplateRender { .. }
             | Error::RouteCollision { .. }
             | Error::FileOutsideNotesDir { .. }
-            | Error::RedirectRouteConflict { .. } => ErrorStage::Routing,
+            | Error::RedirectRouteConflict { .. }
+            | Error::ReservedRouteConflict { .. }
+            | Error::SearchIndexError { .. } => ErrorStage::Routing,
 
             // Localization
             Error::LanguageStringsLoadFailed { .. } => ErrorStage::Localization,
@@ -288,6 +297,10 @@ impl Error {
                 s.file_outside_notes_dir.replace("{path}", path),
             Error::RedirectRouteConflict { url } =>
                 s.redirect_route_conflict.replace("{url}", url),
+            Error::ReservedRouteConflict { pattern, reserved } =>
+                s.reserved_route_conflict.replace("{pattern}", pattern).replace("{reserved}", reserved),
+            Error::SearchIndexError { cause } =>
+                s.search_index_error.replace("{cause}", cause),
             Error::LanguageStringsLoadFailed { cause } =>
                 s.language_strings_load_failed.replace("{cause}", cause),
         }

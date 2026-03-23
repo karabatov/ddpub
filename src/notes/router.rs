@@ -1,7 +1,7 @@
 //! Router, handler generation, RSS.
 
 use crate::config::{self, WebsiteLang};
-use crate::dd::Builtin;
+use crate::dd::{self, Builtin};
 use crate::error::{Error, Result};
 use crate::l10n::Key;
 use crate::layout;
@@ -9,6 +9,7 @@ use crate::notes::html::*;
 use crate::notes::{LinkInfo, PublishTarget, Store, html_as_text};
 use chrono::Utc;
 use std::collections::HashMap;
+use std::path::Path;
 
 /// A route maps a URL pattern to pre-rendered content with a content type.
 #[derive(Clone)]
@@ -79,7 +80,7 @@ fn add_page(
 }
 
 impl Router {
-    pub fn new(w: &WebsiteLang, s: &Store) -> Result<Self> {
+    pub async fn new(w: &WebsiteLang, s: &Store) -> Result<Self> {
         let mut routes: HashMap<String, Route> = HashMap::new();
         let mut redirect_list: Vec<(String, String)> = Vec::new();
 
@@ -124,6 +125,13 @@ impl Router {
             let pattern = w.url_for_builtin(Builtin::Tags);
             let content = html_for_builtin_tags(w, s)?;
             add_page(&mut routes, w, s, &pattern, w.str(Key::TagsTitle), content)?;
+        }
+
+        // Builtin - search.
+        if w.search {
+            let pattern = w.url_for_builtin(Builtin::Search);
+            let content = html_for_builtin_search(w)?;
+            add_page(&mut routes, w, s, &pattern, w.str(Key::SearchTitle), content)?;
         }
 
         // Add published pages and notes.
@@ -201,6 +209,51 @@ impl Router {
                 content_type: "application/rss+xml".to_string(),
             },
         );
+
+        // Build pagefind search index and add generated files as routes.
+        if w.search {
+            let search_url = w.url_for_builtin(Builtin::Search);
+            let pf_config = pagefind::options::PagefindServiceConfig::builder()
+                .root_selector("main".to_string())
+                .force_language(w.language.code.short_code().to_string())
+                .keep_index_url(false)
+                .build();
+
+            let mut index = pagefind::api::PagefindIndex::new(Some(pf_config))
+                .map_err(|e| Error::SearchIndexError { cause: format!("{e}") })?;
+
+            for (url, route) in &routes {
+                if !route.content_type.starts_with("text/html") {
+                    continue;
+                }
+                // Skip the search page itself — it has no meaningful content to index.
+                if *url == search_url {
+                    continue;
+                }
+                let html = String::from_utf8_lossy(&route.content).to_string();
+                let _ = index.add_html_file(None, Some(url.clone()), html).await
+                    .map_err(|e| Error::SearchIndexError { cause: format!("{e}") })?;
+            }
+
+            let pagefind_files = index.get_files().await
+                .map_err(|e| Error::SearchIndexError { cause: format!("{e}") })?;
+
+            for file in pagefind_files {
+                let filename = file.filename.to_string_lossy();
+                let url = w.url_for_pagefind_file(&filename);
+                if routes.contains_key(&url) {
+                    return Err(Error::ReservedRouteConflict {
+                        pattern: url,
+                        reserved: "pagefind/".to_string(),
+                    });
+                }
+                let content_type = dd::guess_content_type(Path::new(&*filename)).to_string();
+                routes.insert(url, Route {
+                    content: file.contents,
+                    content_type,
+                });
+            }
+        }
 
         // Add redirects — source must not conflict with any existing route.
         for r in &w.redirects {

@@ -90,7 +90,7 @@ async fn main() {
         }
     };
 
-    let router = match MultiRouter::new(&cfg, &store) {
+    let router = match MultiRouter::new(&cfg, &store).await {
         Ok(r) => r,
         Err(e) => {
             eprintln!("Could not create router: {e}");

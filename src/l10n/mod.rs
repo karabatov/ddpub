@@ -12,6 +12,7 @@ pub enum Key {
     DateUpdatedPublished,
     FooterPoweredBy,
     TagsTitle,
+    SearchTitle,
     NotFoundTitle,
     NotFoundMessage,
 }
@@ -28,6 +29,8 @@ struct Strings {
     footer_powered_by: String,
     #[serde(rename = "TagsTitle")]
     tags_title: String,
+    #[serde(rename = "SearchTitle")]
+    search_title: String,
     #[serde(rename = "NotFoundTitle")]
     not_found_title: String,
     #[serde(rename = "NotFoundMessage")]
@@ -120,6 +123,10 @@ pub struct ErrorStrings {
     pub redirect_invalid_destination: String,
     #[serde(rename = "RedirectRouteConflict")]
     pub redirect_route_conflict: String,
+    #[serde(rename = "ReservedRouteConflict")]
+    pub reserved_route_conflict: String,
+    #[serde(rename = "SearchIndexError")]
+    pub search_index_error: String,
     #[serde(rename = "LanguageStringsLoadFailed")]
     pub language_strings_load_failed: String,
 }
@@ -169,6 +176,8 @@ impl Default for ErrorStrings {
             redirect_invalid_url: "redirect url '{url}' must start with '/'".into(),
             redirect_invalid_destination: "redirect destination '{destination}' for url '{url}' must be an absolute URL or start with '/'".into(),
             redirect_route_conflict: "redirect url '{url}' conflicts with an existing route".into(),
+            reserved_route_conflict: "route '{pattern}' conflicts with reserved path '{reserved}'".into(),
+            search_index_error: "search index error: {cause}".into(),
             language_strings_load_failed: "could not load language strings: {cause}".into(),
         }
     }
@@ -222,6 +231,7 @@ impl L10n {
             Key::DateUpdatedPublished => &self.loc.date_updated_published,
             Key::FooterPoweredBy => &self.loc.footer_powered_by,
             Key::TagsTitle => &self.loc.tags_title,
+            Key::SearchTitle => &self.loc.search_title,
             Key::NotFoundTitle => &self.loc.not_found_title,
             Key::NotFoundMessage => &self.loc.not_found_message,
         }

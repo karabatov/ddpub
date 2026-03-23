@@ -68,6 +68,14 @@ pub fn html_for_builtin_feed(w: &WebsiteLang, s: &Store) -> Result<String> {
     })
 }
 
+pub fn html_for_builtin_search(w: &WebsiteLang) -> Result<String> {
+    layout::fill_builtin_search(&layout::BuiltinSearch {
+        title: w.str(Key::SearchTitle).to_string(),
+        pagefind_css_url: w.url_for_pagefind_file("pagefind-ui.css"),
+        pagefind_js_url: w.url_for_pagefind_file("pagefind-ui.js"),
+    })
+}
+
 pub fn html_for_builtin_tags(w: &WebsiteLang, s: &Store) -> Result<String> {
     layout::fill_builtin_tags(&layout::BuiltinTags {
         title: w.str(Key::TagsTitle).to_string(),

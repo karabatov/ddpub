@@ -92,6 +92,7 @@ pub fn guess_content_type(path: &Path) -> &'static str {
         "ttf" => "font/ttf",
         "otf" => "font/otf",
         "txt" => "text/plain; charset=utf-8",
+        "wasm" => "application/wasm",
         "zip" => "application/zip",
         _ => "application/octet-stream",
     }

@@ -54,6 +54,10 @@ impl WebsiteLang {
         format!("/{file}")
     }
 
+    pub fn url_for_pagefind_file(&self, filename: &str) -> String {
+        format!("{}pagefind/{}", self.base_url(), filename)
+    }
+
     pub fn url_for_rss_feed(&self) -> String {
         format!("{}rss.xml", self.base_url())
     }

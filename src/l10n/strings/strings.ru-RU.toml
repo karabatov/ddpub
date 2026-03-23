@@ -3,6 +3,7 @@ DatePublished = "Опубликовано %s"
 DateUpdatedPublished = "Обновлено %s ・ Опубликовано %s"
 FooterPoweredBy = 'Питается силой <a href="https://ddpub.org">DDPub</a>'
 TagsTitle = "Теги"
+SearchTitle = "Поиск"
 NotFoundTitle = "Страница не найдена"
 NotFoundMessage = "Запрашиваемая страница не существует."
 
@@ -47,4 +48,6 @@ RedirectEmptyDestination = "назначение перенаправления 
 RedirectInvalidUrl = "url перенаправления '{url}' должен начинаться с '/'"
 RedirectInvalidDestination = "назначение перенаправления '{destination}' для url '{url}' должно быть абсолютным URL или начинаться с '/'"
 RedirectRouteConflict = "url перенаправления '{url}' конфликтует с существующим маршрутом"
+ReservedRouteConflict = "маршрут '{pattern}' конфликтует с зарезервированным путём '{reserved}'"
+SearchIndexError = "ошибка поискового индекса: {cause}"
 LanguageStringsLoadFailed = "не удалось загрузить языковые строки: {cause}"

@@ -19,6 +19,7 @@ tokio = { version = "1", features = ["full"] }
 minijinja = "2"
 toml = "0.8"
 url = "2"
+pagefind = "1"
 
 [dev-dependencies]
 tempfile = "3"

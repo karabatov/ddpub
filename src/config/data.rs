@@ -2,6 +2,10 @@
 
 use serde::Deserialize;
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Debug, Deserialize, Default)]
 pub struct Homepage {
     #[serde(default)]
@@ -125,4 +129,6 @@ pub struct ConfigFile {
     pub segments: Segments,
     #[serde(default)]
     pub redirects: Vec<Redirect>,
+    #[serde(default = "default_true")]
+    pub search: bool,
 }

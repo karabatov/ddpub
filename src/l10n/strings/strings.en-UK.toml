@@ -3,6 +3,7 @@ DatePublished = "Published %s"
 DateUpdatedPublished = "Updated %s ・ Published %s"
 FooterPoweredBy = 'Powered by <a href="https://ddpub.org">%s</a>'
 TagsTitle = "Tags"
+SearchTitle = "Search"
 NotFoundTitle = "Page Not Found"
 NotFoundMessage = "The page you are looking for does not exist."
 
@@ -47,4 +48,6 @@ RedirectEmptyDestination = "redirect destination cannot be empty for url '{url}'
 RedirectInvalidUrl = "redirect url '{url}' must start with '/'"
 RedirectInvalidDestination = "redirect destination '{destination}' for url '{url}' must be an absolute URL or start with '/'"
 RedirectRouteConflict = "redirect url '{url}' conflicts with an existing route"
+ReservedRouteConflict = "route '{pattern}' conflicts with reserved path '{reserved}'"
+SearchIndexError = "search index error: {cause}"
 LanguageStringsLoadFailed = "could not load language strings: {cause}"

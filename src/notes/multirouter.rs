@@ -16,13 +16,13 @@ pub struct MultiRouter {
 }
 
 impl MultiRouter {
-    pub fn new(w: &Website, m: &MultiStore) -> Result<Self> {
-        let main = Router::new(&w.main, &m.main)?;
+    pub async fn new(w: &Website, m: &MultiStore) -> Result<Self> {
+        let main = Router::new(&w.main, &m.main).await?;
 
         let mut sub_routers = Vec::new();
         for cfg in &w.sub_configs {
             if let Some(store) = m.sub_stores.get(&cfg.language.code) {
-                let router = Router::new(cfg, store)?;
+                let router = Router::new(cfg, store).await?;
                 sub_routers.push(router);
             }
         }
