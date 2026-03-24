@@ -41,6 +41,9 @@ pub enum PublishTarget {
 pub struct PublishedNote {
     pub id: NoteId,
     pub target: PublishTarget,
+    /// Human-readable description of where this ID was configured
+    /// (e.g. "homepage", "feed", "tag 'rust'").
+    pub source: String,
 }
 
 #[derive(Debug, Clone)]
@@ -168,15 +171,16 @@ impl Store {
         let feed_tag = w.feed.tag.clone();
         let pages_tag = w.pages_tag.clone();
 
-        let pub_ids: Vec<NoteId> = self.pub_notes.iter().map(|p| p.id.clone()).collect();
+        let pub_notes: Vec<PublishedNote> = self.pub_notes.clone();
 
-        for pub_id in &pub_ids {
+        for pub_note in &pub_notes {
+            let pub_id = &pub_note.id;
             if contents.contains_key(pub_id) {
                 continue;
             }
 
             let meta = self.meta.get(pub_id).ok_or_else(|| {
-                Error::MetadataNotFound { id: pub_id.clone() }
+                Error::MetadataNotFound { id: pub_id.clone(), source: pub_note.source.clone() }
             })?.clone();
 
             let raw_content = markdown::read_content(&meta.filename, notes_dir)?;
@@ -271,6 +275,7 @@ fn notes_for_export(
         e.push(PublishedNote {
             id: id.clone(),
             target: PublishTarget::Builtin,
+            source: "homepage".to_string(),
         });
     }
 
@@ -278,6 +283,7 @@ fn notes_for_export(
         e.push(PublishedNote {
             id: w.feed.id.clone(),
             target: PublishTarget::Builtin,
+            source: "feed".to_string(),
         });
     }
 
@@ -286,6 +292,7 @@ fn notes_for_export(
             e.push(PublishedNote {
                 id: t.id.clone(),
                 target: PublishTarget::Tag,
+                source: format!("tag '{}'", t.tag),
             });
         }
     }
@@ -297,6 +304,7 @@ fn notes_for_export(
             e.push(PublishedNote {
                 id: id.clone(),
                 target: PublishTarget::Page,
+                source: format!("pages (tag '{}')", w.pages_tag),
             });
         }
     }
@@ -311,6 +319,7 @@ fn notes_for_export(
                 e.push(PublishedNote {
                     id: id.clone(),
                     target: PublishTarget::Feed,
+                    source: format!("feed (tag '{}')", w.feed.tag),
                 });
             }
         }

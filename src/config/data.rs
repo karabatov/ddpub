@@ -87,9 +87,11 @@ pub struct Segments {
 #[derive(Debug, Deserialize, Default)]
 pub struct Notes {
     #[serde(default)]
-    pub id_format: String,
+    pub id_length: usize,
     #[serde(default)]
-    pub id_link_format: String,
+    pub id_link_prefix: String,
+    #[serde(default)]
+    pub id_link_suffix: String,
 }
 
 #[derive(Debug, Deserialize, Default)]

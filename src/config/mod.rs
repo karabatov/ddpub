@@ -183,7 +183,7 @@ fn from_config_inner(
 
     let localizer = L10n::new(language.code)?;
 
-    let note_ids = NoteIdMatcher::new(&cfg.notes.id_format, &cfg.notes.id_link_format)?;
+    let note_ids = NoteIdMatcher::new(cfg.notes.id_length, &cfg.notes.id_link_prefix, &cfg.notes.id_link_suffix);
 
     let homepage = homepage::parse_homepage(&cfg.homepage, &note_ids)?;
 
@@ -244,8 +244,9 @@ mod tests {
             https: true,
             title: "Test".to_string(),
             notes: data::Notes {
-                id_format: "[a-z0-9-]+".to_string(),
-                id_link_format: "/note/([a-z0-9-]+)".to_string(),
+                id_length: 0,
+                id_link_prefix: "$".to_string(),
+                id_link_suffix: String::new(),
             },
             feed: data::Feed {
                 tag: "blog".to_string(),
@@ -285,7 +286,8 @@ mod tests {
     #[test]
     fn test_invalid_note_id_in_homepage() {
         let mut cfg = minimal_config();
-        cfg.homepage = data::Homepage { id: "INVALID!!!".to_string(), ..Default::default() };
+        cfg.notes.id_length = 12;
+        cfg.homepage = data::Homepage { id: "short".to_string(), ..Default::default() };
         let err = from_config(cfg, Language::EnUS, false).unwrap_err();
         assert!(err.to_string().contains("invalid note id"));
     }

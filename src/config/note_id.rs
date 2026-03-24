@@ -1,55 +1,94 @@
-//! NoteIdMatcher: regex-based note ID validation and extraction.
+//! NoteIdMatcher: length-based note ID validation and extraction.
 
 use crate::dd::NoteId;
-use crate::error::{Error, Result};
-use regex::Regex;
 
-/// Validates and extracts note IDs from various sources.
+/// Validates and extracts note IDs using a fixed-length prefix scheme.
+///
+/// When `id_length > 0`, a note ID is exactly `id_length` characters extracted
+/// from the start of filenames (before a space). Links use a configurable
+/// prefix/suffix around the ID (e.g. `§202603242008`).
+///
+/// When `id_length == 0`, no structured IDs are used — files are identified
+/// by their full filename.
 #[derive(Debug)]
 pub struct NoteIdMatcher {
-    id_re: Regex,
-    link_re: Regex,
+    id_length: usize,
+    link_prefix: String,
+    link_suffix: String,
 }
 
 impl NoteIdMatcher {
-    pub fn new(id_format: &str, id_link_format: &str) -> Result<Self> {
-        let id_re = Regex::new(id_format)
-            .map_err(|e| Error::InvalidRegex { pattern: id_format.to_string(), cause: e.to_string() })?;
-        let link_re = Regex::new(id_link_format)
-            .map_err(|e| Error::InvalidRegex { pattern: id_link_format.to_string(), cause: e.to_string() })?;
-        Ok(Self { id_re, link_re })
+    pub fn new(id_length: usize, link_prefix: &str, link_suffix: &str) -> Self {
+        Self {
+            id_length,
+            link_prefix: link_prefix.to_string(),
+            link_suffix: link_suffix.to_string(),
+        }
     }
 
-    /// Check if the given string is a valid note ID (full match).
+    /// Check if the given string is a valid note ID.
     pub fn is_valid(&self, test: &str) -> bool {
-        if let Some(m) = self.id_re.find(test) {
-            !m.as_str().is_empty() && m.as_str() == test
+        if self.id_length == 0 {
+            !test.is_empty()
         } else {
-            false
+            test.chars().count() == self.id_length && !test.contains(char::is_whitespace)
         }
     }
 
-    /// Extract a note ID from a link (e.g. `/note/some-id`).
+    /// Extract a note ID from a link (e.g. `§202603242008` or `$some-id`).
     pub fn extract_link(&self, link: &str) -> Option<NoteId> {
-        let caps = self.link_re.captures(link)?;
-        let id = caps.get(1)?.as_str();
-        if self.is_valid(id) {
-            Some(id.to_string())
-        } else {
-            None
-        }
-    }
-
-    /// Extract a note ID from a filename (e.g. `some-id.md`).
-    pub fn extract_file(&self, filename: &str) -> Option<NoteId> {
-        let found = self.id_re.find(filename)?.as_str().to_string();
-        if found.is_empty() {
+        if self.id_length == 0 && self.link_prefix.is_empty() && self.link_suffix.is_empty() {
             return None;
         }
-        if self.is_valid(&found) {
-            Some(found)
+
+        let rest = if !self.link_prefix.is_empty() {
+            link.strip_prefix(&self.link_prefix)?
+        } else {
+            link
+        };
+
+        let rest = if !self.link_suffix.is_empty() {
+            rest.strip_suffix(&self.link_suffix)?
+        } else {
+            rest
+        };
+
+        if self.is_valid(rest) {
+            Some(rest.to_string())
         } else {
             None
+        }
+    }
+
+    /// Extract a note ID from a filename (e.g. `202603242008 something.md`).
+    ///
+    /// Returns `None` when `id_length == 0` or the filename doesn't conform
+    /// to the `<id> <title>.md` / `<id>.md` pattern.
+    pub fn extract_file(&self, filename: &str) -> Option<NoteId> {
+        if self.id_length == 0 {
+            return None;
+        }
+
+        let stem = filename.strip_suffix(".md").unwrap_or(filename);
+        let char_count = stem.chars().count();
+
+        if char_count < self.id_length {
+            return None;
+        }
+
+        let id: String = stem.chars().take(self.id_length).collect();
+
+        if char_count == self.id_length {
+            // Exact match: filename is just the ID (+ .md)
+            Some(id)
+        } else {
+            // Must be followed by a space
+            let next_char = stem.chars().nth(self.id_length)?;
+            if next_char == ' ' {
+                Some(id)
+            } else {
+                None
+            }
         }
     }
 }
@@ -58,43 +97,89 @@ impl NoteIdMatcher {
 mod tests {
     use super::*;
 
-    fn test_matcher() -> NoteIdMatcher {
-        NoteIdMatcher::new(r"[a-z0-9-]+", r"/note/([a-z0-9-]+)").unwrap()
+    #[test]
+    fn test_is_valid_with_length() {
+        let m = NoteIdMatcher::new(12, "$", "");
+        assert!(m.is_valid("202603242008"));
+        assert!(m.is_valid("abcdefghijkl"));
+        assert!(!m.is_valid("short"));
+        assert!(!m.is_valid(""));
+        assert!(!m.is_valid("202603 42008")); // contains space
+        assert!(!m.is_valid("2026032420081")); // too long
     }
 
     #[test]
-    fn test_is_valid() {
-        let m = test_matcher();
-        assert!(m.is_valid("hello-world"));
-        assert!(m.is_valid("abc123"));
-        assert!(!m.is_valid("Hello"));
+    fn test_is_valid_zero_length() {
+        let m = NoteIdMatcher::new(0, "", "");
+        assert!(m.is_valid("anything"));
+        assert!(m.is_valid("a"));
         assert!(!m.is_valid(""));
     }
 
     #[test]
-    fn test_from_link() {
-        let m = test_matcher();
-        assert_eq!(m.extract_link("/note/hello-world"), Some("hello-world".to_string()));
-        assert_eq!(m.extract_link("/note/INVALID"), None);
-        assert_eq!(m.extract_link("/other/hello"), None);
+    fn test_extract_link_with_prefix() {
+        let m = NoteIdMatcher::new(12, "$", "");
+        assert_eq!(m.extract_link("$202603242008"), Some("202603242008".to_string()));
+        assert_eq!(m.extract_link("202603242008"), None); // no prefix
+        assert_eq!(m.extract_link("$short"), None); // wrong length
     }
 
     #[test]
-    fn test_from_file() {
-        let m = test_matcher();
-        assert_eq!(m.extract_file("hello-world.md"), Some("hello-world".to_string()));
-        assert_eq!(m.extract_file("abc123"), Some("abc123".to_string()));
+    fn test_extract_link_with_prefix_and_suffix() {
+        let m = NoteIdMatcher::new(12, "<<", ">>");
+        assert_eq!(m.extract_link("<<202603242008>>"), Some("202603242008".to_string()));
+        assert_eq!(m.extract_link("<<202603242008"), None); // no suffix
+        assert_eq!(m.extract_link("202603242008>>"), None); // no prefix
     }
 
     #[test]
-    fn test_from_file_no_match() {
-        let m = NoteIdMatcher::new(r"\d{14}", r"/note/(\d{14})").unwrap();
-        assert_eq!(m.extract_file("short.md"), None);
+    fn test_extract_link_no_prefix_no_suffix_zero_length() {
+        let m = NoteIdMatcher::new(0, "", "");
+        assert_eq!(m.extract_link("anything"), None); // cannot distinguish
     }
 
     #[test]
-    fn test_invalid_regex() {
-        assert!(NoteIdMatcher::new("[invalid", r"ok").is_err());
-        assert!(NoteIdMatcher::new(r"ok", "[invalid").is_err());
+    fn test_extract_link_prefix_only_zero_length() {
+        let m = NoteIdMatcher::new(0, "$", "");
+        assert_eq!(m.extract_link("$hello"), Some("hello".to_string()));
+        assert_eq!(m.extract_link("hello"), None);
+    }
+
+    #[test]
+    fn test_extract_file_with_space() {
+        let m = NoteIdMatcher::new(12, "$", "");
+        assert_eq!(m.extract_file("202603242008 something.md"), Some("202603242008".to_string()));
+    }
+
+    #[test]
+    fn test_extract_file_exact_length() {
+        let m = NoteIdMatcher::new(12, "$", "");
+        assert_eq!(m.extract_file("202603242008.md"), Some("202603242008".to_string()));
+    }
+
+    #[test]
+    fn test_extract_file_no_space_wrong_length() {
+        let m = NoteIdMatcher::new(12, "$", "");
+        assert_eq!(m.extract_file("about.md"), None);
+    }
+
+    #[test]
+    fn test_extract_file_no_space_after_id() {
+        let m = NoteIdMatcher::new(12, "$", "");
+        assert_eq!(m.extract_file("202603242008extra.md"), None); // no space after ID
+    }
+
+    #[test]
+    fn test_extract_file_zero_length() {
+        let m = NoteIdMatcher::new(0, "", "");
+        assert_eq!(m.extract_file("anything.md"), None);
+    }
+
+    #[test]
+    fn test_unicode_id_length() {
+        let m = NoteIdMatcher::new(3, "$", "");
+        assert!(m.is_valid("абв")); // 3 Cyrillic chars
+        assert!(!m.is_valid("аб")); // 2 chars
+        assert_eq!(m.extract_link("$абв"), Some("абв".to_string()));
     }
 }

@@ -115,7 +115,7 @@ pub fn read_all_metadata(
         }
     };
 
-    let mut meta = HashMap::new();
+    let mut meta: HashMap<NoteId, Metadata> = HashMap::new();
     let mut warnings = Vec::new();
     for entry in entries {
         let entry = entry.map_err(crate::error::Error::NoteIo)?;
@@ -134,6 +134,13 @@ pub fn read_all_metadata(
 
         match read_metadata(w, &id, &filename, notes_dir) {
             Ok(m) => {
+                if let Some(existing) = meta.get(&id) {
+                    return Err(crate::error::Error::DuplicateNoteId {
+                        id: id.clone(),
+                        file1: existing.filename.clone(),
+                        file2: filename.clone(),
+                    });
+                }
                 meta.insert(id, m);
             }
             Err(e) => {

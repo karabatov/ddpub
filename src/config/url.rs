@@ -83,8 +83,9 @@ mod tests {
                 https: true,
                 title: "Test".to_string(),
                 notes: data::Notes {
-                    id_format: "[a-z0-9-]+".to_string(),
-                    id_link_format: "/note/([a-z0-9-]+)".to_string(),
+                    id_length: 0,
+                    id_link_prefix: "$".to_string(),
+                    id_link_suffix: String::new(),
                 },
                 feed: data::Feed {
                     tag: "blog".to_string(),
@@ -110,8 +111,9 @@ mod tests {
                     short: false,
                 },
                 notes: data::Notes {
-                    id_format: "[a-z0-9-]+".to_string(),
-                    id_link_format: "/note/([a-z0-9-]+)".to_string(),
+                    id_length: 0,
+                    id_link_prefix: "$".to_string(),
+                    id_link_suffix: String::new(),
                 },
                 feed: data::Feed {
                     tag: "blog".to_string(),

@@ -47,8 +47,6 @@ pub struct ErrorStrings {
     pub config_file_open: String,
     #[serde(rename = "ConfigFileParse")]
     pub config_file_parse: String,
-    #[serde(rename = "InvalidRegex")]
-    pub invalid_regex: String,
     #[serde(rename = "HomepageConflict")]
     pub homepage_conflict: String,
     #[serde(rename = "HomepageInvalidNoteId")]
@@ -79,6 +77,8 @@ pub struct ErrorStrings {
     pub domain_not_set: String,
     #[serde(rename = "LanguageMismatch")]
     pub language_mismatch: String,
+    #[serde(rename = "DuplicateNoteId")]
+    pub duplicate_note_id: String,
     #[serde(rename = "NotesDirectoryUnreadable")]
     pub notes_directory_unreadable: String,
     #[serde(rename = "NoteNotPublished")]
@@ -138,7 +138,6 @@ impl Default for ErrorStrings {
         Self {
             config_file_open: "could not open config file '{path}': {cause}".into(),
             config_file_parse: "could not load config file '{path}': {cause}".into(),
-            invalid_regex: "could not compile regular expression '{pattern}': {cause}".into(),
             homepage_conflict: "homepage cannot have both 'id' and 'file'".into(),
             homepage_invalid_note_id: "invalid note id '{id}' in homepage".into(),
             feed_conflict: "feed cannot have both 'id' and 'file'".into(),
@@ -154,9 +153,10 @@ impl Default for ErrorStrings {
             unsupported_language: "language '{code}' not supported".into(),
             domain_not_set: "domain field must be set in config file: {path}".into(),
             language_mismatch: "mismatched language in config: {language}".into(),
+            duplicate_note_id: "duplicate note id '{id}': found in '{file1}' and '{file2}'".into(),
             notes_directory_unreadable: "could not read the notes directory '{dir}': {cause}".into(),
             note_not_published: "menu note not published: {id}".into(),
-            metadata_not_found: "metadata not found for note '{id}'".into(),
+            metadata_not_found: "note with id '{id}' not found (configured in {source})".into(),
             note_io: "could not read note: {cause}".into(),
             export_dir_conflict: "export directory must not be the config or notes directory: {dir}".into(),
             export_dir_not_empty: "export directory is not empty (use --force to clear): {dir}".into(),

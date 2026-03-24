@@ -28,10 +28,6 @@ pub enum Error {
         path: String,
         cause: String,
     },
-    InvalidRegex {
-        pattern: String,
-        cause: String,
-    },
     HomepageConflict,
     HomepageInvalidNoteId {
         id: String,
@@ -83,6 +79,11 @@ pub enum Error {
     },
 
     // ── Notes stage ────────────────────────────────────────────────
+    DuplicateNoteId {
+        id: String,
+        file1: String,
+        file2: String,
+    },
     NotesDirectoryUnreadable {
         dir: String,
         cause: String,
@@ -92,6 +93,7 @@ pub enum Error {
     },
     MetadataNotFound {
         id: String,
+        source: String,
     },
     NoteIo(std::io::Error),
 
@@ -159,7 +161,6 @@ impl Error {
             // Config
             Error::ConfigFileOpen { .. }
             | Error::ConfigFileParse { .. }
-            | Error::InvalidRegex { .. }
             | Error::HomepageConflict
             | Error::HomepageInvalidNoteId { .. }
             | Error::FeedConflict
@@ -181,7 +182,8 @@ impl Error {
             | Error::RedirectInvalidDestination { .. } => ErrorStage::Config,
 
             // Notes
-            Error::NotesDirectoryUnreadable { .. }
+            Error::DuplicateNoteId { .. }
+            | Error::NotesDirectoryUnreadable { .. }
             | Error::NoteNotPublished { .. }
             | Error::MetadataNotFound { .. }
             | Error::NoteIo(_) => ErrorStage::Notes,
@@ -221,8 +223,6 @@ impl Error {
                 s.config_file_open.replace("{path}", path).replace("{cause}", cause),
             Error::ConfigFileParse { path, cause } =>
                 s.config_file_parse.replace("{path}", path).replace("{cause}", cause),
-            Error::InvalidRegex { pattern, cause } =>
-                s.invalid_regex.replace("{pattern}", pattern).replace("{cause}", cause),
             Error::HomepageConflict =>
                 s.homepage_conflict.clone(),
             Error::HomepageInvalidNoteId { id } =>
@@ -261,12 +261,14 @@ impl Error {
                 s.redirect_invalid_url.replace("{url}", url),
             Error::RedirectInvalidDestination { url, destination } =>
                 s.redirect_invalid_destination.replace("{url}", url).replace("{destination}", destination),
+            Error::DuplicateNoteId { id, file1, file2 } =>
+                s.duplicate_note_id.replace("{id}", id).replace("{file1}", file1).replace("{file2}", file2),
             Error::NotesDirectoryUnreadable { dir, cause } =>
                 s.notes_directory_unreadable.replace("{dir}", dir).replace("{cause}", cause),
             Error::NoteNotPublished { id } =>
                 s.note_not_published.replace("{id}", id),
-            Error::MetadataNotFound { id } =>
-                s.metadata_not_found.replace("{id}", id),
+            Error::MetadataNotFound { id, source } =>
+                s.metadata_not_found.replace("{id}", id).replace("{source}", source),
             Error::NoteIo(e) =>
                 s.note_io.replace("{cause}", &e.to_string()),
             Error::ExportDirConflict { dir } =>
