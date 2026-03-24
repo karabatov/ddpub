@@ -62,6 +62,10 @@ impl WebsiteLang {
         format!("{}rss.xml", self.base_url())
     }
 
+    pub fn url_for_sitemap(&self) -> String {
+        format!("{}sitemap.xml", self.base_url())
+    }
+
     pub fn absolute_url(&self, pattern: &str) -> String {
         format!("{}://{}{}", self.protocol(), self.domain, pattern)
     }

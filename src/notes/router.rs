@@ -255,6 +255,31 @@ impl Router {
             }
         }
 
+        // Build sitemap.xml.
+        {
+            let search_url = w.url_for_builtin(Builtin::Search);
+            let mut urls: Vec<String> = routes
+                .iter()
+                .filter(|(_, route)| route.content_type.starts_with("text/html"))
+                .map(|(url, _)| url.clone())
+                .filter(|url| *url != search_url)
+                .collect();
+            urls.sort();
+            let mut xml = String::from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
+            for url in &urls {
+                xml.push_str(&format!("  <url><loc>{}</loc></url>\n", w.absolute_url(url)));
+            }
+            xml.push_str("</urlset>\n");
+            let sitemap_pattern = w.url_for_sitemap();
+            routes.insert(
+                sitemap_pattern,
+                Route {
+                    content: xml.into_bytes(),
+                    content_type: "application/xml".to_string(),
+                },
+            );
+        }
+
         // Add redirects — source must not conflict with any existing route.
         for r in &w.redirects {
             if routes.contains_key(&r.url) {

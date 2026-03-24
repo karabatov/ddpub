@@ -1,7 +1,8 @@
-Consistently define and use ID format +housekeeping
 If there is a logo.png in the config directory, displays a logo to the left of the website title +feature
 Add language switcher UI if website is configured with multiple languages +feature
 Add more segment positions +TBD +feature
+x Add sitemap.xml +feature
+x Consistently define and use ID format +housekeeping
 x Builtin search - integrate pagefind +feature
 x Support URL redirects in config, works from URL to URL. The source URL cannot be an existing valid URL. The target URL has to be either a valid internal URL or an external URL. This works over URLs, not notes - to publish a note, create a page or add it to feed. Including homepage - no notes at all (e.g. for domain parking). This should work in the exported HTML static website as well. In the config, it would look like [[redirects]] url = "" destination = "" +feature
 x Export a 404.html page so that we can point reverse proxy to it +feature
