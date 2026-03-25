@@ -1,3 +1,5 @@
+A link should not read "broken" if it's a valid link: /all/180-days-if/ in '202312301935 2023 to 2024.md' +bug
+Child site configs should take id settings from parent by default +feature
 Add option to check to output the full list of source files that are being used / exported +feature
 Add --watch option for serve to automatically reload on update of either config or note directory +feature
 If there is a logo.png in the config directory, displays a logo to the left of the website title +feature

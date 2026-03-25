@@ -18,7 +18,7 @@ pub struct Homepage {
 
 #[derive(Debug, Deserialize, Default)]
 pub struct LanguageData {
-    #[serde(default, rename = "Code")]
+    #[serde(default)]
     pub code: String,
     #[serde(default)]
     pub short: bool,
