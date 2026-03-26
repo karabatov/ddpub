@@ -28,8 +28,8 @@ pub fn render_markdown_with_modifications(
     files: &mut HashMap<String, FileInfo>,
     broken_links: &mut HashMap<String, String>,
     resolved_links: &mut HashMap<String, String>,
-    is_feed_note: impl Fn(&str) -> bool,
-    is_page_note: impl Fn(&str) -> bool,
+    resolve_note: impl Fn(&str) -> Option<String>,
+    resolve_cross_lang: impl Fn(&str) -> Option<String>,
 ) -> String {
     let arena = Arena::new();
 
@@ -63,8 +63,8 @@ pub fn render_markdown_with_modifications(
         files: &mut HashMap<String, FileInfo>,
         broken_links: &mut HashMap<String, String>,
         resolved_links: &mut HashMap<String, String>,
-        is_feed_note: &dyn Fn(&str) -> bool,
-        is_page_note: &dyn Fn(&str) -> bool,
+        resolve_note: &dyn Fn(&str) -> Option<String>,
+        resolve_cross_lang: &dyn Fn(&str) -> Option<String>,
     ) {
         match &mut node.data.borrow_mut().value {
             NodeValue::Link(link) => {
@@ -84,21 +84,32 @@ pub fn render_markdown_with_modifications(
 
                 if path_part.is_empty() {
                     // Fragment-only link (#anchor) — same-page navigation, leave as-is.
-                } else if let Some((id, linked_meta)) = note_meta {
-                    let mut new_link = link_str.clone();
-                    if is_feed_note(&id) {
-                        new_link = w.url_for_feed_note(&linked_meta.slug);
-                    } else if is_page_note(&id) {
-                        new_link = w.url_for_page_note(&linked_meta.slug);
+                } else if let Some((id, _linked_meta)) = note_meta {
+                    if let Some(url) = resolve_note(&id) {
+                        // Same-language published note — validate against current router.
+                        resolved_links.entry(url.clone()).or_insert_with(|| text.clone());
+                        let mut new_link = url;
+                        if let Some(f) = fragment
+                            && !f.is_empty()
+                        {
+                            new_link.push('#');
+                            new_link.push_str(f);
+                        }
+                        link.url = new_link;
+                    } else if let Some(url) = resolve_cross_lang(&id) {
+                        // Cross-language note — skip route validation.
+                        let mut new_link = url;
+                        if let Some(f) = fragment
+                            && !f.is_empty()
+                        {
+                            new_link.push('#');
+                            new_link.push_str(f);
+                        }
+                        link.url = new_link;
+                    } else {
+                        // Note exists in metadata but not published in any config.
+                        broken_links.entry(path_part.to_string()).or_insert(text);
                     }
-                    resolved_links.entry(new_link.clone()).or_insert_with(|| text.clone());
-                    if let Some(f) = fragment
-                        && !f.is_empty()
-                    {
-                        new_link.push('#');
-                        new_link.push_str(f);
-                    }
-                    link.url = new_link;
                 } else if link_str.starts_with("http://")
                     || link_str.starts_with("https://")
                     || link_str.starts_with("mailto:")
@@ -112,7 +123,17 @@ pub fn render_markdown_with_modifications(
                     } else {
                         format!("{}/", path_part)
                     };
-                    resolved_links.entry(normalized).or_insert(text);
+                    // In child configs, only validate paths under this language's prefix.
+                    // Other absolute paths may belong to the main or another language.
+                    let should_validate = if w.is_child {
+                        let prefix = format!("/{}/", w.language);
+                        normalized.starts_with(&prefix)
+                    } else {
+                        true
+                    };
+                    if should_validate {
+                        resolved_links.entry(normalized).or_insert(text);
+                    }
                 } else if let Some(file_info) = try_file_from_link(&link.url, notes_dir, w) {
                     link.url = file_info.link.clone();
                     files.insert(file_info.link.clone(), file_info);
@@ -132,11 +153,11 @@ pub fn render_markdown_with_modifications(
         }
 
         for child in node.children() {
-            walk_nodes(child, w, meta, notes_dir, files, broken_links, resolved_links, is_feed_note, is_page_note);
+            walk_nodes(child, w, meta, notes_dir, files, broken_links, resolved_links, resolve_note, resolve_cross_lang);
         }
     }
 
-    walk_nodes(root, w, meta, notes_dir, files, broken_links, resolved_links, &is_feed_note, &is_page_note);
+    walk_nodes(root, w, meta, notes_dir, files, broken_links, resolved_links, &resolve_note, &resolve_cross_lang);
 
     let mut html_output = Vec::new();
     format_html(root, &options, &mut html_output).unwrap();

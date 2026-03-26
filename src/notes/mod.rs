@@ -84,7 +84,7 @@ pub struct Store {
 }
 
 impl Store {
-    pub fn new(w: &WebsiteLang, notes_dir: &str) -> Result<Self> {
+    pub fn new(w: &WebsiteLang, notes_dir: &str, all_configs: &[&WebsiteLang]) -> Result<Self> {
         let result = metadata::read_all_metadata(w, notes_dir)?;
         let by_tag = make_notes_by_tag(&result.meta);
 
@@ -101,7 +101,7 @@ impl Store {
             warnings: result.warnings,
         };
 
-        store.read_exported_content(w, notes_dir)?;
+        store.read_exported_content(w, notes_dir, all_configs)?;
 
         // Check that menu notes exist.
         for m in &w.menu {
@@ -162,14 +162,12 @@ impl Store {
         &mut self,
         w: &WebsiteLang,
         notes_dir: &str,
+        all_configs: &[&WebsiteLang],
     ) -> Result<()> {
         let mut contents: HashMap<NoteId, NoteContent> = HashMap::new();
         let mut new_files: HashMap<String, FileInfo> = HashMap::new();
         let mut broken_links: Vec<LinkInfo> = Vec::new();
         let mut resolved_links: Vec<LinkInfo> = Vec::new();
-
-        let feed_tag = w.feed.tag.clone();
-        let pages_tag = w.pages_tag.clone();
 
         let pub_notes: Vec<PublishedNote> = self.pub_notes.clone();
 
@@ -185,11 +183,14 @@ impl Store {
 
             let raw_content = markdown::read_content(&meta.filename, notes_dir)?;
 
-            let is_feed = |id: &str| -> bool {
-                is_note_in_tag(id, &feed_tag, &self.meta)
+            let resolve_note = |id: &str| -> Option<String> {
+                url_for_note_in_config(self.meta.get(id)?, w)
             };
-            let is_page = |id: &str| -> bool {
-                is_note_in_tag(id, &pages_tag, &self.meta)
+            let resolve_cross_lang = |id: &str| -> Option<String> {
+                let m = self.meta.get(id)?;
+                all_configs.iter()
+                    .filter(|cfg| cfg.language.code != w.language.code)
+                    .find_map(|cfg| url_for_note_in_config(m, cfg))
             };
 
             let mut note_broken: HashMap<String, String> = HashMap::new();
@@ -203,8 +204,8 @@ impl Store {
                 &mut new_files,
                 &mut note_broken,
                 &mut note_resolved,
-                is_feed,
-                is_page,
+                resolve_note,
+                resolve_cross_lang,
             );
 
             fn merge_links(target: &mut Vec<LinkInfo>, source: HashMap<String, String>, filename: &str) {
@@ -243,15 +244,20 @@ impl Store {
     }
 }
 
-fn is_note_in_tag(id: &str, tag: &str, meta: &HashMap<NoteId, Metadata>) -> bool {
-    if tag.is_empty() {
-        return false;
+/// Returns the URL for a note if it would be published in the given config.
+/// Pages: tag check only (no language filter, matching notes_for_export).
+/// Feed: tag + language check (matching notes_for_export).
+fn url_for_note_in_config(meta: &Metadata, cfg: &WebsiteLang) -> Option<String> {
+    if !cfg.pages_tag.is_empty() && meta.tags.iter().any(|t| t == &cfg.pages_tag) {
+        return Some(cfg.url_for_page_note(&meta.slug));
     }
-    if let Some(m) = meta.get(id) {
-        m.tags.iter().any(|t| t == tag)
-    } else {
-        false
+    if !cfg.feed.tag.is_empty()
+        && meta.tags.iter().any(|t| t == &cfg.feed.tag)
+        && meta.language == cfg.language.code
+    {
+        return Some(cfg.url_for_feed_note(&meta.slug));
     }
+    None
 }
 
 fn make_notes_by_tag(meta: &HashMap<NoteId, Metadata>) -> HashMap<Tag, Vec<NoteId>> {
