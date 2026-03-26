@@ -1,0 +1,17 @@
+Child site configs should take id settings from parent by default +feature
+Add option to check to output the full list of source files that are being used / exported +feature
+Add --watch option for serve to automatically reload on update of either config or note directory +feature
+If there is a logo.png in the config directory, displays a logo to the left of the website title +feature
+Add language switcher UI if website is configured with multiple languages +feature
+Add more segment positions +TBD +feature
+x Allow linking to notes in other language and through relative links +feature
+x A link should not read "broken" if it's a valid link: /all/180-days-if/ in '202312301935 2023 to 2024.md' +bug
+x Add sitemap.xml +feature
+x Consistently define and use ID format +housekeeping
+x Builtin search - integrate pagefind +feature
+x Support URL redirects in config, works from URL to URL. The source URL cannot be an existing valid URL. The target URL has to be either a valid internal URL or an external URL. This works over URLs, not notes - to publish a note, create a page or add it to feed. Including homepage - no notes at all (e.g. for domain parking). This should work in the exported HTML static website as well. In the config, it would look like [[redirects]] url = "" destination = "" +feature
+x Export a 404.html page so that we can point reverse proxy to it +feature
+x Export files linked from notes, not only images +feature
+x I want to add ddpub as a library to another Rust app to check, serve and export websites. The API needs to support it +feature
+x Add --export parameter and generate a full HTML website in the given directory. Cancel if directory is not empty. Create directory if doesn't exist +feature
+x Remove Go implementation leftovers from the branch and move templates and other static files where they belong +housekeeping

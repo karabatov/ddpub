@@ -1,0 +1,30 @@
+[package]
+name = "ddpub"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nome = { git = "https://github.com/karabatov/nome.git", tag = "v1.1.0" }
+axum = "0.8"
+chrono = "0.4"
+clap = { version = "4", features = ["derive"] }
+comrak = "0.36"
+hex = "0.4"
+regex = "1"
+rss = "2"
+serde = { version = "1", features = ["derive"] }
+sha1 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+minijinja = "2"
+toml = "0.8"
+url = "2"
+pagefind = "1"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,13 @@
+version = 1
+
+[[columns]]
+tag = "kano-todo"
+name = "To Do"
+
+[[columns]]
+tag = "review"
+name = "Review"
+
+[[columns]]
+tag = "kano-done"
+name = "Done"

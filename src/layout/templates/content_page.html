@@ -1,0 +1,7 @@
+<article>
+{% if not p.has_leading_h1 %}<h1>{{ p.title }}</h1>
+{% endif %}
+<div class="post-content">
+{{ p.content }}
+</div>
+</article>

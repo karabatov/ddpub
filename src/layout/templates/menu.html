@@ -1,0 +1,5 @@
+{% if page.header.menu %}
+<nav class="menu">
+{% for item in page.header.menu %}<a href="{{ item.url }}">{{ item.title }}</a>{% endfor %}
+</nav>
+{% endif %}

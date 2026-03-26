@@ -1,0 +1,10 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% if page.head.title %}{{ page.head.title }} - {% endif %}{{ page.head.website_title }}</title>
+    {% include "metatags" %}
+    <link rel="stylesheet" type="text/css" href="/theme.css" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="alternate" type="application/rss+xml" title="{{ page.head.website_title }}" href="{{ page.head.rss_url }}" />
+    {% if page.head.suffix %}{{ page.head.suffix }}
+    {% endif %}
+</head>

@@ -1,0 +1,11 @@
+<article>
+<h1>{{ p.title }}</h1>
+<link href="{{ p.pagefind_css_url }}" rel="stylesheet">
+<div id="search"></div>
+<script src="{{ p.pagefind_js_url }}"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    new PagefindUI({ element: "#search", showSubResults: true });
+});
+</script>
+</article>

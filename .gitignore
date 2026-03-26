@@ -2,3 +2,5 @@
 ddpub
 ddpub.exe
 ddpub-linux-*
+/bin
+/target
