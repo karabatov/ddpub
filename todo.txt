@@ -1,3 +1,4 @@
+Allow file note links in menu +feature
 Child site configs should take id settings from parent by default +feature
 Add option to check to output the full list of source files that are being used / exported +feature
 Add --watch option for serve to automatically reload on update of either config or note directory +feature

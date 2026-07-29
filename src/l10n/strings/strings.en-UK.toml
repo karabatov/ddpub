@@ -1,7 +1,7 @@
 DateFormat = "%-d %B %Y"
 DatePublished = "Published %s"
 DateUpdatedPublished = "Updated %s ・ Published %s"
-FooterPoweredBy = 'Powered by <a href="https://ddpub.org">%s</a>'
+FooterPoweredBy = 'Powered by <a href="https://ddpub.org">DDPub</a>'
 TagsTitle = "Tags"
 SearchTitle = "Search"
 NotFoundTitle = "Page Not Found"
